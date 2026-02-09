@@ -1,0 +1,17 @@
+{
+    "name": "planit",
+    "short_name": "planit",
+    "description": "Technion degree planner",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#4ca9a1",
+    "icons": [
+        {
+            "src": "/favicon.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        }
+    ]
+}
