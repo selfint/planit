@@ -1,45 +1,26 @@
 import './style.css';
-import typescriptLogo from './typescript.svg';
+
 import appLogo from '/favicon.svg';
-import { setupCounter } from './counter.ts';
+import appTemplate from './app.html?raw';
 import { initPWA } from './pwa.ts';
+import { setupCounter } from './counter.ts';
+import typescriptLogo from './typescript.svg';
 
-const app = document.querySelector<HTMLDivElement>('#app')!;
-app.innerHTML = `
-  <div>
-    <a href="https://vite.dev" target="_blank">
-      <img src="${appLogo}" class="logo" alt="App logo" />
-    </a>
-    <a href="https://www.typescriptlang.org/" target="_blank">
-      <img src="${typescriptLogo}" class="logo vanilla" alt="TypeScript logo" />
-    </a>
-    <h1>planit</h1>
-    <div class="card">
-      <button id="counter" type="button"></button>
-    </div>
-    <p class="read-the-docs">
-      Click on the Vite and TypeScript logos to learn more
-    </p>
-  </div>
-  <div
-    id="pwa-toast"
-    role="alert"
-    aria-labelledby="toast-message"
-  >
-    <div class="message">
-      <span id="toast-message"></span>
-    </div>
-    <div class="buttons">
-        <button id="pwa-refresh" type="button">
-          Reload
-        </button>
-        <button id="pwa-close" type="button">
-          Close
-        </button>
-    </div>
-  </div>
-`;
+const app = document.querySelector<HTMLDivElement>('#app');
 
-setupCounter(document.querySelector<HTMLButtonElement>('#counter')!);
+if (!app) {
+    throw new Error('Missing #app element');
+}
+app.innerHTML = appTemplate
+    .replaceAll('{{appLogo}}', appLogo)
+    .replaceAll('{{typescriptLogo}}', typescriptLogo);
+
+const counterButton = document.querySelector<HTMLButtonElement>('#counter');
+
+if (!counterButton) {
+    throw new Error('Missing #counter button');
+}
+
+setupCounter(counterButton);
 
 initPWA(app);

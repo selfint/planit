@@ -1,0 +1,63 @@
+<div class="flex flex-col items-center p-0.5">
+    <div class="flex flex-row">
+        <a
+            href="https://vite.dev"
+            target="_blank"
+            class="font-medium text-[#646cff] no-underline hover:text-[#747bff] dark:hover:text-[#535bf2]"
+        >
+            <img
+                src="{{appLogo}}"
+                class="h-[6em] p-[1.5em] transition-[filter] duration-300 will-change-[filter] hover:drop-shadow-[0_0_2em_#646cffaa]"
+                alt="App logo"
+            />
+        </a>
+        <a
+            href="https://www.typescriptlang.org/"
+            target="_blank"
+            class="font-medium text-[#646cff] no-underline hover:text-[#747bff] dark:hover:text-[#535bf2]"
+        >
+            <img
+                src="{{typescriptLogo}}"
+                class="h-[6em] p-[1.5em] transition-[filter] duration-300 will-change-[filter] hover:drop-shadow-[0_0_2em_#3178c6aa]"
+                alt="TypeScript logo"
+            />
+        </a>
+    </div>
+    <h1 class="text-[3.2em] leading-[1.1]">planit</h1>
+    <div class="p-8">
+        <button
+            id="counter"
+            type="button"
+            class="cursor-pointer rounded-lg border border-transparent bg-[#f9f9f9] px-[1.2em] py-[0.6em] text-base font-medium text-[#213547] transition-[border-color] duration-250 hover:border-[#646cff] focus-visible:outline-4 focus-visible:outline-[-webkit-focus-ring-color] dark:bg-[#1a1a1a] dark:text-[rgba(255,255,255,0.87)]"
+        ></button>
+    </div>
+    <p class="text-[#888]">
+        Click on the Vite and TypeScript logos to learn more
+    </p>
+</div>
+<div
+    id="pwa-toast"
+    role="alert"
+    aria-labelledby="toast-message"
+    class="fixed right-0 bottom-0 z-10 m-4 hidden rounded-sm border border-[#8885] p-3 text-left shadow-[3px_4px_5px_0_#8885]"
+>
+    <div class="mb-2">
+        <span id="toast-message"></span>
+    </div>
+    <div class="flex gap-1.5">
+        <button
+            id="pwa-refresh"
+            type="button"
+            class="hidden cursor-pointer rounded-xs border border-[#8885] bg-[#f9f9f9] px-2.5 py-0.75 text-sm font-medium text-[#213547] transition-[border-color] duration-250 hover:border-[#646cff] focus-visible:outline-4 focus-visible:outline-[-webkit-focus-ring-color] dark:bg-[#1a1a1a] dark:text-[rgba(255,255,255,0.87)]"
+        >
+            Reload
+        </button>
+        <button
+            id="pwa-close"
+            type="button"
+            class="cursor-pointer rounded-xs border border-[#8885] bg-[#f9f9f9] px-2.5 py-0.75 text-sm font-medium text-[#213547] transition-[border-color] duration-250 hover:border-[#646cff] focus-visible:outline-4 focus-visible:outline-[-webkit-focus-ring-color] dark:bg-[#1a1a1a] dark:text-[rgba(255,255,255,0.87)]"
+        >
+            Close
+        </button>
+    </div>
+</div>

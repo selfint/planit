@@ -1,11 +1,12 @@
-import js from '@eslint/js';
-
-import globals from 'globals';
-import tseslint from 'typescript-eslint';
-import json from '@eslint/json';
-import markdown from '@eslint/markdown';
 import css from '@eslint/css';
 import { defineConfig } from 'eslint/config';
+import eslintParserHTML from '@html-eslint/parser';
+import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
+import globals from 'globals';
+import js from '@eslint/js';
+import json from '@eslint/json';
+import markdown from '@eslint/markdown';
+import tseslint from 'typescript-eslint';
 
 export default defineConfig(
     {
@@ -17,9 +18,35 @@ export default defineConfig(
         ],
     },
     {
+        files: ['**/*.html'],
+        languageOptions: { parser: eslintParserHTML },
+    },
+    {
+        files: ['src/**/*.{js,ts,html}'],
+        extends: [
+            eslintPluginBetterTailwindcss.configs['recommended-error'],
+            eslintPluginBetterTailwindcss.configs['stylistic-error'],
+            eslintPluginBetterTailwindcss.configs['correctness-error'],
+        ],
+        settings: {
+            'better-tailwindcss': {
+                entryPoint: 'src/style.css',
+                rootFontSize: 16,
+            },
+        },
+        rules: {
+            'better-tailwindcss/enforce-canonical-classes': 'error',
+            'better-tailwindcss/enforce-consistent-line-wrapping': 'off',
+            'better-tailwindcss/enforce-consistent-class-order': 'off',
+        },
+    },
+    {
         files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
         languageOptions: {
-            globals: { ...globals.browser, ...globals.es2021 },
+            globals: {
+                ...globals.browser,
+                ...globals.es2021,
+            },
             parserOptions: {
                 projectService: {
                     allowDefaultProject: ['*.config.js', '*.config.ts'],
@@ -29,6 +56,8 @@ export default defineConfig(
         },
         ...js.configs.recommended,
         extends: [
+            tseslint.configs.recommended,
+            tseslint.configs.eslintRecommended,
             tseslint.configs.recommendedTypeChecked,
             tseslint.configs.strictTypeChecked,
             tseslint.configs.stylisticTypeChecked,
@@ -51,6 +80,32 @@ export default defineConfig(
                 'interface',
             ],
             '@typescript-eslint/no-floating-promises': 'error', // Vital for Service Workers
+            'object-curly-newline': [
+                'error',
+                {
+                    ObjectExpression: { multiline: true, minProperties: 3 },
+                    ObjectPattern: { multiline: true, minProperties: 3 },
+                    ImportDeclaration: { multiline: true, minProperties: 3 },
+                    ExportDeclaration: { multiline: true, minProperties: 3 },
+                },
+            ],
+            'comma-dangle': ['error', 'only-multiline'],
+            'object-curly-spacing': ['error', 'always'],
+            'sort-imports': [
+                'error',
+                {
+                    ignoreCase: false,
+                    ignoreDeclarationSort: false,
+                    ignoreMemberSort: false,
+                    memberSyntaxSortOrder: [
+                        'none',
+                        'all',
+                        'multiple',
+                        'single',
+                    ],
+                    allowSeparatedGroups: true,
+                },
+            ],
         },
     },
 
@@ -58,18 +113,14 @@ export default defineConfig(
         files: ['**/*.json', '**/*.jsonc', '**/*.json5'],
         plugins: { json },
         language: 'json/json',
-        rules: {
-            'json/no-duplicate-keys': 'error',
-        },
+        rules: { 'json/no-duplicate-keys': 'error' },
     },
 
     {
         files: ['**/*.md'],
         plugins: { markdown },
         language: 'markdown/gfm',
-        rules: {
-            'markdown/no-invalid-label-refs': 'error',
-        },
+        rules: { 'markdown/no-invalid-label-refs': 'error' },
     },
 
     {
