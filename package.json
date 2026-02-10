@@ -9,7 +9,8 @@
         "preview": "vite preview",
         "eslint": "eslint",
         "prettier": "prettier",
-        "format": "eslint --fix && prettier --write '**/*.{ts,js,html}'"
+        "format": "eslint --fix && prettier --write '**/*.{ts,js,html}'",
+        "format:check": "eslint --max-warnings=0 && prettier --check '**/*.{ts,js,html}'"
     },
     "devDependencies": {
         "@eslint/css": "^0.14.1",
