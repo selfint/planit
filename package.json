@@ -10,12 +10,12 @@
         "eslint": "eslint",
         "prettier": "prettier",
         "format": "eslint --fix && prettier --write '**/*.{ts,js,html}'",
-        "format:check": "eslint --max-warnings=0 && prettier --check '**/*.{ts,js,html}'"
+        "format:check": "eslint --max-warnings=0 && prettier --check '**/*.{ts,js,html}'",
+        "vibe": "vibe-kanban"
     },
     "devDependencies": {
         "@eslint/css": "^0.14.1",
         "@eslint/js": "^10.0.1",
-        "@eslint/json": "^1.0.0",
         "@eslint/markdown": "^7.5.1",
         "@html-eslint/eslint-plugin": "^0.54.2",
         "@html-eslint/parser": "^0.54.0",
@@ -31,6 +31,7 @@
         "tailwindcss": "^4.1.18",
         "typescript": "~5.9.3",
         "typescript-eslint": "^8.55.0",
+        "vibe-kanban": "^0.1.8",
         "vite": "^7.1.9",
         "vite-plugin-pwa": "^1.1.0",
         "workbox-window": "^7.4.0"

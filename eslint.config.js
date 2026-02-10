@@ -4,7 +4,6 @@ import eslintParserHTML from '@html-eslint/parser';
 import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
 import globals from 'globals';
 import js from '@eslint/js';
-import json from '@eslint/json';
 import markdown from '@eslint/markdown';
 import tseslint from 'typescript-eslint';
 
@@ -107,13 +106,6 @@ export default defineConfig(
                 },
             ],
         },
-    },
-
-    {
-        files: ['**/*.json', '**/*.jsonc', '**/*.json5'],
-        plugins: { json },
-        language: 'json/json',
-        rules: { 'json/no-duplicate-keys': 'error' },
     },
 
     {
