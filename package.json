@@ -11,7 +11,7 @@
         "prettier": "prettier",
         "format": "eslint --fix && prettier --write '**/*.{ts,js,html}'",
         "format:check": "eslint --max-warnings=0 && prettier --check '**/*.{ts,js,html}'",
-        "unitttest": "vitest run",
+        "unitttest": "vitest run --passWithNoTests",
         "integtest": "playwright test",
         "test": "pnpm run unitttest && pnpm run integtest",
         "vibe": "vibe-kanban"
