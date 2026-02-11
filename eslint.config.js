@@ -131,7 +131,8 @@ export default defineConfig(
         rules: {
             'css/no-duplicate-imports': 'error',
             'css/no-empty-blocks': 'error',
-            'css/no-invalid-at-rules': 'error',
+            // TODO: How to configure this to work with tailwind classes?
+            // 'css/no-invalid-at-rules': 'error',
             'css/no-invalid-properties': 'error',
             'css/use-baseline': ['error', { available: 'widely' }],
             'css/use-layers': 'error',
