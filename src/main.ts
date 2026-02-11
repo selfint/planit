@@ -20,7 +20,7 @@ function initApp(): HTMLDivElement {
 }
 
 function main(): void {
-    const _app = initApp();
+    initApp();
     initPWA();
 }
 
