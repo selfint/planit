@@ -13,7 +13,7 @@ function initApp(): HTMLDivElement {
 
     const headerHost = app.querySelector<HTMLElement>('[data-app-header]');
     if (headerHost !== null) {
-        headerHost.outerHTML = AppHeader().outerHTML;
+        headerHost.replaceWith(AppHeader());
     }
 
     return app;
