@@ -9,7 +9,8 @@ const meta: Meta = {
         container.className = 'space-y-8';
 
         const lightSection = document.createElement('section');
-        lightSection.className = 'space-y-3 rounded-3xl p-4 border-2';
+        lightSection.className =
+            'space-y-3 rounded-3xl border border-slate-200 bg-white/70 p-4';
         lightSection.innerHTML =
             '<p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Light mode</p>';
         lightSection.appendChild(createAppHeader());
