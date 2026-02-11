@@ -15,15 +15,4 @@
     --color-text-muted: var(--color-text-muted-dark);
     --color-text: var(--color-text-dark);
     --color-warning: var(--color-warning-dark);
-    background:
-        radial-gradient(
-            1100px circle at 12% -10%,
-            rgba(62, 200, 180, 0.12),
-            transparent 55%
-        ),
-        radial-gradient(
-            900px circle at 95% 0%,
-            rgba(79, 143, 190, 0.14),
-            transparent 55%
-        );
 }
