@@ -1,8 +1,8 @@
 import './style.css';
 
+import { AppHeader } from './components/AppHeader';
 import appTemplate from './app.html?raw';
 import { initPWA } from './pwa.ts';
-import { AppHeader } from './components/AppHeader';
 
 function initApp(): HTMLDivElement {
     const app = document.querySelector<HTMLDivElement>('#app');
