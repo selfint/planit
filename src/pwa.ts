@@ -3,7 +3,7 @@ import { registerSW } from 'virtual:pwa-register';
 const getRequiredElement = (root: ParentNode, selector: string): Element => {
     const element = root.querySelector(selector);
 
-    if (!element) {
+    if (element === null) {
         throw new Error(`Missing element: ${selector}`);
     }
 
@@ -96,15 +96,19 @@ export function initPWA(app: Element): void {
                     return;
                 }
 
-                if (!r) {
+                if (r === undefined) {
                     return;
                 }
 
                 if (r.active?.state === 'activated') {
                     swActivated = true;
                     registerPeriodicSync(period, swUrl, r);
-                } else if (r.installing) {
-                    r.installing.addEventListener('statechange', (e) => {
+                } else {
+                    const installing = r.installing;
+                    if (installing === null) {
+                        return;
+                    }
+                    installing.addEventListener('statechange', (e) => {
                         const sw = e.target as ServiceWorker;
                         swActivated = sw.state === 'activated';
                         if (swActivated) {
