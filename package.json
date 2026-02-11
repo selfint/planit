@@ -11,6 +11,9 @@
         "prettier": "prettier",
         "format": "eslint --fix && prettier --write '**/*.{ts,js,html}'",
         "format:check": "eslint --max-warnings=0 && prettier --check '**/*.{ts,js,html}'",
+        "unitttest": "vitest run --passWithNoTests",
+        "integtest": "playwright test",
+        "test": "pnpm run unitttest && pnpm run integtest",
         "vibe": "vibe-kanban"
     },
     "devDependencies": {
@@ -19,6 +22,7 @@
         "@eslint/markdown": "^7.5.1",
         "@html-eslint/eslint-plugin": "^0.54.2",
         "@html-eslint/parser": "^0.54.0",
+        "@playwright/test": "^1.58.2",
         "@tailwindcss/node": "^4.1.18",
         "@tailwindcss/vite": "^4.1.18",
         "@types/node": "^25.2.2",
@@ -33,6 +37,7 @@
         "typescript-eslint": "^8.55.0",
         "vibe-kanban": "^0.1.8",
         "vite": "^7.1.9",
+        "vitest": "^3.2.4",
         "vite-plugin-pwa": "^1.1.0",
         "workbox-window": "^7.4.0"
     },
