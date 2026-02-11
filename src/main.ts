@@ -2,8 +2,7 @@ import './style.css';
 
 import appTemplate from './app.html?raw';
 import { initPWA } from './pwa.ts';
-import logoUrl from './assets/logo.webp';
-import titleSvg from './assets/Title.svg?raw';
+import { mountAppHeader } from './components/AppHeader';
 
 function initApp(): HTMLDivElement {
     const app = document.querySelector<HTMLDivElement>('#app');
@@ -12,18 +11,9 @@ function initApp(): HTMLDivElement {
     }
     app.innerHTML = appTemplate;
 
-    const logo = app.querySelector<HTMLImageElement>('[data-logo]');
-    if (logo !== null) {
-        logo.src = logoUrl;
-    }
-
-    const title = app.querySelector<HTMLDivElement>('[data-title]');
-    if (title !== null) {
-        title.innerHTML = titleSvg;
-        const svg = title.querySelector<SVGElement>('svg');
-        if (svg !== null) {
-            svg.setAttribute('class', 'h-full w-auto');
-        }
+    const headerHost = app.querySelector<HTMLElement>('[data-app-header]');
+    if (headerHost) {
+        mountAppHeader(headerHost);
     }
 
     return app;
