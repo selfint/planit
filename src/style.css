@@ -1,1 +1,49 @@
 @import 'tailwindcss' layer(tailwind);
+
+@theme {
+    --font-sans:
+        'Rubik', 'Assistant', 'Heebo', ui-sans-serif, system-ui, sans-serif;
+    --color-bg: var(--app-bg);
+    --color-surface-1: var(--app-surface-1);
+    --color-surface-2: var(--app-surface-2);
+    --color-border: var(--app-border);
+    --color-text: var(--app-text);
+    --color-text-muted: var(--app-text-muted);
+    --color-accent: var(--app-accent);
+    --color-accent-contrast: var(--app-accent-contrast);
+    --color-success: var(--app-success);
+    --color-warning: var(--app-warning);
+    --color-danger: var(--app-danger);
+    --color-info: var(--app-info);
+}
+
+:root {
+    color-scheme: light dark;
+    --app-bg: #f5f8f9;
+    --app-surface-1: #ffffff;
+    --app-surface-2: #edf2f4;
+    --app-border: #d7e0e6;
+    --app-text: #19232a;
+    --app-text-muted: #5b6a74;
+    --app-accent: #2aa89b;
+    --app-accent-contrast: #f3fffd;
+    --app-success: #2d9d89;
+    --app-warning: #d7a31b;
+    --app-danger: #d96565;
+    --app-info: #4f8fbe;
+}
+
+.dark {
+    --app-bg: #0b1116;
+    --app-surface-1: #121b22;
+    --app-surface-2: #19242c;
+    --app-border: #26343d;
+    --app-text: #e5eef0;
+    --app-text-muted: #93a3ad;
+    --app-accent: #3ec8b4;
+    --app-accent-contrast: #0c1517;
+    --app-success: #3ec8b4;
+    --app-warning: #e2b652;
+    --app-danger: #e07a7a;
+    --app-info: #6aa7d8;
+}

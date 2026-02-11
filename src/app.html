@@ -1,4 +1,181 @@
-<div class="flex items-center gap-4 p-6 text-slate-900 dark:text-white">
-    <img class="size-12" alt="Planit logo" data-logo />
-    <div class="h-8 w-40" aria-label="Planit" role="img" data-title></div>
+<div
+    class="bg-bg text-text min-h-screen w-full [background:radial-gradient(1100px_circle_at_8%_-10%,rgba(62,200,180,0.2),transparent_55%),radial-gradient(900px_circle_at_100%_0%,rgba(106,167,216,0.18),transparent_50%)]"
+>
+    <div
+        class="mx-auto flex min-h-screen max-w-6xl flex-col px-4 pt-[calc(env(safe-area-inset-top)+2rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:px-8"
+    >
+        <header
+            class="border-border/70 bg-surface-1/80 flex flex-col gap-4 rounded-3xl border p-4 shadow backdrop-blur sm:p-6"
+        >
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex items-center gap-3">
+                    <img
+                        class="border-border/60 bg-surface-2/80 size-12 rounded-2xl border p-2 shadow"
+                        alt="Planit logo"
+                        data-logo
+                    />
+                    <div class="flex flex-col gap-1">
+                        <div
+                            class="text-text h-7 w-36"
+                            aria-label="Planit"
+                            role="img"
+                            data-title
+                        ></div>
+                        <p class="text-text-muted text-xs">
+                            Degree planner for the Technion
+                        </p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap items-center gap-3 text-xs">
+                    <div
+                        class="border-border/60 bg-surface-2/70 text-text-muted flex items-center gap-2 rounded-full border px-3 py-1"
+                    >
+                        <span class="bg-success size-2 rounded-full"></span>
+                        Offline-ready
+                    </div>
+                    <button
+                        type="button"
+                        class="border-border/60 bg-surface-2/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
+                    >
+                        Sync status
+                    </button>
+                </div>
+            </div>
+            <nav class="flex flex-wrap gap-2">
+                <button
+                    type="button"
+                    class="bg-accent text-accent-contrast rounded-full px-4 py-2 text-xs font-medium shadow"
+                >
+                    Planner
+                </button>
+                <button
+                    type="button"
+                    class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text rounded-full border px-4 py-2 text-xs font-medium transition duration-200 ease-out"
+                >
+                    Catalogs
+                </button>
+                <button
+                    type="button"
+                    class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text rounded-full border px-4 py-2 text-xs font-medium transition duration-200 ease-out"
+                >
+                    Courses
+                </button>
+                <button
+                    type="button"
+                    class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text rounded-full border px-4 py-2 text-xs font-medium transition duration-200 ease-out"
+                >
+                    Search
+                </button>
+                <button
+                    type="button"
+                    class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text rounded-full border px-4 py-2 text-xs font-medium transition duration-200 ease-out"
+                >
+                    Settings
+                </button>
+            </nav>
+        </header>
+
+        <main class="mt-8 grid gap-6 lg:grid-cols-[1.35fr_0.65fr]">
+            <section
+                class="border-border/60 bg-surface-1/80 flex flex-col gap-5 rounded-3xl border p-6 shadow"
+            >
+                <div class="flex flex-col gap-2">
+                    <p class="text-text-muted text-xs">Welcome back</p>
+                    <h1 class="text-2xl font-medium">
+                        Map your semesters with clarity.
+                    </h1>
+                    <p class="text-text-muted text-xs">
+                        Planit keeps your degree plan offline-first, then syncs
+                        updates when you are online.
+                    </p>
+                </div>
+                <div class="grid gap-3 sm:grid-cols-3">
+                    <div
+                        class="border-border/60 bg-surface-2/80 rounded-2xl border p-4"
+                    >
+                        <p class="text-text-muted text-xs">Current plan</p>
+                        <p class="mt-2 text-lg font-medium">Spring 2026</p>
+                        <p class="text-text-muted mt-1 text-xs">
+                            12 credits tracked
+                        </p>
+                    </div>
+                    <div
+                        class="border-border/60 bg-surface-2/80 rounded-2xl border p-4"
+                    >
+                        <p class="text-text-muted text-xs">Requirements</p>
+                        <p class="mt-2 text-lg font-medium">68%</p>
+                        <p class="text-text-muted mt-1 text-xs">On track</p>
+                    </div>
+                    <div
+                        class="border-border/60 bg-surface-2/80 rounded-2xl border p-4"
+                    >
+                        <p class="text-text-muted text-xs">Next sync</p>
+                        <p class="mt-2 text-lg font-medium">Ready</p>
+                        <p class="text-text-muted mt-1 text-xs">
+                            Waiting for connection
+                        </p>
+                    </div>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <button
+                        type="button"
+                        class="bg-accent text-accent-contrast rounded-full px-4 py-2 text-xs font-medium shadow"
+                    >
+                        Start planning
+                    </button>
+                    <button
+                        type="button"
+                        class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text rounded-full border px-4 py-2 text-xs font-medium transition duration-200 ease-out"
+                    >
+                        Review requirements
+                    </button>
+                </div>
+            </section>
+            <aside class="flex flex-col gap-4">
+                <div
+                    class="border-border/60 bg-surface-1/80 rounded-3xl border p-5 shadow"
+                >
+                    <p class="text-text-muted text-xs">Sync overview</p>
+                    <p class="mt-2 text-lg font-medium">Catalogs + Courses</p>
+                    <p class="text-text-muted mt-2 text-xs">
+                        Last refreshed: not yet synced
+                    </p>
+                    <div
+                        class="text-text-muted mt-4 flex items-center gap-3 text-xs"
+                    >
+                        <span class="bg-warning size-2 rounded-full"></span>
+                        Pending network
+                    </div>
+                </div>
+                <div
+                    class="border-border/60 bg-surface-1/80 rounded-3xl border p-5 shadow"
+                >
+                    <p class="text-text-muted text-xs">Offline storage</p>
+                    <p class="mt-2 text-lg font-medium">IndexedDB ready</p>
+                    <p class="text-text-muted mt-2 text-xs">
+                        Your plans stay local until you sync.
+                    </p>
+                    <div
+                        class="text-text-muted mt-4 flex items-center gap-3 text-xs"
+                    >
+                        <span class="bg-success size-2 rounded-full"></span>
+                        Encrypted on device
+                    </div>
+                </div>
+            </aside>
+        </main>
+
+        <footer
+            class="border-border/60 text-text-muted mt-10 flex flex-wrap items-center justify-between gap-3 border-t pt-4 text-xs"
+        >
+            <div class="flex items-center gap-2">
+                <span class="bg-info size-2 rounded-full"></span>
+                Planit PWA - Offline-first planner
+            </div>
+            <div class="flex flex-wrap items-center gap-4">
+                <span>Safe-area aware</span>
+                <span>Build 0.0.0</span>
+            </div>
+        </footer>
+    </div>
 </div>
