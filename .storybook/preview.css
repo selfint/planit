@@ -1,0 +1,18 @@
+@import '../src/style.css';
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
+[data-theme='dark'] {
+    --color-accent-contrast: var(--color-accent-contrast-dark);
+    --color-accent: var(--color-accent-dark);
+    --color-bg: var(--color-bg-dark);
+    --color-border: var(--color-border-dark);
+    --color-danger: var(--color-danger-dark);
+    --color-info: var(--color-info-dark);
+    --color-success: var(--color-success-dark);
+    --color-surface-1: var(--color-surface-1-dark);
+    --color-surface-2: var(--color-surface-2-dark);
+    --color-text-muted: var(--color-text-muted-dark);
+    --color-text: var(--color-text-dark);
+    --color-warning: var(--color-warning-dark);
+}
