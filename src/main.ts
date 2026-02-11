@@ -1,14 +1,15 @@
 import './style.css';
 
-import { getCourses, getMeta } from './db/indexeddb';
+import { getCoursesPage, getMeta } from './db/indexeddb';
 
 import { AppHeader } from './components/AppHeader';
 import appTemplate from './app.html?raw';
 import { initCourseSync } from './sync/courseSync';
 import { initPWA } from './pwa.ts';
 
-const COURSE_TABLE_LIMIT = 12;
+const COURSE_TABLE_LIMIT = 10;
 const COURSE_COUNT_KEY = 'courseDataCount';
+const COURSE_REMOTE_UPDATED_KEY = 'courseDataRemoteUpdatedAt';
 
 function initApp(): HTMLDivElement {
     const app = document.querySelector<HTMLDivElement>('#app');
@@ -28,17 +29,22 @@ function initApp(): HTMLDivElement {
 function main(): void {
     const app = initApp();
     initPWA();
+    const state = { pageIndex: 0 };
     function handleSync(): void {
-        void loadCourseTable(app);
+        void loadCourseTable(app, state);
     }
 
     initCourseSync({ onSync: handleSync });
-    void loadCourseTable(app);
+    registerCoursePagination(app, state);
+    void loadCourseTable(app, state);
 }
 
 main();
 
-async function loadCourseTable(app: ParentNode): Promise<void> {
+async function loadCourseTable(
+    app: ParentNode,
+    state: { pageIndex: number }
+): Promise<void> {
     const rows =
         app.querySelector<HTMLTableSectionElement>('[data-course-rows]');
     const empty = app.querySelector<HTMLParagraphElement>(
@@ -47,16 +53,38 @@ async function loadCourseTable(app: ParentNode): Promise<void> {
     const count = app.querySelector<HTMLParagraphElement>(
         '[data-course-count]'
     );
+    const lastUpdated = app.querySelector<HTMLParagraphElement>(
+        '[data-course-last-updated]'
+    );
+    const pageLabel = app.querySelector<HTMLSpanElement>('[data-course-page]');
+    const prevButton =
+        app.querySelector<HTMLButtonElement>('[data-course-prev]');
+    const nextButton =
+        app.querySelector<HTMLButtonElement>('[data-course-next]');
 
     if (rows === null || empty === null || count === null) {
         return;
     }
 
-    const [courses, meta] = await Promise.all([
-        getCourses(COURSE_TABLE_LIMIT),
+    if (
+        lastUpdated === null ||
+        pageLabel === null ||
+        prevButton === null ||
+        nextButton === null
+    ) {
+        return;
+    }
+
+    const [courses, countMeta, updatedMeta] = await Promise.all([
+        getCoursesPage(
+            COURSE_TABLE_LIMIT,
+            state.pageIndex * COURSE_TABLE_LIMIT
+        ),
         getMeta(COURSE_COUNT_KEY),
+        getMeta(COURSE_REMOTE_UPDATED_KEY),
     ]);
-    updateCourseCount(count, courses.length, meta?.value);
+    updateCourseCount(count, courses.length, countMeta?.value);
+    updateLastUpdated(lastUpdated, updatedMeta?.value);
 
     rows.replaceChildren();
     for (const course of courses) {
@@ -68,6 +96,41 @@ async function loadCourseTable(app: ParentNode): Promise<void> {
     } else {
         empty.classList.add('hidden');
     }
+
+    updateCoursePagination(
+        pageLabel,
+        prevButton,
+        nextButton,
+        state.pageIndex,
+        countMeta?.value,
+        courses.length
+    );
+}
+
+function registerCoursePagination(
+    app: ParentNode,
+    state: { pageIndex: number }
+): void {
+    const prevButton =
+        app.querySelector<HTMLButtonElement>('[data-course-prev]');
+    const nextButton =
+        app.querySelector<HTMLButtonElement>('[data-course-next]');
+
+    if (prevButton === null || nextButton === null) {
+        return;
+    }
+
+    prevButton.addEventListener('click', () => {
+        if (state.pageIndex > 0) {
+            state.pageIndex -= 1;
+            void loadCourseTable(app, state);
+        }
+    });
+
+    nextButton.addEventListener('click', () => {
+        state.pageIndex += 1;
+        void loadCourseTable(app, state);
+    });
 }
 
 function updateCourseCount(
@@ -77,12 +140,10 @@ function updateCourseCount(
 ): void {
     const totalCount = parseMetaCount(metaValue);
     if (totalCount !== undefined && totalCount > visibleCount) {
-        count.textContent = `Showing ${String(visibleCount)} of ${String(
-            totalCount
-        )} courses`;
+        count.textContent = `${totalCount} courses`;
         return;
     }
-    count.textContent = `Showing ${String(visibleCount)} courses`;
+    count.textContent = `${String(visibleCount)} courses`;
 }
 
 function parseMetaCount(value: unknown): number | undefined {
@@ -98,6 +159,62 @@ function parseMetaCount(value: unknown): number | undefined {
     }
 
     return undefined;
+}
+
+function updateLastUpdated(
+    element: HTMLParagraphElement,
+    metaValue: unknown
+): void {
+    const formatted = formatRemoteUpdatedAt(metaValue);
+    element.textContent = formatted ?? 'Last update: —';
+}
+
+function formatRemoteUpdatedAt(metaValue: unknown): string | undefined {
+    if (typeof metaValue !== 'string' || metaValue.length === 0) {
+        return undefined;
+    }
+
+    const date = new Date(metaValue);
+    if (Number.isNaN(date.getTime())) {
+        return undefined;
+    }
+
+    return `Last update: ${date.toLocaleDateString()}`;
+}
+
+function updateCoursePagination(
+    label: HTMLSpanElement,
+    prevButton: HTMLButtonElement,
+    nextButton: HTMLButtonElement,
+    pageIndex: number,
+    metaValue: unknown,
+    visibleCount: number
+): void {
+    const totalCount = parseMetaCount(metaValue);
+    const totalPages =
+        totalCount !== undefined
+            ? Math.max(1, Math.ceil(totalCount / COURSE_TABLE_LIMIT))
+            : pageIndex + 1;
+    const currentPage = Math.min(pageIndex + 1, totalPages);
+    label.textContent = `Page ${String(currentPage)} of ${String(totalPages)}`;
+
+    prevButton.disabled = pageIndex <= 0;
+    nextButton.disabled =
+        totalCount !== undefined
+            ? pageIndex + 1 >= totalPages
+            : visibleCount < COURSE_TABLE_LIMIT;
+    togglePaginationButtonState(prevButton);
+    togglePaginationButtonState(nextButton);
+}
+
+function togglePaginationButtonState(button: HTMLButtonElement): void {
+    if (button.disabled) {
+        button.classList.add('opacity-60');
+        button.classList.add('cursor-not-allowed');
+    } else {
+        button.classList.remove('opacity-60');
+        button.classList.remove('cursor-not-allowed');
+    }
 }
 
 function createCourseRow(course: {

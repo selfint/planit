@@ -140,7 +140,14 @@ export async function getCourse(
 }
 
 export async function getCourses(limit: number): Promise<CourseRecord[]> {
-    if (limit <= 0) {
+    return getCoursesPage(limit, 0);
+}
+
+export async function getCoursesPage(
+    limit: number,
+    offset: number
+): Promise<CourseRecord[]> {
+    if (limit <= 0 || offset < 0) {
         return [];
     }
 
@@ -148,6 +155,7 @@ export async function getCourses(limit: number): Promise<CourseRecord[]> {
 
     return new Promise((resolve, reject) => {
         const results: CourseRecord[] = [];
+        let skipped = false;
         const tx = db.transaction(STORE_COURSES, 'readonly');
         const store = tx.objectStore(STORE_COURSES);
         const request = store.openCursor();
@@ -157,6 +165,13 @@ export async function getCourses(limit: number): Promise<CourseRecord[]> {
             if (cursor === null || results.length >= limit) {
                 return;
             }
+
+            if (!skipped && offset > 0) {
+                skipped = true;
+                cursor.advance(offset);
+                return;
+            }
+
             results.push(cursor.value as CourseRecord);
             cursor.continue();
         };

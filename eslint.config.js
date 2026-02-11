@@ -106,6 +106,12 @@ export default defineConfig(
                     allowSeparatedGroups: true,
                 },
             ],
+            '@typescript-eslint/restrict-template-expressions': [
+                'error',
+                {
+                    allowNumber: true,
+                },
+            ],
         },
     },
 
