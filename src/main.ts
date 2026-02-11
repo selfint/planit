@@ -22,16 +22,6 @@ function initApp(): HTMLDivElement {
 function main(): void {
     const app = initApp();
     initPWA(app);
-
-    if (import.meta.env.DEV) {
-        void import('./dev-components')
-            .then(({ initComponentRoutes }) => {
-                initComponentRoutes(app);
-            })
-            .catch((error: unknown) => {
-                console.error('Failed to load dev component routes', error);
-            });
-    }
 }
 
 main();
