@@ -32,6 +32,12 @@ function initApp(): HTMLDivElement {
 function main(): void {
     const app = initApp();
     initPWA(app);
+
+    if (import.meta.env.DEV) {
+        import('./dev-components').then(({ initComponentRoutes }) => {
+            initComponentRoutes(app);
+        });
+    }
 }
 
 main();
