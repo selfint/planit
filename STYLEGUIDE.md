@@ -38,6 +38,8 @@ Core tokens:
 - `--color-accent-contrast` (text/icon on accent)
 - `--color-success` `--color-warning` `--color-danger` `--color-info`
 
+Each semantic token should have dark-first values, with light theme equivalents defined under the light theme selector if/when added.
+
 Guidelines:
 
 - Keep contrast at or above WCAG AA for primary text.
