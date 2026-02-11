@@ -30,7 +30,7 @@ export type CourseRecord = {
     } | null)[];
 };
 
-const openDb = (): Promise<IDBDatabase> => {
+function openDb(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
 
@@ -52,13 +52,13 @@ const openDb = (): Promise<IDBDatabase> => {
             reject(request.error ?? new Error('Failed to open IndexedDB'));
         };
     });
-};
+}
 
-const withStore = async <T>(
+async function withStore<T>(
     storeName: string,
     mode: IDBTransactionMode,
     fn: (store: IDBObjectStore) => IDBRequest<T> | null
-): Promise<T | undefined> => {
+): Promise<T | undefined> {
     const db = await openDb();
 
     return new Promise((resolve, reject) => {
@@ -88,30 +88,27 @@ const withStore = async <T>(
             reject(tx.error ?? new Error('IndexedDB transaction aborted'));
         };
     });
-};
+}
 
-export const getMeta = async (key: string): Promise<MetaEntry | undefined> => {
+export async function getMeta(key: string): Promise<MetaEntry | undefined> {
     const entry = await withStore<MetaEntry>(STORE_META, 'readonly', (store) =>
         store.get(key)
     );
     return entry;
-};
+}
 
-export const setMeta = async (entry: MetaEntry): Promise<void> => {
+export async function setMeta(entry: MetaEntry): Promise<void> {
     await withStore(STORE_META, 'readwrite', (store) => {
         store.put(entry);
         return null;
     });
-};
+}
 
-export const setMetaValue = async (
-    key: string,
-    value: unknown
-): Promise<void> => {
+export async function setMetaValue(key: string, value: unknown): Promise<void> {
     await setMeta({ key, value });
-};
+}
 
-export const putCourses = async (courses: CourseRecord[]): Promise<void> => {
+export async function putCourses(courses: CourseRecord[]): Promise<void> {
     const db = await openDb();
 
     await new Promise<void>((resolve, reject) => {
@@ -133,15 +130,15 @@ export const putCourses = async (courses: CourseRecord[]): Promise<void> => {
             reject(tx.error ?? new Error('Course transaction aborted'));
         };
     });
-};
+}
 
-export const getCourse = async (
+export async function getCourse(
     code: string
-): Promise<CourseRecord | undefined> => {
+): Promise<CourseRecord | undefined> {
     const course = await withStore<CourseRecord>(
         STORE_COURSES,
         'readonly',
         (store) => store.get(code)
     );
     return course;
-};
+}

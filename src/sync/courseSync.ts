@@ -16,11 +16,11 @@ export type CourseSyncResult = {
     count?: number;
 };
 
-const isOnline = (): boolean => {
+function isOnline(): boolean {
     return 'onLine' in navigator ? navigator.onLine : true;
-};
+}
 
-const fetchCourseData = async (): Promise<Response> => {
+async function fetchCourseData(): Promise<Response> {
     const [etagEntry, lastModifiedEntry] = await Promise.all([
         getMeta(COURSE_META_KEYS.etag),
         getMeta(COURSE_META_KEYS.lastModified),
@@ -42,9 +42,9 @@ const fetchCourseData = async (): Promise<Response> => {
     }
 
     return fetch(COURSE_DATA_URL, { headers });
-};
+}
 
-export const syncCourseData = async (): Promise<CourseSyncResult> => {
+export async function syncCourseData(): Promise<CourseSyncResult> {
     if (!isOnline()) {
         return { status: 'offline' };
     }
@@ -82,16 +82,16 @@ export const syncCourseData = async (): Promise<CourseSyncResult> => {
     ]);
 
     return { status: 'updated', count: courses.length };
-};
+}
 
-export const initCourseSync = (): void => {
-    const runSync = async (): Promise<void> => {
+export function initCourseSync(): void {
+    async function runSync(): Promise<void> {
         try {
             await syncCourseData();
         } catch (error) {
             console.error('Course sync failed', error);
         }
-    };
+    }
 
     window.addEventListener('online', () => {
         void runSync();
@@ -100,4 +100,4 @@ export const initCourseSync = (): void => {
     if (isOnline()) {
         void runSync();
     }
-};
+}
