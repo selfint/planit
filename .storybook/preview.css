@@ -1,3 +1,6 @@
-@custom-variant dark (&:where(.sb-dark, .sb-dark *));
+/* @import "tailwindcss"; */
 
 @import '../src/style.css';
+
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
