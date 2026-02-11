@@ -125,14 +125,6 @@ export default defineConfig(
     },
 
     {
-        files: ['**/*.spec.ts', '**/*.test.ts'],
-        rules: {
-            '@typescript-eslint/no-unsafe-call': 'off',
-            '@typescript-eslint/no-unsafe-member-access': 'off',
-        },
-    },
-
-    {
         files: ['**/*.css'],
         plugins: { css },
         language: 'css/css',
