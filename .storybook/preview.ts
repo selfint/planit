@@ -9,7 +9,7 @@ const themeDecorator: Decorator = (Story, context) => {
     const theme = (context.globals.theme as ThemeMode) ?? 'light';
 
     wrapper.dataset.theme = theme;
-    wrapper.className = 'min-h-screen bg-bg text-text p-6';
+    wrapper.className = 'min-h-screen text-text p-6';
 
     const story = Story();
     if (typeof story === 'string') {

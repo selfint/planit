@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html';
 
-import { createAppHeader } from './AppHeader';
+import { AppHeader } from './AppHeader';
 
 const meta: Meta = {
     title: 'Components/AppHeader',
@@ -11,11 +11,14 @@ export default meta;
 export type Story = StoryObj;
 
 export const Default: Story = {
-    render: () => createAppHeader(),
+    render: () => AppHeader(),
+    globals: {
+        theme: 'light',
+    },
 };
 
 export const Dark: Story = {
-    render: () => createAppHeader(),
+    render: () => AppHeader(),
     globals: {
         theme: 'dark',
     },

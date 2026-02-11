@@ -2,7 +2,7 @@ import logoUrl from '../assets/logo.webp';
 import templateHtml from './AppHeader.html?raw';
 import titleSvg from '../assets/Title.svg?raw';
 
-export function createAppHeader(): HTMLElement {
+export function AppHeader(): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -28,11 +28,5 @@ export function createAppHeader(): HTMLElement {
         }
     }
 
-    return root;
-}
-
-export function mountAppHeader(target: HTMLElement): HTMLElement {
-    const root = createAppHeader();
-    target.appendChild(root);
     return root;
 }

@@ -2,7 +2,7 @@ import './style.css';
 
 import appTemplate from './app.html?raw';
 import { initPWA } from './pwa.ts';
-import { mountAppHeader } from './components/AppHeader';
+import { AppHeader } from './components/AppHeader';
 
 function initApp(): HTMLDivElement {
     const app = document.querySelector<HTMLDivElement>('#app');
@@ -13,7 +13,7 @@ function initApp(): HTMLDivElement {
 
     const headerHost = app.querySelector<HTMLElement>('[data-app-header]');
     if (headerHost !== null) {
-        mountAppHeader(headerHost);
+        headerHost.appendChild(AppHeader());
     }
 
     return app;
