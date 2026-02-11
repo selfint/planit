@@ -104,10 +104,6 @@ export async function setMeta(entry: MetaEntry): Promise<void> {
     });
 }
 
-export async function setMetaValue(key: string, value: unknown): Promise<void> {
-    await setMeta({ key, value });
-}
-
 export async function putCourses(courses: CourseRecord[]): Promise<void> {
     const db = await openDb();
 

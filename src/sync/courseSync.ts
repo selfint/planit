@@ -1,4 +1,4 @@
-import { getMeta, putCourses, setMetaValue } from '../db/indexeddb';
+import { getMeta, putCourses, setMeta } from '../db/indexeddb';
 import type { CourseRecord } from '../db/indexeddb';
 
 const COURSE_DATA_URL =
@@ -56,7 +56,10 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
 
     const response = await fetchCourseData();
     if (response.status === 304) {
-        await setMetaValue(COURSE_META_KEYS.lastSync, new Date().toISOString());
+        await setMeta({
+            key: COURSE_META_KEYS.lastSync,
+            value: new Date().toISOString(),
+        });
         return { status: 'skipped' };
     }
 
@@ -77,13 +80,19 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
     const lastModified = response.headers.get('last-modified');
     await Promise.all([
         etag !== null && etag.length > 0
-            ? setMetaValue(COURSE_META_KEYS.etag, etag)
+            ? setMeta({ key: COURSE_META_KEYS.etag, value: etag })
             : Promise.resolve(),
         lastModified !== null && lastModified.length > 0
-            ? setMetaValue(COURSE_META_KEYS.lastModified, lastModified)
+            ? setMeta({
+                  key: COURSE_META_KEYS.lastModified,
+                  value: lastModified,
+              })
             : Promise.resolve(),
-        setMetaValue(COURSE_META_KEYS.lastSync, new Date().toISOString()),
-        setMetaValue(COURSE_META_KEYS.count, courses.length),
+        setMeta({
+            key: COURSE_META_KEYS.lastSync,
+            value: new Date().toISOString(),
+        }),
+        setMeta({ key: COURSE_META_KEYS.count, value: courses.length }),
     ]);
 
     return { status: 'updated', count: courses.length };
