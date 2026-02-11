@@ -40,7 +40,7 @@ export default defineConfig(
         },
     },
     {
-        files: ['**/*.{js,mjs,cjs,ts,mts,cts}'],
+        files: ['{src,tests}/**/*.{js,mjs,cjs,ts,mts,cts}'],
         languageOptions: {
             globals: {
                 ...globals.browser,
@@ -93,7 +93,7 @@ export default defineConfig(
                 {
                     ObjectExpression: { multiline: true, minProperties: 3 },
                     ObjectPattern: { multiline: true, minProperties: 3 },
-                    ImportDeclaration: { multiline: true, minProperties: 3 },
+                    ImportDeclaration: 'never',
                     ExportDeclaration: { multiline: true, minProperties: 3 },
                 },
             ],
