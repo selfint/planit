@@ -1,24 +1,25 @@
-import templateHtml from './AppHeader.html?raw';
 import logoUrl from '../assets/logo.webp';
+import templateHtml from './AppHeader.html?raw';
 import titleSvg from '../assets/Title.svg?raw';
 
 export function createAppHeader(): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
-    const root = template.content.firstElementChild?.cloneNode(
-        true
-    ) as HTMLElement;
+    const root = template.content.firstElementChild?.cloneNode(true);
+    if (!(root instanceof HTMLElement)) {
+        throw new Error('AppHeader template root not found');
+    }
 
     const logo = root.querySelector<HTMLImageElement>('[data-logo]');
-    if (logo) {
+    if (logo !== null) {
         logo.src = logoUrl;
     }
 
     const title = root.querySelector<HTMLDivElement>('[data-title]');
-    if (title) {
+    if (title !== null) {
         title.innerHTML = titleSvg;
         const svg = title.querySelector<SVGElement>('svg');
-        if (svg) {
+        if (svg !== null) {
             svg.setAttribute('class', 'h-full w-auto');
         }
     }

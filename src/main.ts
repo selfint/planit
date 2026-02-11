@@ -12,7 +12,7 @@ function initApp(): HTMLDivElement {
     app.innerHTML = appTemplate;
 
     const headerHost = app.querySelector<HTMLElement>('[data-app-header]');
-    if (headerHost) {
+    if (headerHost !== null) {
         mountAppHeader(headerHost);
     }
 
@@ -24,9 +24,13 @@ function main(): void {
     initPWA(app);
 
     if (import.meta.env.DEV) {
-        import('./dev-components').then(({ initComponentRoutes }) => {
-            initComponentRoutes(app);
-        });
+        void import('./dev-components')
+            .then(({ initComponentRoutes }) => {
+                initComponentRoutes(app);
+            })
+            .catch((error: unknown) => {
+                console.error('Failed to load dev component routes', error);
+            });
     }
 }
 

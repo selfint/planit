@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 import { expect, test } from '@playwright/test';
 
 test('playwright sanity check', async ({ page }) => {

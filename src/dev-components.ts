@@ -2,11 +2,14 @@ type ComponentModule = {
     mountComponent?: (
         target: HTMLElement,
         options?: unknown
-    ) => HTMLElement | void;
+    ) => HTMLElement | undefined;
     createComponent?: (
         options?: unknown
-    ) => { root?: HTMLElement } | HTMLElement;
-    default?: (target: HTMLElement, options?: unknown) => HTMLElement | void;
+    ) => { root?: HTMLElement } | HTMLElement | undefined;
+    default?: (
+        target: HTMLElement,
+        options?: unknown
+    ) => HTMLElement | undefined;
 };
 
 type ComponentEntry = {
@@ -73,15 +76,15 @@ function navigate(path: string): void {
 function attachLinkHandler(root: HTMLElement): void {
     root.addEventListener('click', (event) => {
         const target = event.target as HTMLElement | null;
-        if (!target) {
+        if (target === null) {
             return;
         }
         const link = target.closest<HTMLAnchorElement>('a[data-route-link]');
-        if (!link) {
+        if (link === null) {
             return;
         }
         const href = link.getAttribute('href');
-        if (!href) {
+        if (href === null || href.length === 0) {
             return;
         }
         event.preventDefault();
@@ -93,7 +96,7 @@ let outletElement: HTMLElement | null = null;
 
 export function initComponentRoutes(app: HTMLElement): void {
     const outlet = app.querySelector<HTMLElement>('[data-route]');
-    if (!outlet) {
+    if (outlet === null) {
         return;
     }
 
@@ -109,7 +112,7 @@ export function initComponentRoutes(app: HTMLElement): void {
 
 function renderRoute(): void {
     const outlet = outletElement;
-    if (!outlet) {
+    if (outlet === null) {
         return;
     }
 
@@ -127,7 +130,7 @@ function renderRoute(): void {
     const componentName = decodeURIComponent(
         path.replace('/components/', '').split('/')[0]
     );
-    renderComponentDetail(outlet, componentName);
+    void renderComponentDetail(outlet, componentName);
 }
 
 function renderGallery(outlet: HTMLElement): void {
@@ -135,12 +138,9 @@ function renderGallery(outlet: HTMLElement): void {
     const list = entries
         .map((entry) => {
             const detailPath = `/components/${entry.name}`;
-            const tag =
-                entry.tsPath && entry.htmlPath
-                    ? 'ts+html'
-                    : entry.tsPath
-                      ? 'ts'
-                      : 'html';
+            const hasTs = entry.tsPath !== undefined;
+            const hasHtml = entry.htmlPath !== undefined;
+            const tag = hasTs && hasHtml ? 'ts+html' : hasTs ? 'ts' : 'html';
             return `
                 <li class="flex items-center justify-between rounded-xl border border-slate-200 bg-white px-4 py-3 shadow-sm">
                     <a class="text-sm font-semibold text-slate-900 hover:text-slate-700" data-route-link href="${detailPath}">
@@ -170,7 +170,7 @@ function renderGallery(outlet: HTMLElement): void {
                 <p class="mt-2 text-sm text-slate-600">Browse and validate component markup and behavior.</p>
             </header>
             <div class="space-y-3">
-                ${entries.length ? `<ul class="grid gap-3">${list}</ul>` : emptyState}
+                ${entries.length > 0 ? `<ul class="grid gap-3">${list}</ul>` : emptyState}
             </div>
         </section>
         `
@@ -208,22 +208,17 @@ async function renderComponentDetail(
     const status = outlet.querySelector<HTMLElement>('[data-component-status]');
     const host = outlet.querySelector<HTMLElement>('[data-component-host]');
 
-    if (!status || !host) {
+    if (status === null || host === null) {
         return;
     }
 
-    if (!entry?.tsPath) {
+    if (entry?.tsPath === undefined) {
         status.textContent = 'No TS entry found.';
         return;
     }
 
     try {
         const moduleLoader = componentModules[entry.tsPath];
-        if (!moduleLoader) {
-            status.textContent = 'No TS module loader.';
-            return;
-        }
-
         const mod = (await moduleLoader()) as ComponentModule;
         const mounted = mountFromModule(mod, host);
 
@@ -251,13 +246,12 @@ function mountFromModule(mod: ComponentModule, host: HTMLElement): boolean {
             host.appendChild(result);
             return true;
         }
-        if (
-            result &&
-            typeof result === 'object' &&
-            result.root instanceof HTMLElement
-        ) {
-            host.appendChild(result.root);
-            return true;
+        if (result !== undefined) {
+            const root = result.root;
+            if (root instanceof HTMLElement) {
+                host.appendChild(root);
+                return true;
+            }
         }
     }
 
