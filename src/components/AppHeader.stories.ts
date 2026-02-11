@@ -16,22 +16,12 @@ export const Default: Story = {
 
 export const Dark: Story = {
     render: () => createAppHeader(),
-    decorators: [
-        (Story) => {
-            const wrapper = document.createElement('div');
-            wrapper.dataset.theme = 'dark';
-            const story = Story();
-            if (typeof story === 'string') {
-                wrapper.innerHTML = story;
-            } else {
-                wrapper.appendChild(story);
-            }
-            return wrapper;
-        },
-    ],
+    globals: {
+        theme: 'dark',
+    },
     parameters: {
         backgrounds: {
- default: 'dark'
-},
+            default: 'dark',
+        },
     },
 };
