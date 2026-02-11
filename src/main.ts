@@ -13,7 +13,7 @@ function initApp(): HTMLDivElement {
 
     const headerHost = app.querySelector<HTMLElement>('[data-app-header]');
     if (headerHost !== null) {
-        headerHost.appendChild(AppHeader());
+        headerHost.outerHTML = AppHeader().outerHTML;
     }
 
     return app;
