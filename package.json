@@ -8,7 +8,7 @@
         "build": "tsc && vite build",
         "preview": "vite preview",
         "eslint": "eslint",
-        "prettier": "prettier",
+        "prettier": "prettier --write '**/*.{ts,js,html}'",
         "format": "eslint --fix && prettier --write '**/*.{ts,js,html}'",
         "format:check": "eslint --max-warnings=0 && prettier --check '**/*.{ts,js,html}'",
         "storybook": "storybook dev -p 6006",
