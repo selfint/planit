@@ -23,8 +23,7 @@ It is optimized for a professional minimalist PWA with RTL and LTR support, base
 
 Define theme tokens as CSS variables and map them to Tailwind v4 theme variables.
 Use a small set of purposeful colors with clear semantic meaning.
-This is a dark-first UI, so the default tokens represent the dark theme.
-If a light theme is added later, define a parallel set of tokens under a light theme selector.
+The default tokens represent the light theme. Use `dark:` variants for dark theme values.
 
 Core tokens:
 
@@ -38,7 +37,7 @@ Core tokens:
 - `--color-accent-contrast` (text/icon on accent)
 - `--color-success` `--color-warning` `--color-danger` `--color-info`
 
-Each semantic token should have dark-first values, with light theme equivalents defined under the light theme selector if/when added.
+Each semantic token should have light defaults with `dark:` overrides.
 
 Guidelines:
 
