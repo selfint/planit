@@ -16,6 +16,11 @@ export type CourseSyncResult = {
     count?: number;
 };
 
+export type CourseSyncOptions = {
+    onSync?: (result: CourseSyncResult) => void;
+    onError?: (error: unknown) => void;
+};
+
 function isOnline(): boolean {
     return 'onLine' in navigator ? navigator.onLine : true;
 }
@@ -84,18 +89,22 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
     return { status: 'updated', count: courses.length };
 }
 
-export function initCourseSync(): void {
+export function initCourseSync(options?: CourseSyncOptions): void {
     async function runSync(): Promise<void> {
         try {
-            await syncCourseData();
+            const result = await syncCourseData();
+            options?.onSync?.(result);
         } catch (error) {
             console.error('Course sync failed', error);
+            options?.onError?.(error);
         }
     }
 
-    window.addEventListener('online', () => {
+    function handleOnline(): void {
         void runSync();
-    });
+    }
+
+    window.addEventListener('online', handleOnline);
 
     if (isOnline()) {
         void runSync();

@@ -61,6 +61,50 @@
                         Review requirements
                     </button>
                 </div>
+                <div
+                    class="border-border/60 bg-surface-2/80 rounded-2xl border p-4"
+                >
+                    <div
+                        class="flex flex-wrap items-center justify-between gap-3"
+                    >
+                        <div class="flex flex-col gap-1">
+                            <p class="text-text-muted text-xs">Course data</p>
+                            <p class="text-lg font-medium">
+                                IndexedDB snapshot
+                            </p>
+                        </div>
+                        <p class="text-text-muted text-xs" data-course-count>
+                            Showing 0 courses
+                        </p>
+                    </div>
+                    <div class="mt-4 overflow-x-auto">
+                        <table class="w-full text-xs">
+                            <thead class="text-text-muted">
+                                <tr class="border-border/60 border-b">
+                                    <th class="py-2 text-start font-medium">
+                                        Code
+                                    </th>
+                                    <th class="py-2 text-start font-medium">
+                                        Name
+                                    </th>
+                                    <th class="py-2 text-start font-medium">
+                                        Points
+                                    </th>
+                                    <th class="py-2 text-start font-medium">
+                                        Faculty
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody
+                                class="divide-border/60 divide-y"
+                                data-course-rows
+                            ></tbody>
+                        </table>
+                    </div>
+                    <p class="text-text-muted mt-3 text-xs" data-course-empty>
+                        No courses stored yet. Sync online to load data.
+                    </p>
+                </div>
             </section>
             <aside class="flex flex-col gap-4">
                 <div
