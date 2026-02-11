@@ -1,4 +1,4 @@
-export const DB_NAME = 'planit';
+export const DB_NAME = 'db';
 export const DB_VERSION = 1;
 
 export const STORE_COURSES = 'courses';
@@ -30,7 +30,7 @@ export type CourseRecord = {
     } | null)[];
 };
 
-const openPlanitDb = (): Promise<IDBDatabase> => {
+const openDb = (): Promise<IDBDatabase> => {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
 
@@ -57,16 +57,16 @@ const openPlanitDb = (): Promise<IDBDatabase> => {
 const withStore = async <T>(
     storeName: string,
     mode: IDBTransactionMode,
-    fn: (store: IDBObjectStore) => IDBRequest<T> | void
+    fn: (store: IDBObjectStore) => IDBRequest<T> | null
 ): Promise<T | undefined> => {
-    const db = await openPlanitDb();
+    const db = await openDb();
 
     return new Promise((resolve, reject) => {
         const tx = db.transaction(storeName, mode);
         const store = tx.objectStore(storeName);
         const request = fn(store);
 
-        if (request !== undefined) {
+        if (request !== null) {
             request.onsuccess = (): void => {
                 resolve(request.result);
             };
@@ -77,7 +77,7 @@ const withStore = async <T>(
 
         tx.oncomplete = (): void => {
             db.close();
-            if (request === undefined) {
+            if (request === null) {
                 resolve(undefined);
             }
         };
@@ -100,6 +100,7 @@ export const getMeta = async (key: string): Promise<MetaEntry | undefined> => {
 export const setMeta = async (entry: MetaEntry): Promise<void> => {
     await withStore(STORE_META, 'readwrite', (store) => {
         store.put(entry);
+        return null;
     });
 };
 
@@ -111,7 +112,7 @@ export const setMetaValue = async (
 };
 
 export const putCourses = async (courses: CourseRecord[]): Promise<void> => {
-    const db = await openPlanitDb();
+    const db = await openDb();
 
     await new Promise<void>((resolve, reject) => {
         const tx = db.transaction(STORE_COURSES, 'readwrite');

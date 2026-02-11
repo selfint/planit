@@ -27,11 +27,18 @@ const fetchCourseData = async (): Promise<Response> => {
     ]);
 
     const headers = new Headers();
-    if (etagEntry?.value !== undefined) {
-        headers.set('If-None-Match', String(etagEntry.value));
+    const etagValue =
+        typeof etagEntry?.value === 'string' ? etagEntry.value : undefined;
+    const lastModifiedValue =
+        typeof lastModifiedEntry?.value === 'string'
+            ? lastModifiedEntry.value
+            : undefined;
+
+    if (etagValue !== undefined && etagValue.length > 0) {
+        headers.set('If-None-Match', etagValue);
     }
-    if (lastModifiedEntry?.value !== undefined) {
-        headers.set('If-Modified-Since', String(lastModifiedEntry.value));
+    if (lastModifiedValue !== undefined && lastModifiedValue.length > 0) {
+        headers.set('If-Modified-Since', lastModifiedValue);
     }
 
     return fetch(COURSE_DATA_URL, { headers });
@@ -50,7 +57,9 @@ export const syncCourseData = async (): Promise<CourseSyncResult> => {
 
     if (!response.ok) {
         throw new Error(
-            `Failed to fetch course data: ${response.status} ${response.statusText}`
+            `Failed to fetch course data: ${String(response.status)} ${
+                response.statusText
+            }`
         );
     }
 
@@ -62,8 +71,10 @@ export const syncCourseData = async (): Promise<CourseSyncResult> => {
     const etag = response.headers.get('etag');
     const lastModified = response.headers.get('last-modified');
     await Promise.all([
-        etag ? setMetaValue(COURSE_META_KEYS.etag, etag) : Promise.resolve(),
-        lastModified
+        etag !== null && etag.length > 0
+            ? setMetaValue(COURSE_META_KEYS.etag, etag)
+            : Promise.resolve(),
+        lastModified !== null && lastModified.length > 0
             ? setMetaValue(COURSE_META_KEYS.lastModified, lastModified)
             : Promise.resolve(),
         setMetaValue(COURSE_META_KEYS.lastSync, new Date().toISOString()),
