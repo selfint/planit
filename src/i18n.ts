@@ -79,13 +79,16 @@ function applyAttributeTranslations(
     });
 }
 
-export async function initI18n(options: InitI18nOptions = {}): Promise<void> {
+export async function initI18n(options: InitI18nOptions = {
+}): Promise<void> {
     const lang = options.lang ?? 'he';
     const root = options.root ?? document;
     const path = options.path ?? `/i18n/${lang}.json`;
 
     try {
-        const response = await fetch(path, { cache: 'no-store' });
+        const response = await fetch(path, {
+ cache: 'no-store'
+});
         if (!response.ok) {
             throw new Error(`Failed to load translations from ${path}`);
         }
