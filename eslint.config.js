@@ -1,4 +1,4 @@
-import css from '@eslint/css';
+// import css from '@eslint/css';
 import { defineConfig } from 'eslint/config';
 import eslintParserHTML from '@html-eslint/parser';
 import eslintPluginBetterTailwindcss from 'eslint-plugin-better-tailwindcss';
@@ -122,20 +122,20 @@ export default defineConfig(
         plugins: { markdown },
         language: 'markdown/gfm',
         rules: { 'markdown/no-invalid-label-refs': 'error' },
-    },
-
-    {
-        files: ['**/*.css'],
-        plugins: { css },
-        language: 'css/css',
-        rules: {
-            'css/no-duplicate-imports': 'error',
-            'css/no-empty-blocks': 'error',
-            // TODO: How to configure this to work with tailwind classes?
-            // 'css/no-invalid-at-rules': 'error',
-            'css/no-invalid-properties': 'error',
-            'css/use-baseline': ['error', { available: 'widely' }],
-            'css/use-layers': 'error',
-        },
     }
+
+    // TODO: How to configure this to work with tailwind v4?
+    // {
+    //     files: ['**/*.css'],
+    //     plugins: { css },
+    //     language: 'css/css',
+    //     rules: {
+    //         'css/no-duplicate-imports': 'error',
+    //         'css/no-empty-blocks': 'error',
+    //         'css/no-invalid-at-rules': 'error',
+    //         'css/no-invalid-properties': 'error',
+    //         'css/use-baseline': ['error', { available: 'widely' }],
+    //         'css/use-layers': 'error',
+    //     },
+    // }
 );
