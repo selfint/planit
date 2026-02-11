@@ -15,7 +15,8 @@ Build UI components as paired files: HTML for structure/styling and TypeScript f
 2. Put all markup and Tailwind classes in the HTML file inside a <template>.
 3. Keep logic, state, and event wiring in the TS file; do not embed scripts in HTML.
 4. Use data attributes in the HTML to target elements from TS.
-5. Export a clear mounting API from the TS file.
+5. Export a component factory (e.g., `AppHeader()`) that returns a root element.
+6. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
 
 ## Component Contract
 
@@ -29,14 +30,28 @@ Build UI components as paired files: HTML for structure/styling and TypeScript f
 - TypeScript:
     - Import the HTML as text (prefer `?raw` with Vite).
     - Clone the template into a root element.
-    - Bind events and expose a mount/create function.
+    - Bind events and return a single root element.
 
 ## Implementation Notes
 
-- Prefer small, explicit functions: create(), mount(target), update(state).
+- Prefer small, explicit factories: `Component()` returns an element.
 - Keep state in TS; avoid inline styles or JS in HTML.
 - Use class toggles or data attributes for stateful styling.
 - Keep DOM queries scoped to the cloned root element.
+- Use `replaceWith(Component())` when swapping placeholders.
+
+## Storybook Integration
+
+- Story files live next to components: src/components/<Component>.stories.ts.
+- Use the global Storybook theme toolbar and backgrounds.
+- Define two stories: `Default` (light) and `Dark` (set `globals: { theme: 'dark' }`).
+- Do not build custom preview wrappers; rely on `.storybook/preview.ts` for theme wrapping.
+
+## Dark Mode Behavior
+
+- Components should use CSS variable-based utilities (e.g., `text-text`, `bg-surface-1`).
+- Dark mode is applied at the app shell or Storybook wrapper by swapping CSS variables.
+- No `dark:` prefixes are required inside components when variables are used.
 
 ## Minimal Template Pattern
 
@@ -52,34 +67,25 @@ Use this shape unless the codebase already provides a different pattern:
 ```
 
 ```ts
-export type ComponentOptions = {
-    title: string;
-    onPrimary?: () => void;
-};
+import templateHtml from './Component.html?raw';
 
-export function createComponent(options: ComponentOptions) {
+export function Component(): HTMLElement {
     const template = document.createElement('template');
-    template.innerHTML = /* html */ `...`; // or import HTML per project setup
-    const root = template.content.firstElementChild?.cloneNode(
-        true
-    ) as HTMLElement;
-
-    const title = root.querySelector<HTMLElement>("[data-role='title']");
-    if (title) title.textContent = options.title;
-
-    const button = root.querySelector<HTMLButtonElement>(
-        "[data-action='primary']"
-    );
-    if (button && options.onPrimary) {
-        button.addEventListener('click', options.onPrimary);
+    template.innerHTML = templateHtml;
+    const templateElement = template.content.firstElementChild;
+    if (!(templateElement instanceof HTMLTemplateElement)) {
+        throw new Error('Component template element not found');
+    }
+    const root = templateElement.content.firstElementChild?.cloneNode(true);
+    if (!(root instanceof HTMLElement)) {
+        throw new Error('Component template root not found');
     }
 
-    return { root };
-}
+    const title = root.querySelector<HTMLElement>("[data-role='title']");
+    if (title !== null) {
+        title.textContent = 'Title';
+    }
 
-export function mountComponent(target: HTMLElement, options: ComponentOptions) {
-    const { root } = createComponent(options);
-    target.appendChild(root);
     return root;
 }
 ```
