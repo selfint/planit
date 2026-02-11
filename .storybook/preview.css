@@ -1,8 +1,8 @@
 @import '../src/style.css';
 
-@custom-variant dark (&:where(.sb-dark, .sb-dark *));
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
 
-.sb-dark {
+[data-theme='dark'] {
     --color-accent-contrast: var(--color-accent-contrast-dark);
     --color-accent: var(--color-accent-dark);
     --color-bg: var(--color-bg-dark);

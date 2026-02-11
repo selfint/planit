@@ -91,7 +91,7 @@ export default defineConfig(
             'object-curly-newline': [
                 'error',
                 {
-                    ObjectExpression: { multiline: true, minProperties: 3 },
+                    ObjectExpression: 'always',
                     ObjectPattern: { multiline: true, minProperties: 3 },
                     ImportDeclaration: 'never',
                     ExportDeclaration: { multiline: true, minProperties: 3 },
