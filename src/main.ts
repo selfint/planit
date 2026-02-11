@@ -2,6 +2,7 @@ import './style.css';
 
 import { AppHeader } from './components/AppHeader';
 import appTemplate from './app.html?raw';
+import { initCourseSync } from './sync/courseSync';
 import { initPWA } from './pwa.ts';
 
 function initApp(): HTMLDivElement {
@@ -22,6 +23,7 @@ function initApp(): HTMLDivElement {
 function main(): void {
     initApp();
     initPWA();
+    initCourseSync();
 }
 
 main();
