@@ -1,3 +1,29 @@
 @import '../src/style.css';
 
 @custom-variant dark (&:where(.sb-dark, .sb-dark *));
+
+.sb-dark {
+    --color-accent-contrast: var(--color-accent-contrast-dark);
+    --color-accent: var(--color-accent-dark);
+    --color-bg: var(--color-bg-dark);
+    --color-border: var(--color-border-dark);
+    --color-danger: var(--color-danger-dark);
+    --color-info: var(--color-info-dark);
+    --color-success: var(--color-success-dark);
+    --color-surface-1: var(--color-surface-1-dark);
+    --color-surface-2: var(--color-surface-2-dark);
+    --color-text-muted: var(--color-text-muted-dark);
+    --color-text: var(--color-text-dark);
+    --color-warning: var(--color-warning-dark);
+    background:
+        radial-gradient(
+            1100px circle at 12% -10%,
+            rgba(62, 200, 180, 0.12),
+            transparent 55%
+        ),
+        radial-gradient(
+            900px circle at 95% 0%,
+            rgba(79, 143, 190, 0.14),
+            transparent 55%
+        );
+}
