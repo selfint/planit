@@ -18,3 +18,20 @@
     --color-danger: #d96565;
     --color-info: #4f8fbe;
 }
+
+@variant dark {
+    @theme {
+        --color-bg: #0b1116;
+        --color-surface-1: #121b22;
+        --color-surface-2: #19242c;
+        --color-border: #26343d;
+        --color-text: #e5eef0;
+        --color-text-muted: #93a3ad;
+        --color-accent: #3ec8b4;
+        --color-accent-contrast: #0c1517;
+        --color-success: #3ec8b4;
+        --color-warning: #e2b652;
+        --color-danger: #e07a7a;
+        --color-info: #6aa7d8;
+    }
+}
