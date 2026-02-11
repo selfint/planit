@@ -88,15 +88,7 @@ export default defineConfig(
             ],
             '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
             '@typescript-eslint/no-floating-promises': 'error', // Vital for Service Workers
-            'object-curly-newline': [
-                'error',
-                {
-                    ObjectExpression: 'always',
-                    ObjectPattern: { multiline: true, minProperties: 3 },
-                    ImportDeclaration: 'never',
-                    ExportDeclaration: { multiline: true, minProperties: 3 },
-                },
-            ],
+            'object-curly-newline': ['off'], // let prettier handle this
             'comma-dangle': ['error', 'only-multiline'],
             'object-curly-spacing': ['error', 'always'],
             'sort-imports': [
