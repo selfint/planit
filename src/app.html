@@ -1,5 +1,5 @@
 <div
-    class="bg-bg text-text min-h-screen w-full [background:radial-gradient(1100px_circle_at_8%_-10%,rgba(62,200,180,0.2),transparent_55%),radial-gradient(900px_circle_at_100%_0%,rgba(106,167,216,0.18),transparent_50%)]"
+    class="bg-bg text-text min-h-screen w-full [background:radial-gradient(1100px_circle_at_8%_-10%,rgba(62,200,180,0.2),transparent_55%),radial-gradient(900px_circle_at_100%_0%,rgba(106,167,216,0.18),transparent_50%)] dark:[--color-accent-contrast:#0c1517] dark:[--color-accent:#3ec8b4] dark:[--color-bg:#0b1116] dark:[--color-border:#26343d] dark:[--color-danger:#e07a7a] dark:[--color-info:#6aa7d8] dark:[--color-success:#3ec8b4] dark:[--color-surface-1:#121b22] dark:[--color-surface-2:#19242c] dark:[--color-text-muted:#93a3ad] dark:[--color-text:#e5eef0] dark:[--color-warning:#e2b652]"
 >
     <div
         class="mx-auto flex min-h-screen max-w-6xl flex-col px-4 pt-[calc(env(safe-area-inset-top)+2rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:px-8"
@@ -38,6 +38,13 @@
                         class="border-border/60 bg-surface-2/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
                     >
                         Sync status
+                    </button>
+                    <button
+                        type="button"
+                        class="border-border/60 bg-surface-2/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
+                        data-theme-toggle
+                    >
+                        Theme
                     </button>
                 </div>
             </div>
