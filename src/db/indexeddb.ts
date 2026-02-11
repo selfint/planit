@@ -23,11 +23,11 @@ export type CourseRecord = {
     seasons?: string[];
     faculty?: string;
     current?: boolean;
-    tests?: Array<{
+    tests?: ({
         year: number;
         monthIndex: number;
         day: number;
-    } | null>;
+    } | null)[];
 };
 
 const openPlanitDb = (): Promise<IDBDatabase> => {
