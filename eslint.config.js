@@ -66,6 +66,18 @@ export default defineConfig(
             eqeqeq: ['error', 'always'], // No == allowed
             curly: ['error', 'all'], // Force {} for all if/else
             'no-implicit-coercion': 'error', // No !! or +str tricks
+            '@typescript-eslint/strict-boolean-expressions': [
+                'error',
+                {
+                    allowAny: false,
+                    allowNullableBoolean: false,
+                    allowNullableNumber: false,
+                    allowNullableObject: false,
+                    allowNullableString: false,
+                    allowNumber: false,
+                    allowString: false,
+                },
+            ],
             '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/explicit-function-return-type': 'error',
             '@typescript-eslint/no-non-null-assertion': 'error',
@@ -74,10 +86,7 @@ export default defineConfig(
                 'error',
                 { argsIgnorePattern: '^_' },
             ],
-            '@typescript-eslint/consistent-type-definitions': [
-                'error',
-                'interface',
-            ],
+            '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
             '@typescript-eslint/no-floating-promises': 'error', // Vital for Service Workers
             'object-curly-newline': [
                 'error',
