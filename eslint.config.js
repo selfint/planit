@@ -84,7 +84,7 @@ export default defineConfig(
             'no-trailing-spaces': 'error',
             '@typescript-eslint/no-unused-vars': [
                 'error',
-                { argsIgnorePattern: '^_' },
+                { argsIgnorePattern: '^_', variableIgnorePattern: '^_' },
             ],
             '@typescript-eslint/consistent-type-definitions': ['error', 'type'],
             '@typescript-eslint/no-floating-promises': 'error', // Vital for Service Workers
