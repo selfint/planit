@@ -1,4 +1,4 @@
-import '../src/style.css';
+import './preview.css';
 
 import type { Preview } from '@storybook/html';
 
