@@ -1,5 +1,7 @@
 @import 'tailwindcss' layer(tailwind);
 
+/* TODO: how can we make eslint */
+/* eslint-disable-next-line css/no-invalid-at-rules */
 @theme {
     --font-sans:
         'Rubik', 'Assistant', 'Heebo', ui-sans-serif, system-ui, sans-serif;
