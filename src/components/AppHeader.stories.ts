@@ -15,8 +15,7 @@ const meta: Meta = {
         lightSection.appendChild(createAppHeader());
 
         const darkSection = document.createElement('section');
-        darkSection.className = 'space-y-3 rounded-3xl bg-slate-950 p-4';
-        darkSection.dataset.theme = 'dark';
+        darkSection.className = 'sb-dark space-y-3 rounded-3xl bg-bg-dark p-4';
         darkSection.innerHTML =
             '<p class="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">Dark mode</p>';
         darkSection.appendChild(createAppHeader());

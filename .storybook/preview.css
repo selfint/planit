@@ -2,5 +2,4 @@
 
 @import '../src/style.css';
 
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
-
+@custom-variant dark (&:where(.sb-dark, .sb-dark *));
