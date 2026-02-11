@@ -1,1 +1,30 @@
 @import 'tailwindcss' layer(tailwind);
+
+@theme {
+    --font-sans:
+        'Rubik', 'Assistant', 'Heebo', ui-sans-serif, system-ui, sans-serif;
+    --color-bg: #f5f8f9;
+    --color-bg-dark: #0b1116;
+    --color-surface-1: #ffffff;
+    --color-surface-1-dark: #121b22;
+    --color-surface-2: #edf2f4;
+    --color-surface-2-dark: #19242c;
+    --color-border: #d7e0e6;
+    --color-border-dark: #26343d;
+    --color-text: #19232a;
+    --color-text-dark: #e5eef0;
+    --color-text-muted: #5b6a74;
+    --color-text-muted-dark: #93a3ad;
+    --color-accent: #2aa89b;
+    --color-accent-dark: #3ec8b4;
+    --color-accent-contrast: #f3fffd;
+    --color-accent-contrast-dark: #0c1517;
+    --color-success: #2d9d89;
+    --color-success-dark: #3ec8b4;
+    --color-warning: #d7a31b;
+    --color-warning-dark: #e2b652;
+    --color-danger: #d96565;
+    --color-danger-dark: #e07a7a;
+    --color-info: #4f8fbe;
+    --color-info-dark: #6aa7d8;
+}
