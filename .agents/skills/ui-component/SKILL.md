@@ -28,7 +28,7 @@ Build UI components as paired files: HTML for structure/styling and TypeScript f
     - Keep UI-only concerns here: structure, Tailwind classes, semantic tags.
     - Use data attributes like data-role, data-action, data-slot for hooks.
 - TypeScript:
-    - Import the HTML as text (prefer `?raw` with Vite).
+    - Import the HTML as text (`?raw` with Vite).
     - Clone the template into a root element.
     - Bind events and return a single root element.
 
