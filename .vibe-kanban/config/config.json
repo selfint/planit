@@ -25,7 +25,7 @@
     "default_pr_base": "main"
   },
   "analytics_enabled": true,
-  "workspace_dir": ".vibe-kanban/worktrees",
+  "workspace_dir": null,
   "last_app_version": "0.1.8",
   "show_release_notes": false,
   "language": "BROWSER",

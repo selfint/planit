@@ -18,9 +18,15 @@
             "target": "/home/vscode/.local/share/opencode/auth.json",
             "type": "bind"
         },
+        // persist vibe-kanban state after docker rebuild
         {
             "source": "${localWorkspaceFolder}/.vibe-kanban/config",
             "target": "/home/vscode/.local/share/vibe-kanban",
+            "type": "bind"
+        },
+        {
+            "source": "${localWorkspaceFolder}/.vibe-kanban/worktrees",
+            "target": "/var/tmp/vibe-kanban/worktrees",
             "type": "bind"
         }
     ],
