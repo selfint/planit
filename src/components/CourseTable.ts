@@ -1,4 +1,4 @@
-import { getAllCourses, getMeta } from '../db/indexeddb';
+import { getCoursesPageSorted, getMeta } from '../db/indexeddb';
 import { initCourseSync } from '../sync/courseSync';
 
 import templateHtml from './CourseTable.html?raw';
@@ -196,20 +196,18 @@ async function loadCourseTable(
     sortButtons: HTMLButtonElement[],
     sortIndicators: HTMLSpanElement[]
 ): Promise<void> {
-    const [courses, countMeta, updatedMeta] = await Promise.all([
-        getAllCourses(),
+    const [pageCourses, countMeta, updatedMeta] = await Promise.all([
+        getCoursesPageSorted(
+            COURSE_TABLE_LIMIT,
+            state.pageIndex * COURSE_TABLE_LIMIT,
+            state.sortKey,
+            state.sortDirection
+        ),
         getMeta(COURSE_COUNT_KEY),
         getMeta(COURSE_REMOTE_UPDATED_KEY),
     ]);
 
     updateSortControls(sortButtons, sortIndicators, state);
-    const sortedCourses = sortCourses(courses, state);
-    const pageStart = state.pageIndex * COURSE_TABLE_LIMIT;
-    const pageCourses = sortedCourses.slice(
-        pageStart,
-        pageStart + COURSE_TABLE_LIMIT
-    );
-
     updateCourseCount(count, pageCourses.length, countMeta?.value);
     updateLastUpdated(lastUpdated, updatedMeta?.value);
 
@@ -229,7 +227,7 @@ async function loadCourseTable(
         prevButton,
         nextButton,
         state.pageIndex,
-        countMeta?.value ?? courses.length,
+        countMeta?.value,
         pageCourses.length
     );
 }
@@ -415,54 +413,4 @@ function createSortIcon(direction: CourseSortDirection): SVGSVGElement {
     svg.append(path);
 
     return svg;
-}
-
-function sortCourses(
-    courses: CourseRowData[],
-    state: CourseTableState
-): CourseRowData[] {
-    const sorted = [...courses];
-    const direction = state.sortDirection === 'asc' ? 1 : -1;
-
-    sorted.sort((left, right) => {
-        const leftValue = getCourseSortValue(left, state.sortKey);
-        const rightValue = getCourseSortValue(right, state.sortKey);
-
-        if (leftValue === undefined && rightValue === undefined) {
-            return 0;
-        }
-        if (leftValue === undefined) {
-            return 1;
-        }
-        if (rightValue === undefined) {
-            return -1;
-        }
-
-        if (typeof leftValue === 'number' && typeof rightValue === 'number') {
-            return (leftValue - rightValue) * direction;
-        }
-
-        return (
-            leftValue.toString().localeCompare(rightValue.toString(), 'he') *
-            direction
-        );
-    });
-
-    return sorted;
-}
-
-function getCourseSortValue(
-    course: CourseRowData,
-    key: CourseSortKey
-): string | number | undefined {
-    switch (key) {
-        case 'code':
-            return course.code;
-        case 'name':
-            return course.name;
-        case 'points':
-            return course.points;
-        case 'median':
-            return course.median;
-    }
 }

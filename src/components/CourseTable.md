@@ -17,15 +17,14 @@ It pairs the template in `src/components/CourseTable.html` with logic in
 
 1. `CourseTable()` clones the HTML template and queries required elements.
 2. `initCourseSync()` triggers reloads after background sync.
-3. `loadCourseTable()` reads all courses, sorts them, slices the current page,
-   and renders rows.
+3. `loadCourseTable()` reads a sorted page from IndexedDB and renders rows.
 4. Count and last updated metadata are read via `getMeta()`.
 
 ## Sorting
 
 - Sort state lives in `CourseTableState` (`sortKey`, `sortDirection`).
 - Clicking a column header toggles direction or switches the sort key.
-- Sorting is applied to the full dataset, then pagination slices the result.
+- Sorting is applied in IndexedDB using indices for each sort key/direction.
 - The active sort indicator is an inline SVG chevron.
 
 ## Pagination
@@ -48,5 +47,5 @@ It pairs the template in `src/components/CourseTable.html` with logic in
 
 ## Notes
 
-- Sorting is in-memory; if the dataset grows large, consider indexed
-  pagination by adding indices in IndexedDB.
+- Sorting uses IndexedDB indices; missing numeric values are normalized to
+  sort last in either direction.
