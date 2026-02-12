@@ -348,9 +348,10 @@ function createCourseCell(
     className?: string
 ): HTMLTableCellElement {
     const cell = document.createElement('td');
-    cell.className = className
-        ? `px-2 py-2 text-start ${className}`
-        : 'px-2 py-2 text-start';
+    cell.className =
+        className !== undefined && className.length > 0
+            ? `px-2 py-2 text-start ${className}`
+            : 'px-2 py-2 text-start';
     cell.textContent = text;
     return cell;
 }
