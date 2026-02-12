@@ -1,7 +1,9 @@
 import './style.css';
 
+import { AppFooter } from './components/AppFooter';
 import { AppHeader } from './components/AppHeader';
-import { CourseTable } from './components/CourseTable';
+import { PlannerOverview } from './components/PlannerOverview';
+import { StatusSidebar } from './components/StatusSidebar';
 import appTemplate from './app.html?raw';
 import { initPWA } from './pwa.ts';
 
@@ -17,11 +19,23 @@ function initApp(): HTMLDivElement {
         headerHost.replaceWith(AppHeader());
     }
 
-    const courseTableHost = app.querySelector<HTMLElement>(
-        '[data-course-table]'
+    const plannerOverviewHost = app.querySelector<HTMLElement>(
+        '[data-planner-overview]'
     );
-    if (courseTableHost !== null) {
-        courseTableHost.replaceWith(CourseTable());
+    if (plannerOverviewHost !== null) {
+        plannerOverviewHost.replaceWith(PlannerOverview());
+    }
+
+    const statusSidebarHost = app.querySelector<HTMLElement>(
+        '[data-status-sidebar]'
+    );
+    if (statusSidebarHost !== null) {
+        statusSidebarHost.replaceWith(StatusSidebar());
+    }
+
+    const footerHost = app.querySelector<HTMLElement>('[data-app-footer]');
+    if (footerHost !== null) {
+        footerHost.replaceWith(AppFooter());
     }
 
     return app;
