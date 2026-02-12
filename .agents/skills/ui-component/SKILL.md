@@ -15,7 +15,7 @@ The app is always RTL and in Hebrew; inline all copy in Hebrew.
 1. Confirm or create the component pair at src/components/<Component>.html and src/components/<Component>.ts.
 2. Put all markup and Tailwind classes in the HTML file inside a <template>.
 3. Keep logic, state, and event wiring in the TS file; do not embed scripts in HTML.
-4. Inline Hebrew copy directly in the HTML; do not use i18n attributes.
+4. Put all text in Hebrew; except for PlanIt and other english-only phrases.
 5. Use data attributes in the HTML to target elements from TS.
 6. Export a component factory (e.g., `AppHeader()`) that returns a root element.
 7. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
