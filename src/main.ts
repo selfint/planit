@@ -5,7 +5,7 @@ import { AppHeader } from './components/AppHeader';
 import { PlannerOverview } from './components/PlannerOverview';
 import { StatusSidebar } from './components/StatusSidebar';
 import appTemplate from './app.html?raw';
-import { initPWA } from './pwa.ts';
+import { initPWA } from '$lib/pwa';
 
 function initApp(): HTMLDivElement {
     const app = document.querySelector<HTMLDivElement>('#app');

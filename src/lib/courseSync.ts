@@ -1,5 +1,5 @@
-import { getMeta, putCourses, setMeta } from '../db/indexeddb';
-import type { CourseRecord } from '../db/indexeddb';
+import { getMeta, putCourses, setMeta } from '$lib/indexeddb';
+import type { CourseRecord } from '$lib/indexeddb';
 
 const COURSE_DATA_URL =
     'https://raw.githubusercontent.com/selfint/degree-planner/main/static/courseData.json';

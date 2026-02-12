@@ -1,5 +1,6 @@
 import type { StorybookConfig } from '@storybook/html-vite';
 import tailwindcss from '@tailwindcss/vite';
+import { resolve } from 'node:path';
 
 const config: StorybookConfig = {
     stories: ['../src/**/*.stories.@(ts|tsx|js|jsx|mdx)'],
@@ -17,6 +18,12 @@ const config: StorybookConfig = {
         return {
             ...config,
             plugins: [...(config.plugins ?? []), tailwindcss()],
+            resolve: {
+                alias: {
+                    $lib: resolve('src/lib'),
+                    $components: resolve('src/components'),
+                },
+            },
         };
     },
 };

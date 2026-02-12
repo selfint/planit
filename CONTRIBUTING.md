@@ -5,7 +5,7 @@ Thanks for helping improve Planit. This guide focuses on code style and linting.
 ## Code Style (Source of Truth)
 
 - ESLint rules in `eslint.config.js` are the source of truth.
-- Format and lint before submitting changes, run `pnpm format`.
+- Format and lint before submitting changes, run `pnpm format` and `pnpm lint`.
 
 ## TypeScript Style
 
@@ -40,8 +40,9 @@ Avoid:
 
 ## Linting
 
-Run ESLint before pushing. If unsure, run:
+Run formatting and linting before pushing. If unsure, run:
 
 ```bash
 pnpm format
+pnpm lint
 ```
