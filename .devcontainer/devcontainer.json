@@ -30,16 +30,14 @@
             ]
         }
     },
-    // Features to add to the dev container. More info: https://containers.dev/features.
-    // "features": {},
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    // "forwardPorts": [],
-    // Use 'postCreateCommand' to run commands after the container is created.
-    "postCreateCommand": [
-        "pnpm exec playwright install --with-deps"
-    ]
-    // Configure tool-specific properties.
-    // "customizations": {},
-    // Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
-    // "remoteUser": "root"
+    "forwardPorts": [
+        // vite dev
+        5137,
+        // vite preview
+        4137,
+        // storybook
+        6006
+    ],
+    "postCreateCommand": "bash -c 'pnpm exec playwright install --with-deps'"
 }
