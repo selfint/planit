@@ -17,6 +17,11 @@
             "source": "${localEnv:HOME}/.local/share/opencode/auth.json",
             "target": "/home/vscode/.local/share/opencode/auth.json",
             "type": "bind"
+        },
+        {
+            "source": "${localWorkspaceFolder}/.vibe-kanban/config",
+            "target": "/home/vscode/.local/share/vibe-kanban",
+            "type": "bind"
         }
     ],
     "customizations": {
