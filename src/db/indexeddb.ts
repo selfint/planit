@@ -350,7 +350,7 @@ function isMissingSortValue(
         case 'code':
             return course.code.length === 0;
         case 'name':
-            return course.name === undefined || course.name === null;
+            return course.name === undefined;
         case 'points':
             return (
                 course.points === undefined || !Number.isFinite(course.points)
