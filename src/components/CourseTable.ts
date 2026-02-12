@@ -1,5 +1,4 @@
 import { getCoursesPage, getMeta } from '../db/indexeddb';
-import i18n from '../i18n/he.json';
 import { initCourseSync } from '../sync/courseSync';
 
 import templateHtml from './CourseTable.html?raw';
@@ -7,6 +6,14 @@ import templateHtml from './CourseTable.html?raw';
 const COURSE_TABLE_LIMIT = 12;
 const COURSE_COUNT_KEY = 'courseDataCount';
 const COURSE_REMOTE_UPDATED_KEY = 'courseDataRemoteUpdatedAt';
+const COURSE_COUNT_PREFIX = 'מוצגים';
+const COURSE_COUNT_SUFFIX = 'קורסים';
+const COURSE_COUNT_JOINER = 'מתוך';
+const COURSE_LAST_UPDATE_EMPTY = 'עדכון אחרון: —';
+const COURSE_LAST_UPDATE_LABEL = 'עדכון אחרון';
+const COURSE_PAGE_LABEL = 'עמוד';
+const COURSE_PAGE_JOINER = 'מתוך';
+const COURSE_EMPTY_VALUE = '—';
 
 type CourseRowData = {
     code: string;
@@ -107,19 +114,6 @@ export function CourseTable(): HTMLElement {
         },
     });
 
-    document.addEventListener('i18n:loaded', () => {
-        void loadCourseTable(
-            state,
-            rows,
-            empty,
-            count,
-            lastUpdated,
-            pageLabel,
-            prevButton,
-            nextButton
-        );
-    });
-
     void loadCourseTable(
         state,
         rows,
@@ -183,9 +177,9 @@ function updateCourseCount(
     metaValue: unknown
 ): void {
     const totalCount = parseMetaCount(metaValue);
-    const prefix = i18n.courseTable.countPrefix;
-    const suffix = i18n.courseTable.countSuffix;
-    const joiner = i18n.courseTable.countOfJoiner;
+    const prefix = COURSE_COUNT_PREFIX;
+    const suffix = COURSE_COUNT_SUFFIX;
+    const joiner = COURSE_COUNT_JOINER;
     if (totalCount !== undefined && totalCount > visibleCount) {
         count.textContent = `${prefix} ${String(visibleCount)} ${joiner} ${String(totalCount)} ${suffix}`;
         return;
@@ -214,10 +208,10 @@ function updateLastUpdated(
 ): void {
     const formattedDate = formatRemoteUpdatedAt(metaValue);
     if (formattedDate === undefined) {
-        element.textContent = i18n.courseTable.lastUpdateEmpty;
+        element.textContent = COURSE_LAST_UPDATE_EMPTY;
         return;
     }
-    const label = i18n.courseTable.lastUpdateLabel;
+    const label = COURSE_LAST_UPDATE_LABEL;
     element.textContent = `${label}: ${formattedDate}`;
 }
 
@@ -248,8 +242,8 @@ function updateCoursePagination(
             ? Math.max(1, Math.ceil(totalCount / COURSE_TABLE_LIMIT))
             : pageIndex + 1;
     const currentPage = Math.min(pageIndex + 1, totalPages);
-    const pageLabel = i18n.courseTable.pagination.pageLabel;
-    const pageJoiner = i18n.courseTable.pagination.pageOfJoiner;
+    const pageLabel = COURSE_PAGE_LABEL;
+    const pageJoiner = COURSE_PAGE_JOINER;
     label.textContent = `${pageLabel} ${String(currentPage)} ${pageJoiner} ${String(totalPages)}`;
 
     prevButton.disabled = pageIndex <= 0;
@@ -299,5 +293,5 @@ function formatCoursePoints(points?: number): string {
 }
 
 function getEmptyValueLabel(): string {
-    return i18n.common.emptyValue;
+    return COURSE_EMPTY_VALUE;
 }

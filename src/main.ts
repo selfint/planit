@@ -3,7 +3,6 @@ import './style.css';
 import { AppHeader } from './components/AppHeader';
 import { CourseTable } from './components/CourseTable';
 import appTemplate from './app.html?raw';
-import { initI18n } from './i18n';
 import { initPWA } from './pwa.ts';
 
 function initApp(): HTMLDivElement {
@@ -30,8 +29,7 @@ function initApp(): HTMLDivElement {
 
 function main(): void {
     try {
-        const app = initApp();
-        initI18n({ root: app });
+        initApp();
         initPWA();
     } catch (err: unknown) {
         console.error('Failed to start app:', err);
