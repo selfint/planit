@@ -1,4 +1,4 @@
-import { getCoursesPage, getMeta } from '../db/indexeddb';
+import { getCoursesPageSorted, getMeta } from '../db/indexeddb';
 import { initCourseSync } from '../sync/courseSync';
 
 import templateHtml from './CourseTable.html?raw';
@@ -19,11 +19,16 @@ type CourseRowData = {
     code: string;
     name?: string;
     points?: number;
-    faculty?: string;
+    median?: number;
 };
+
+type CourseSortKey = 'code' | 'name' | 'points' | 'median';
+type CourseSortDirection = 'asc' | 'desc';
 
 type CourseTableState = {
     pageIndex: number;
+    sortKey: CourseSortKey;
+    sortDirection: CourseSortDirection;
 };
 
 export function CourseTable(): HTMLElement {
@@ -54,6 +59,12 @@ export function CourseTable(): HTMLElement {
         root.querySelector<HTMLButtonElement>('[data-course-prev]');
     const nextButton =
         root.querySelector<HTMLButtonElement>('[data-course-next]');
+    const sortButtons = Array.from(
+        root.querySelectorAll<HTMLButtonElement>('[data-course-sort]')
+    );
+    const sortIndicators = Array.from(
+        root.querySelectorAll<HTMLSpanElement>('[data-sort-indicator]')
+    );
 
     if (
         rows === null ||
@@ -62,12 +73,18 @@ export function CourseTable(): HTMLElement {
         lastUpdated === null ||
         pageLabel === null ||
         prevButton === null ||
-        nextButton === null
+        nextButton === null ||
+        sortButtons.length === 0 ||
+        sortIndicators.length === 0
     ) {
         throw new Error('CourseTable required elements not found');
     }
 
-    const state: CourseTableState = { pageIndex: 0 };
+    const state: CourseTableState = {
+        pageIndex: 0,
+        sortKey: 'code',
+        sortDirection: 'asc',
+    };
 
     prevButton.addEventListener('click', () => {
         if (state.pageIndex > 0) {
@@ -80,7 +97,9 @@ export function CourseTable(): HTMLElement {
                 lastUpdated,
                 pageLabel,
                 prevButton,
-                nextButton
+                nextButton,
+                sortButtons,
+                sortIndicators
             );
         }
     });
@@ -95,9 +114,42 @@ export function CourseTable(): HTMLElement {
             lastUpdated,
             pageLabel,
             prevButton,
-            nextButton
+            nextButton,
+            sortButtons,
+            sortIndicators
         );
     });
+
+    for (const button of sortButtons) {
+        button.addEventListener('click', () => {
+            const sortKey = parseSortKey(button.dataset.sortKey);
+            if (sortKey === undefined) {
+                return;
+            }
+
+            if (state.sortKey === sortKey) {
+                state.sortDirection =
+                    state.sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.sortKey = sortKey;
+                state.sortDirection = 'asc';
+            }
+
+            state.pageIndex = 0;
+            void loadCourseTable(
+                state,
+                rows,
+                empty,
+                count,
+                lastUpdated,
+                pageLabel,
+                prevButton,
+                nextButton,
+                sortButtons,
+                sortIndicators
+            );
+        });
+    }
 
     initCourseSync({
         onSync: () => {
@@ -109,7 +161,9 @@ export function CourseTable(): HTMLElement {
                 lastUpdated,
                 pageLabel,
                 prevButton,
-                nextButton
+                nextButton,
+                sortButtons,
+                sortIndicators
             );
         },
     });
@@ -122,7 +176,9 @@ export function CourseTable(): HTMLElement {
         lastUpdated,
         pageLabel,
         prevButton,
-        nextButton
+        nextButton,
+        sortButtons,
+        sortIndicators
     );
 
     return root;
@@ -136,26 +192,31 @@ async function loadCourseTable(
     lastUpdated: HTMLParagraphElement,
     pageLabel: HTMLSpanElement,
     prevButton: HTMLButtonElement,
-    nextButton: HTMLButtonElement
+    nextButton: HTMLButtonElement,
+    sortButtons: HTMLButtonElement[],
+    sortIndicators: HTMLSpanElement[]
 ): Promise<void> {
-    const [courses, countMeta, updatedMeta] = await Promise.all([
-        getCoursesPage(
+    const [pageCourses, countMeta, updatedMeta] = await Promise.all([
+        getCoursesPageSorted(
             COURSE_TABLE_LIMIT,
-            state.pageIndex * COURSE_TABLE_LIMIT
+            state.pageIndex * COURSE_TABLE_LIMIT,
+            state.sortKey,
+            state.sortDirection
         ),
         getMeta(COURSE_COUNT_KEY),
         getMeta(COURSE_REMOTE_UPDATED_KEY),
     ]);
 
-    updateCourseCount(count, courses.length, countMeta?.value);
+    updateSortControls(sortButtons, sortIndicators, state);
+    updateCourseCount(count, pageCourses.length, countMeta?.value);
     updateLastUpdated(lastUpdated, updatedMeta?.value);
 
     rows.replaceChildren();
-    for (const course of courses) {
+    for (const course of pageCourses) {
         rows.append(createCourseRow(course));
     }
 
-    if (courses.length === 0) {
+    if (pageCourses.length === 0) {
         empty.classList.remove('hidden');
     } else {
         empty.classList.add('hidden');
@@ -167,7 +228,7 @@ async function loadCourseTable(
         nextButton,
         state.pageIndex,
         countMeta?.value,
-        courses.length
+        pageCourses.length
     );
 }
 
@@ -270,28 +331,106 @@ function createCourseRow(course: CourseRowData): HTMLTableRowElement {
     row.className = 'text-text';
     const emptyValue = getEmptyValueLabel();
 
-    row.append(createCourseCell(course.code));
-    row.append(createCourseCell(course.name ?? emptyValue));
-    row.append(createCourseCell(formatCoursePoints(course.points)));
-    row.append(createCourseCell(course.faculty ?? emptyValue));
+    row.append(
+        createCourseCell(course.code, 'whitespace-nowrap overflow-hidden')
+    );
+    row.append(
+        createCourseCell(course.name ?? emptyValue, 'w-full whitespace-normal')
+    );
+    row.append(
+        createCourseCell(
+            formatCourseNumber(course.points),
+            'whitespace-nowrap overflow-hidden'
+        )
+    );
+    row.append(
+        createCourseCell(
+            formatCourseNumber(course.median),
+            'whitespace-nowrap overflow-hidden'
+        )
+    );
 
     return row;
 }
 
-function createCourseCell(text: string): HTMLTableCellElement {
+function createCourseCell(
+    text: string,
+    className?: string
+): HTMLTableCellElement {
     const cell = document.createElement('td');
-    cell.className = 'py-2 text-start';
+    cell.className =
+        className !== undefined && className.length > 0
+            ? `px-2 py-2 text-start ${className}`
+            : 'px-2 py-2 text-start';
     cell.textContent = text;
     return cell;
 }
 
-function formatCoursePoints(points?: number): string {
-    if (points === undefined || !Number.isFinite(points)) {
+function formatCourseNumber(value?: number): string {
+    if (value === undefined || !Number.isFinite(value)) {
         return getEmptyValueLabel();
     }
-    return points.toString();
+    return value.toString();
 }
 
 function getEmptyValueLabel(): string {
     return COURSE_EMPTY_VALUE;
+}
+
+function parseSortKey(value: string | undefined): CourseSortKey | undefined {
+    if (
+        value === 'code' ||
+        value === 'name' ||
+        value === 'points' ||
+        value === 'median'
+    ) {
+        return value;
+    }
+    return undefined;
+}
+
+function updateSortControls(
+    buttons: HTMLButtonElement[],
+    indicators: HTMLSpanElement[],
+    state: CourseTableState
+): void {
+    for (const button of buttons) {
+        const key = parseSortKey(button.dataset.sortKey);
+        if (key === undefined) {
+            continue;
+        }
+        const isActive = key === state.sortKey;
+        button.classList.toggle('text-text', isActive);
+        button.classList.toggle('text-text-muted', !isActive);
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    }
+
+    for (const indicator of indicators) {
+        const key = parseSortKey(indicator.dataset.sortKey);
+        if (key === undefined) {
+            continue;
+        }
+        if (key !== state.sortKey) {
+            indicator.replaceChildren();
+            continue;
+        }
+        indicator.replaceChildren(createSortIcon(state.sortDirection));
+    }
+}
+
+function createSortIcon(direction: CourseSortDirection): SVGSVGElement {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.classList.add('h-3', 'w-3', 'text-text-muted');
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('fill', 'currentColor');
+    path.setAttribute(
+        'd',
+        direction === 'asc' ? 'M12 8l5 6H7l5-6z' : 'M12 16l-5-6h10l-5 6z'
+    );
+    svg.append(path);
+
+    return svg;
 }
