@@ -1,10 +1,17 @@
 import { VitePWA } from 'vite-plugin-pwa';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
+import { resolve } from 'node:path';
 
 // https://vitejs.dev/config/
 export default defineConfig({
     base: './',
+    resolve: {
+        alias: {
+            $lib: resolve('src/lib'),
+            $components: resolve('src/components'),
+        },
+    },
     plugins: [
         tailwindcss(),
         VitePWA({

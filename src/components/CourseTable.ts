@@ -1,5 +1,5 @@
-import { getCoursesPageSorted, getMeta } from '../db/indexeddb';
-import { initCourseSync } from '../sync/courseSync';
+import { getCoursesPageSorted, getMeta } from '$lib/indexeddb';
+import { initCourseSync } from '$lib/courseSync';
 
 import templateHtml from './CourseTable.html?raw';
 

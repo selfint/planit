@@ -42,7 +42,7 @@ jobs:
         run: pnpm build
 
       - name: Check formatting
-        run: pnpm format:check
+        run: pnpm lint:check
 
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v4
