@@ -1,6 +1,8 @@
 import './style.css';
 
 import { AppHeader } from './components/AppHeader';
+import appTemplate from './app.html?raw';
+import { initI18n } from './i18n';
 import { CourseTable } from './components/CourseTable';
 import { initPWA } from './pwa.ts';
 
@@ -28,8 +30,9 @@ function initApp(): HTMLDivElement {
     return app;
 }
 
-function main(): void {
+async function main(): Promise<void> {
     initApp();
+    await initI18n();
     initPWA();
 }
 
