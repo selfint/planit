@@ -1,4 +1,4 @@
-import { getCoursesPage, getMeta } from '../db/indexeddb';
+import { getAllCourses, getMeta } from '../db/indexeddb';
 import { initCourseSync } from '../sync/courseSync';
 
 import templateHtml from './CourseTable.html?raw';
@@ -197,26 +197,28 @@ async function loadCourseTable(
     sortIndicators: HTMLSpanElement[]
 ): Promise<void> {
     const [courses, countMeta, updatedMeta] = await Promise.all([
-        getCoursesPage(
-            COURSE_TABLE_LIMIT,
-            state.pageIndex * COURSE_TABLE_LIMIT
-        ),
+        getAllCourses(),
         getMeta(COURSE_COUNT_KEY),
         getMeta(COURSE_REMOTE_UPDATED_KEY),
     ]);
 
     updateSortControls(sortButtons, sortIndicators, state);
     const sortedCourses = sortCourses(courses, state);
+    const pageStart = state.pageIndex * COURSE_TABLE_LIMIT;
+    const pageCourses = sortedCourses.slice(
+        pageStart,
+        pageStart + COURSE_TABLE_LIMIT
+    );
 
-    updateCourseCount(count, courses.length, countMeta?.value);
+    updateCourseCount(count, pageCourses.length, countMeta?.value);
     updateLastUpdated(lastUpdated, updatedMeta?.value);
 
     rows.replaceChildren();
-    for (const course of sortedCourses) {
+    for (const course of pageCourses) {
         rows.append(createCourseRow(course));
     }
 
-    if (sortedCourses.length === 0) {
+    if (pageCourses.length === 0) {
         empty.classList.remove('hidden');
     } else {
         empty.classList.add('hidden');
@@ -227,8 +229,8 @@ async function loadCourseTable(
         prevButton,
         nextButton,
         state.pageIndex,
-        countMeta?.value,
-        sortedCourses.length
+        countMeta?.value ?? courses.length,
+        pageCourses.length
     );
 }
 

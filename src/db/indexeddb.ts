@@ -143,6 +143,41 @@ export async function getCourses(limit: number): Promise<CourseRecord[]> {
     return getCoursesPage(limit, 0);
 }
 
+export async function getAllCourses(): Promise<CourseRecord[]> {
+    const db = await openDb();
+
+    return new Promise((resolve, reject) => {
+        const results: CourseRecord[] = [];
+        const tx = db.transaction(STORE_COURSES, 'readonly');
+        const store = tx.objectStore(STORE_COURSES);
+        const request = store.openCursor();
+
+        request.onsuccess = (): void => {
+            const cursor = request.result;
+            if (cursor === null) {
+                return;
+            }
+            results.push(cursor.value as CourseRecord);
+            cursor.continue();
+        };
+
+        request.onerror = (): void => {
+            reject(request.error ?? new Error('Failed to read courses'));
+        };
+
+        tx.oncomplete = (): void => {
+            db.close();
+            resolve(results);
+        };
+        tx.onerror = (): void => {
+            reject(tx.error ?? new Error('Course transaction failed'));
+        };
+        tx.onabort = (): void => {
+            reject(tx.error ?? new Error('Course transaction aborted'));
+        };
+    });
+}
+
 export async function getCoursesPage(
     limit: number,
     offset: number
