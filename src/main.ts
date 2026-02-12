@@ -4,6 +4,7 @@ import { AppFooter } from './components/AppFooter';
 import { AppHeader } from './components/AppHeader';
 import { PlannerOverview } from './components/PlannerOverview';
 import { StatusSidebar } from './components/StatusSidebar';
+import { UpdateBanner } from './components/UpdateBanner';
 import appTemplate from './app.html?raw';
 import { initPWA } from '$lib/pwa';
 
@@ -17,6 +18,13 @@ function initApp(): HTMLDivElement {
     const headerHost = app.querySelector<HTMLElement>('[data-app-header]');
     if (headerHost !== null) {
         headerHost.replaceWith(AppHeader());
+    }
+
+    const updateBannerHost = app.querySelector<HTMLElement>(
+        '[data-update-banner]'
+    );
+    if (updateBannerHost !== null) {
+        updateBannerHost.replaceWith(UpdateBanner());
     }
 
     const plannerOverviewHost = app.querySelector<HTMLElement>(

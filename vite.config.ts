@@ -1,11 +1,28 @@
 import { VitePWA } from 'vite-plugin-pwa';
 import tailwindcss from '@tailwindcss/vite';
 import { defineConfig } from 'vite';
+import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
+
+function resolveBuildSha(): string {
+    if (process.env.GITHUB_SHA) {
+        return process.env.GITHUB_SHA.slice(0, 7);
+    }
+    try {
+        return execSync('git rev-parse --short HEAD').toString().trim();
+    } catch {
+        return 'dev';
+    }
+}
+
+const buildSha = resolveBuildSha();
 
 // https://vitejs.dev/config/
 export default defineConfig({
     base: './',
+    define: {
+        __BUILD_SHA__: JSON.stringify(buildSha),
+    },
     resolve: {
         alias: {
             $lib: resolve('src/lib'),
@@ -34,6 +51,7 @@ export default defineConfig({
                 globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
                 cleanupOutdatedCaches: true,
                 clientsClaim: true,
+                skipWaiting: true,
             },
 
             devOptions: {
