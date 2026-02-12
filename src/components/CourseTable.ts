@@ -391,11 +391,28 @@ function updateSortControls(
             continue;
         }
         if (key !== state.sortKey) {
-            indicator.textContent = '';
+            indicator.replaceChildren();
             continue;
         }
-        indicator.textContent = state.sortDirection === 'asc' ? '^' : 'v';
+        indicator.replaceChildren(createSortIcon(state.sortDirection));
     }
+}
+
+function createSortIcon(direction: CourseSortDirection): SVGSVGElement {
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 24 24');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.classList.add('h-3', 'w-3', 'text-text-muted');
+
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('fill', 'currentColor');
+    path.setAttribute(
+        'd',
+        direction === 'asc' ? 'M12 8l5 6H7l5-6z' : 'M12 16l-5-6h10l-5 6z'
+    );
+    svg.append(path);
+
+    return svg;
 }
 
 function sortCourses(
