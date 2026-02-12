@@ -105,5 +105,7 @@ export async function initI18n(options: InitI18nOptions = {}): Promise<void> {
 
     applyMeta(activeTranslations.meta);
     applyTranslations(root, activeTranslations);
-    document.dispatchEvent(new CustomEvent('i18n:loaded', { detail: { lang } }));
+    document.dispatchEvent(
+        new CustomEvent('i18n:loaded', { detail: { lang } })
+    );
 }
