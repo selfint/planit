@@ -3,7 +3,10 @@ import './style.css';
 import { AppHeader } from './components/AppHeader';
 import appTemplate from './app.html?raw';
 import { initI18n } from './i18n';
+import { CourseTable } from './components/CourseTable';
 import { initPWA } from './pwa.ts';
+
+import appTemplate from './app.html?raw';
 
 function initApp(): HTMLDivElement {
     const app = document.querySelector<HTMLDivElement>('#app');
@@ -15,6 +18,13 @@ function initApp(): HTMLDivElement {
     const headerHost = app.querySelector<HTMLElement>('[data-app-header]');
     if (headerHost !== null) {
         headerHost.replaceWith(AppHeader());
+    }
+
+    const courseTableHost = app.querySelector<HTMLElement>(
+        '[data-course-table]'
+    );
+    if (courseTableHost !== null) {
+        courseTableHost.replaceWith(CourseTable());
     }
 
     return app;
