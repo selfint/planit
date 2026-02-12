@@ -5,21 +5,45 @@
     >
         <div class="flex flex-wrap items-center justify-between gap-3">
             <div class="flex flex-col gap-1">
-                <p class="text-text-muted text-xs">Course data</p>
-                <p class="text-lg font-medium">IndexedDB snapshot</p>
+                <p class="text-text-muted text-xs" data-i18n="courseTable.title">
+                    Course data
+                </p>
+                <p class="text-lg font-medium" data-i18n="courseTable.subtitle">
+                    IndexedDB snapshot
+                </p>
             </div>
             <p class="text-text-muted text-xs" data-course-count>
-                Showing 0 courses
+                <span data-i18n="courseTable.countZero">Showing 0 courses</span>
             </p>
         </div>
         <div class="mt-4 overflow-x-auto">
             <table class="w-full text-xs">
                 <thead class="text-text-muted">
                     <tr class="border-border/60 border-b">
-                        <th class="py-2 text-start font-medium">Code</th>
-                        <th class="py-2 text-start font-medium">Name</th>
-                        <th class="py-2 text-start font-medium">Points</th>
-                        <th class="py-2 text-start font-medium">Faculty</th>
+                        <th
+                            class="py-2 text-start font-medium"
+                            data-i18n="courseTable.columns.code"
+                        >
+                            Code
+                        </th>
+                        <th
+                            class="py-2 text-start font-medium"
+                            data-i18n="courseTable.columns.name"
+                        >
+                            Name
+                        </th>
+                        <th
+                            class="py-2 text-start font-medium"
+                            data-i18n="courseTable.columns.points"
+                        >
+                            Points
+                        </th>
+                        <th
+                            class="py-2 text-start font-medium"
+                            data-i18n="courseTable.columns.faculty"
+                        >
+                            Faculty
+                        </th>
                     </tr>
                 </thead>
                 <tbody
@@ -32,28 +56,38 @@
             class="mt-3 flex flex-wrap items-center justify-between gap-3 text-xs"
         >
             <p class="text-text-muted" data-course-last-updated>
-                Last update: —
+                <span data-i18n="courseTable.lastUpdateEmpty">Last update: —</span>
             </p>
             <div class="flex items-center gap-2">
                 <button
                     type="button"
                     class="border-border/60 bg-surface-1/70 text-text-muted hover:border-accent/40 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
                     data-course-prev
+                    data-i18n="courseTable.pagination.prev"
                 >
                     Prev
                 </button>
-                <span class="text-text-muted" data-course-page>Page 1</span>
+                <span
+                    class="text-text-muted"
+                    data-course-page
+                    data-i18n="courseTable.pagination.pageDefault"
+                >
+                    Page 1
+                </span>
                 <button
                     type="button"
                     class="border-border/60 bg-surface-1/70 text-text-muted hover:border-accent/40 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
                     data-course-next
+                    data-i18n="courseTable.pagination.next"
                 >
                     Next
                 </button>
             </div>
         </div>
         <p class="text-text-muted mt-3 text-xs" data-course-empty>
-            No courses stored yet. Sync online to load data.
+            <span data-i18n="courseTable.empty">
+                No courses stored yet. Sync online to load data.
+            </span>
         </p>
     </section>
 </template>

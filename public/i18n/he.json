@@ -55,5 +55,27 @@
         "tagline": "Planit PWA - מתכנן אופליין תחילה",
         "safeArea": "מותאם ל-Safe Area",
         "build": "Build 0.0.0"
+    },
+    "courseTable": {
+        "title": "נתוני קורסים",
+        "subtitle": "תמונת מצב IndexedDB",
+        "countZero": "מוצגים 0 קורסים",
+        "count": "מוצגים {visible} קורסים",
+        "countOf": "מוצגים {visible} מתוך {total} קורסים",
+        "lastUpdateEmpty": "עדכון אחרון: —",
+        "lastUpdate": "עדכון אחרון: {date}",
+        "columns": {
+            "code": "קוד",
+            "name": "שם",
+            "points": "נק״ז",
+            "faculty": "פקולטה"
+        },
+        "pagination": {
+            "prev": "הקודם",
+            "next": "הבא",
+            "page": "עמוד {current} מתוך {total}",
+            "pageDefault": "עמוד 1"
+        },
+        "empty": "אין קורסים שמורים עדיין. סנכרן אונליין כדי לטעון נתונים."
     }
 }

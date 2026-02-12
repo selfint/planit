@@ -9,6 +9,8 @@ type TranslationData = {
     [key: string]: unknown;
 };
 
+let activeTranslations: TranslationData | undefined;
+
 type InitI18nOptions = {
     lang?: string;
     root?: ParentNode;
@@ -56,6 +58,36 @@ function applyTextTranslations(root: ParentNode, data: TranslationData): void {
     });
 }
 
+function applyReplacements(
+    text: string,
+    replacements?: Record<string, string | number>
+): string {
+    if (!replacements) {
+        return text;
+    }
+    return text.replace(/\{(\w+)\}/g, (match, key) => {
+        if (!(key in replacements)) {
+            return match;
+        }
+        return String(replacements[key]);
+    });
+}
+
+export function translate(
+    key: string,
+    replacements?: Record<string, string | number>,
+    fallback?: string
+): string {
+    const value = activeTranslations ? getValue(activeTranslations, key) : undefined;
+    if (typeof value === 'string') {
+        return applyReplacements(value, replacements);
+    }
+    if (fallback) {
+        return applyReplacements(fallback, replacements);
+    }
+    return applyReplacements(key, replacements);
+}
+
 function applyAttributeTranslations(
     root: ParentNode,
     data: TranslationData
@@ -93,9 +125,13 @@ export async function initI18n(options: InitI18nOptions = {
             throw new Error(`Failed to load translations from ${path}`);
         }
         const data = (await response.json()) as TranslationData;
+        activeTranslations = data;
         applyMeta(data.meta);
         applyAttributeTranslations(root, data);
         applyTextTranslations(root, data);
+        document.dispatchEvent(
+            new CustomEvent('i18n:loaded', { detail: { lang } })
+        );
     } catch (error) {
         console.error('Failed to initialize i18n', error);
     }

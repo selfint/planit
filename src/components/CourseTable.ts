@@ -1,3 +1,4 @@
+import { translate } from '../i18n';
 import { getCoursesPage, getMeta } from '../db/indexeddb';
 import { initCourseSync } from '../sync/courseSync';
 
@@ -106,6 +107,19 @@ export function CourseTable(): HTMLElement {
         },
     });
 
+    document.addEventListener('i18n:loaded', () => {
+        void loadCourseTable(
+            state,
+            rows,
+            empty,
+            count,
+            lastUpdated,
+            pageLabel,
+            prevButton,
+            nextButton
+        );
+    });
+
     void loadCourseTable(
         state,
         rows,
@@ -170,12 +184,18 @@ function updateCourseCount(
 ): void {
     const totalCount = parseMetaCount(metaValue);
     if (totalCount !== undefined && totalCount > visibleCount) {
-        count.textContent = `Showing ${String(visibleCount)} of ${String(
-            totalCount
-        )} courses`;
+        count.textContent = translate(
+            'courseTable.countOf',
+            { visible: visibleCount, total: totalCount },
+            `Showing ${String(visibleCount)} of ${String(totalCount)} courses`
+        );
         return;
     }
-    count.textContent = `Showing ${String(visibleCount)} courses`;
+    count.textContent = translate(
+        'courseTable.count',
+        { visible: visibleCount },
+        `Showing ${String(visibleCount)} courses`
+    );
 }
 
 function parseMetaCount(value: unknown): number | undefined {
@@ -197,8 +217,20 @@ function updateLastUpdated(
     element: HTMLParagraphElement,
     metaValue: unknown
 ): void {
-    const formatted = formatRemoteUpdatedAt(metaValue);
-    element.textContent = formatted ?? 'Last update: —';
+    const formattedDate = formatRemoteUpdatedAt(metaValue);
+    if (!formattedDate) {
+        element.textContent = translate(
+            'courseTable.lastUpdateEmpty',
+            undefined,
+            'Last update: —'
+        );
+        return;
+    }
+    element.textContent = translate(
+        'courseTable.lastUpdate',
+        { date: formattedDate },
+        `Last update: ${formattedDate}`
+    );
 }
 
 function formatRemoteUpdatedAt(metaValue: unknown): string | undefined {
@@ -211,7 +243,7 @@ function formatRemoteUpdatedAt(metaValue: unknown): string | undefined {
         return undefined;
     }
 
-    return `Last update: ${date.toLocaleDateString()}`;
+    return date.toLocaleDateString();
 }
 
 function updateCoursePagination(
@@ -228,7 +260,11 @@ function updateCoursePagination(
             ? Math.max(1, Math.ceil(totalCount / COURSE_TABLE_LIMIT))
             : pageIndex + 1;
     const currentPage = Math.min(pageIndex + 1, totalPages);
-    label.textContent = `Page ${String(currentPage)} of ${String(totalPages)}`;
+    label.textContent = translate(
+        'courseTable.pagination.page',
+        { current: currentPage, total: totalPages },
+        `Page ${String(currentPage)} of ${String(totalPages)}`
+    );
 
     prevButton.disabled = pageIndex <= 0;
     nextButton.disabled =

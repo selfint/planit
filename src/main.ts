@@ -1,12 +1,10 @@
 import './style.css';
 
 import { AppHeader } from './components/AppHeader';
+import { CourseTable } from './components/CourseTable';
 import appTemplate from './app.html?raw';
 import { initI18n } from './i18n';
-import { CourseTable } from './components/CourseTable';
 import { initPWA } from './pwa.ts';
-
-import appTemplate from './app.html?raw';
 
 function initApp(): HTMLDivElement {
     const app = document.querySelector<HTMLDivElement>('#app');
@@ -36,4 +34,7 @@ async function main(): Promise<void> {
     initPWA();
 }
 
-main();
+main().catch((err: unknown) => {
+    console.error('Failed to start app:', err);
+    process.exit(1);
+});
