@@ -9,7 +9,7 @@
   "notifications": {
     "sound_enabled": true,
     "push_enabled": true,
-    "sound_file": "COW_MOOING"
+    "sound_file": "ABSTRACT_SOUND4"
   },
   "editor": {
     "editor_type": "VS_CODE",
