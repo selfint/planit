@@ -341,7 +341,7 @@ function createCourseRow(course: CourseRowData): HTMLTableRowElement {
 
 function createCourseCell(text: string): HTMLTableCellElement {
     const cell = document.createElement('td');
-    cell.className = 'py-2 text-start';
+    cell.className = 'px-2 py-2 text-start';
     cell.textContent = text;
     return cell;
 }
