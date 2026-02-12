@@ -288,11 +288,12 @@ function togglePaginationButtonState(button: HTMLButtonElement): void {
 function createCourseRow(course: CourseRowData): HTMLTableRowElement {
     const row = document.createElement('tr');
     row.className = 'text-text';
+    const emptyValue = getEmptyValueLabel();
 
     row.append(createCourseCell(course.code));
-    row.append(createCourseCell(course.name ?? '—'));
+    row.append(createCourseCell(course.name ?? emptyValue));
     row.append(createCourseCell(formatCoursePoints(course.points)));
-    row.append(createCourseCell(course.faculty ?? '—'));
+    row.append(createCourseCell(course.faculty ?? emptyValue));
 
     return row;
 }
@@ -306,7 +307,11 @@ function createCourseCell(text: string): HTMLTableCellElement {
 
 function formatCoursePoints(points?: number): string {
     if (points === undefined || !Number.isFinite(points)) {
-        return '—';
+        return getEmptyValueLabel();
     }
     return points.toString();
+}
+
+function getEmptyValueLabel(): string {
+    return translate('common.emptyValue', undefined, '—');
 }
