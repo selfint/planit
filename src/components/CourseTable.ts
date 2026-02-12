@@ -331,17 +331,26 @@ function createCourseRow(course: CourseRowData): HTMLTableRowElement {
     row.className = 'text-text';
     const emptyValue = getEmptyValueLabel();
 
-    row.append(createCourseCell(course.code));
-    row.append(createCourseCell(course.name ?? emptyValue));
-    row.append(createCourseCell(formatCourseNumber(course.points)));
-    row.append(createCourseCell(formatCourseNumber(course.median)));
+    row.append(createCourseCell(course.code, 'whitespace-nowrap'));
+    row.append(createCourseCell(course.name ?? emptyValue, 'w-full'));
+    row.append(
+        createCourseCell(formatCourseNumber(course.points), 'whitespace-nowrap')
+    );
+    row.append(
+        createCourseCell(formatCourseNumber(course.median), 'whitespace-nowrap')
+    );
 
     return row;
 }
 
-function createCourseCell(text: string): HTMLTableCellElement {
+function createCourseCell(
+    text: string,
+    className?: string
+): HTMLTableCellElement {
     const cell = document.createElement('td');
-    cell.className = 'px-2 py-2 text-start';
+    cell.className = className
+        ? `px-2 py-2 text-start ${className}`
+        : 'px-2 py-2 text-start';
     cell.textContent = text;
     return cell;
 }
