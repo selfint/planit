@@ -60,10 +60,11 @@
         "title": "נתוני קורסים",
         "subtitle": "תמונת מצב IndexedDB",
         "countZero": "מוצגים 0 קורסים",
-        "count": "מוצגים {visible} קורסים",
-        "countOf": "מוצגים {visible} מתוך {total} קורסים",
+        "countPrefix": "מוצגים",
+        "countOfJoiner": "מתוך",
+        "countSuffix": "קורסים",
         "lastUpdateEmpty": "עדכון אחרון: —",
-        "lastUpdate": "עדכון אחרון: {date}",
+        "lastUpdateLabel": "עדכון אחרון",
         "columns": {
             "code": "קוד",
             "name": "שם",
@@ -73,7 +74,8 @@
         "pagination": {
             "prev": "הקודם",
             "next": "הבא",
-            "page": "עמוד {current} מתוך {total}",
+            "pageLabel": "עמוד",
+            "pageOfJoiner": "מתוך",
             "pageDefault": "עמוד 1"
         },
         "empty": "אין קורסים שמורים עדיין. סנכרן אונליין כדי לטעון נתונים."

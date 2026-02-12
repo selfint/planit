@@ -1,6 +1,6 @@
-import { translate } from '../i18n';
 import { getCoursesPage, getMeta } from '../db/indexeddb';
 import { initCourseSync } from '../sync/courseSync';
+import i18n from '../i18n/he.json';
 
 import templateHtml from './CourseTable.html?raw';
 
@@ -183,19 +183,14 @@ function updateCourseCount(
     metaValue: unknown
 ): void {
     const totalCount = parseMetaCount(metaValue);
+    const prefix = i18n.courseTable?.countPrefix ?? 'Showing';
+    const suffix = i18n.courseTable?.countSuffix ?? 'courses';
+    const joiner = i18n.courseTable?.countOfJoiner ?? 'of';
     if (totalCount !== undefined && totalCount > visibleCount) {
-        count.textContent = translate(
-            'courseTable.countOf',
-            { visible: visibleCount, total: totalCount },
-            `Showing ${String(visibleCount)} of ${String(totalCount)} courses`
-        );
+        count.textContent = `${prefix} ${String(visibleCount)} ${joiner} ${String(totalCount)} ${suffix}`;
         return;
     }
-    count.textContent = translate(
-        'courseTable.count',
-        { visible: visibleCount },
-        `Showing ${String(visibleCount)} courses`
-    );
+    count.textContent = `${prefix} ${String(visibleCount)} ${suffix}`;
 }
 
 function parseMetaCount(value: unknown): number | undefined {
@@ -219,18 +214,12 @@ function updateLastUpdated(
 ): void {
     const formattedDate = formatRemoteUpdatedAt(metaValue);
     if (!formattedDate) {
-        element.textContent = translate(
-            'courseTable.lastUpdateEmpty',
-            undefined,
-            'Last update: —'
-        );
+        element.textContent =
+            i18n.courseTable?.lastUpdateEmpty ?? 'Last update: —';
         return;
     }
-    element.textContent = translate(
-        'courseTable.lastUpdate',
-        { date: formattedDate },
-        `Last update: ${formattedDate}`
-    );
+    const label = i18n.courseTable?.lastUpdateLabel ?? 'Last update';
+    element.textContent = `${label}: ${formattedDate}`;
 }
 
 function formatRemoteUpdatedAt(metaValue: unknown): string | undefined {
@@ -260,11 +249,9 @@ function updateCoursePagination(
             ? Math.max(1, Math.ceil(totalCount / COURSE_TABLE_LIMIT))
             : pageIndex + 1;
     const currentPage = Math.min(pageIndex + 1, totalPages);
-    label.textContent = translate(
-        'courseTable.pagination.page',
-        { current: currentPage, total: totalPages },
-        `Page ${String(currentPage)} of ${String(totalPages)}`
-    );
+    const pageLabel = i18n.courseTable?.pagination?.pageLabel ?? 'Page';
+    const pageJoiner = i18n.courseTable?.pagination?.pageOfJoiner ?? 'of';
+    label.textContent = `${pageLabel} ${String(currentPage)} ${pageJoiner} ${String(totalPages)}`;
 
     prevButton.disabled = pageIndex <= 0;
     nextButton.disabled =
@@ -313,5 +300,5 @@ function formatCoursePoints(points?: number): string {
 }
 
 function getEmptyValueLabel(): string {
-    return translate('common.emptyValue', undefined, '—');
+    return i18n.common?.emptyValue ?? '—';
 }
