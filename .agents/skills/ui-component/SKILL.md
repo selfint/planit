@@ -8,15 +8,17 @@ description: Create or update UI components in vanilla TypeScript + Vite + Tailw
 ## Overview
 
 Build UI components as paired files: HTML for structure/styling and TypeScript for behavior, using <template> for DOM cloning.
+The app is always RTL and in Hebrew; inline all copy in Hebrew.
 
 ## Workflow
 
 1. Confirm or create the component pair at src/components/<Component>.html and src/components/<Component>.ts.
 2. Put all markup and Tailwind classes in the HTML file inside a <template>.
 3. Keep logic, state, and event wiring in the TS file; do not embed scripts in HTML.
-4. Use data attributes in the HTML to target elements from TS.
-5. Export a component factory (e.g., `AppHeader()`) that returns a root element.
-6. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
+4. Inline Hebrew copy directly in the HTML; do not use i18n attributes.
+5. Use data attributes in the HTML to target elements from TS.
+6. Export a component factory (e.g., `AppHeader()`) that returns a root element.
+7. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
 
 ## Component Contract
 
