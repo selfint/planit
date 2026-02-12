@@ -120,7 +120,7 @@ describe('pwa lib', () => {
         options?.onNeedRefresh?.();
 
         const event = dispatchEventSpy.mock.calls
-            .map((call) => call[0] as Event)
+            .map((call) => call[0])
             .find((candidate) => candidate.type === PWA_UPDATE_EVENT);
         expect(event?.type).toBe(PWA_UPDATE_EVENT);
     });

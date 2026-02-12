@@ -115,7 +115,7 @@ export function initPWA(): void {
                 }
             },
         });
-        if (pendingInitialUpdate && updateSW !== null) {
+        if (pendingInitialUpdate) {
             pendingInitialUpdate = false;
             void updateSW(true);
         }
