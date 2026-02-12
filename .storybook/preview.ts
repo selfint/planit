@@ -10,6 +10,7 @@ const themeDecorator: Decorator = (Story, context) => {
 
     wrapper.dataset.theme = theme;
     wrapper.className = 'min-h-screen text-text p-6';
+    wrapper.dir = 'rtl';
 
     const story = Story();
     if (typeof story === 'string') {
