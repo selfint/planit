@@ -1,15 +1,84 @@
 import { registerSW } from 'virtual:pwa-register';
 
+export const PWA_UPDATE_EVENT = 'planit:pwa-update';
+export type UpdateSW = (reloadPage?: boolean) => Promise<void>;
+
 export function initPWA(): void {
     let swActivated = false;
+    let pendingUpdate = false;
+    let bannerShown = false;
+    let updateSW: UpdateSW | null = null;
+    let checkForUpdate: (() => Promise<void>) | null = null;
+    let isInitialLoad = true;
     // check for updates every 10 minutes
     const period = 10 * 60 * 1000;
 
+    const dispatchUpdateAvailable = (): void => {
+        if (updateSW === null) {
+            return;
+        }
+
+        if (bannerShown) {
+            return;
+        }
+        bannerShown = true;
+
+        window.dispatchEvent(
+            new CustomEvent(PWA_UPDATE_EVENT, {
+                detail: { updateSW },
+            })
+        );
+    };
+
+    const handleUpdateAvailable = (): void => {
+        if (isInitialLoad) {
+            if ('onLine' in navigator && !navigator.onLine) {
+                pendingUpdate = true;
+                return;
+            }
+            if (updateSW !== null) {
+                void updateSW(true);
+                return;
+            }
+        }
+
+        if ('onLine' in navigator && !navigator.onLine) {
+            pendingUpdate = true;
+            return;
+        }
+
+        dispatchUpdateAvailable();
+    };
+
+    window.addEventListener('online', () => {
+        if (!pendingUpdate) {
+            if (checkForUpdate !== null) {
+                void checkForUpdate();
+            }
+            return;
+        }
+        pendingUpdate = false;
+        dispatchUpdateAvailable();
+        if (checkForUpdate !== null) {
+            void checkForUpdate();
+        }
+    });
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState !== 'visible') {
+            return;
+        }
+        if (checkForUpdate !== null) {
+            void checkForUpdate();
+        }
+    });
+
     window.addEventListener('load', () => {
-        registerSW({
+        updateSW = registerSW({
             immediate: true,
-            // onOfflineReady() {},
-            // onNeedRefresh() {},
+            onNeedRefresh() {
+                handleUpdateAvailable();
+            },
             onRegisteredSW(swUrl, r) {
                 if (period <= 0) {
                     return;
@@ -21,7 +90,8 @@ export function initPWA(): void {
 
                 if (r.active?.state === 'activated') {
                     swActivated = true;
-                    registerPeriodicSync(period, swUrl, r);
+                    checkForUpdate = registerPeriodicSync(period, swUrl, r);
+                    void checkForUpdate();
                 } else {
                     const installing = r.installing;
                     if (installing === null) {
@@ -31,12 +101,18 @@ export function initPWA(): void {
                         const sw = e.target as ServiceWorker;
                         swActivated = sw.state === 'activated';
                         if (swActivated) {
-                            registerPeriodicSync(period, swUrl, r);
+                            checkForUpdate = registerPeriodicSync(
+                                period,
+                                swUrl,
+                                r
+                            );
+                            void checkForUpdate();
                         }
                     });
                 }
             },
         });
+        isInitialLoad = false;
     });
 }
 
@@ -47,9 +123,9 @@ function registerPeriodicSync(
     period: number,
     swUrl: string,
     r: ServiceWorkerRegistration
-): void {
+): () => Promise<void> {
     if (period <= 0) {
-        return;
+        return async (): Promise<void> => Promise.resolve();
     }
 
     const checkForSwUpdate = async (): Promise<void> => {
@@ -73,4 +149,6 @@ function registerPeriodicSync(
     setInterval((): void => {
         void checkForSwUpdate();
     }, period);
+
+    return checkForSwUpdate;
 }

@@ -1,0 +1,25 @@
+<template>
+    <section
+        class="border-border/60 bg-surface-1/90 text-text mb-4 flex flex-col items-start gap-3 rounded-2xl border px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between sm:gap-4 sm:px-6"
+        data-component="UpdateBanner"
+        role="status"
+        aria-live="polite"
+    >
+        <div class="flex min-w-0 flex-1 items-center gap-3 text-xs sm:text-sm">
+            <span class="bg-info size-2 rounded-full"></span>
+            <div class="flex min-w-0 flex-col gap-0.5 text-start leading-snug">
+                <span class="font-medium">גרסה חדשה זמינה</span>
+                <span class="text-text-muted text-xs"
+                    >עדכן כדי לקבל את השיפורים האחרונים</span
+                >
+            </div>
+        </div>
+        <button
+            type="button"
+            class="bg-accent text-accent-contrast w-full rounded-full px-4 py-2 text-xs font-medium shadow-sm transition duration-200 ease-out hover:opacity-90 sm:w-auto"
+            data-update-action
+        >
+            עדכן עכשיו
+        </button>
+    </section>
+</template>

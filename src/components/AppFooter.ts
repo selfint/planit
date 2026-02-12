@@ -12,5 +12,10 @@ export function AppFooter(): HTMLElement {
         throw new Error('AppFooter template root not found');
     }
 
+    const buildSha = root.querySelector<HTMLElement>('[data-build-sha]');
+    if (buildSha !== null) {
+        buildSha.textContent = `Build ${__BUILD_SHA__}`;
+    }
+
     return root;
 }
