@@ -19,11 +19,16 @@ type CourseRowData = {
     code: string;
     name?: string;
     points?: number;
-    faculty?: string;
+    median?: number;
 };
+
+type CourseSortKey = 'code' | 'name' | 'points' | 'median';
+type CourseSortDirection = 'asc' | 'desc';
 
 type CourseTableState = {
     pageIndex: number;
+    sortKey: CourseSortKey;
+    sortDirection: CourseSortDirection;
 };
 
 export function CourseTable(): HTMLElement {
@@ -54,6 +59,12 @@ export function CourseTable(): HTMLElement {
         root.querySelector<HTMLButtonElement>('[data-course-prev]');
     const nextButton =
         root.querySelector<HTMLButtonElement>('[data-course-next]');
+    const sortButtons = Array.from(
+        root.querySelectorAll<HTMLButtonElement>('[data-course-sort]')
+    );
+    const sortIndicators = Array.from(
+        root.querySelectorAll<HTMLSpanElement>('[data-sort-indicator]')
+    );
 
     if (
         rows === null ||
@@ -62,12 +73,18 @@ export function CourseTable(): HTMLElement {
         lastUpdated === null ||
         pageLabel === null ||
         prevButton === null ||
-        nextButton === null
+        nextButton === null ||
+        sortButtons.length === 0 ||
+        sortIndicators.length === 0
     ) {
         throw new Error('CourseTable required elements not found');
     }
 
-    const state: CourseTableState = { pageIndex: 0 };
+    const state: CourseTableState = {
+        pageIndex: 0,
+        sortKey: 'code',
+        sortDirection: 'asc',
+    };
 
     prevButton.addEventListener('click', () => {
         if (state.pageIndex > 0) {
@@ -80,7 +97,9 @@ export function CourseTable(): HTMLElement {
                 lastUpdated,
                 pageLabel,
                 prevButton,
-                nextButton
+                nextButton,
+                sortButtons,
+                sortIndicators
             );
         }
     });
@@ -95,9 +114,42 @@ export function CourseTable(): HTMLElement {
             lastUpdated,
             pageLabel,
             prevButton,
-            nextButton
+            nextButton,
+            sortButtons,
+            sortIndicators
         );
     });
+
+    for (const button of sortButtons) {
+        button.addEventListener('click', () => {
+            const sortKey = parseSortKey(button.dataset.sortKey);
+            if (sortKey === undefined) {
+                return;
+            }
+
+            if (state.sortKey === sortKey) {
+                state.sortDirection =
+                    state.sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                state.sortKey = sortKey;
+                state.sortDirection = 'asc';
+            }
+
+            state.pageIndex = 0;
+            void loadCourseTable(
+                state,
+                rows,
+                empty,
+                count,
+                lastUpdated,
+                pageLabel,
+                prevButton,
+                nextButton,
+                sortButtons,
+                sortIndicators
+            );
+        });
+    }
 
     initCourseSync({
         onSync: () => {
@@ -109,7 +161,9 @@ export function CourseTable(): HTMLElement {
                 lastUpdated,
                 pageLabel,
                 prevButton,
-                nextButton
+                nextButton,
+                sortButtons,
+                sortIndicators
             );
         },
     });
@@ -122,7 +176,9 @@ export function CourseTable(): HTMLElement {
         lastUpdated,
         pageLabel,
         prevButton,
-        nextButton
+        nextButton,
+        sortButtons,
+        sortIndicators
     );
 
     return root;
@@ -136,7 +192,9 @@ async function loadCourseTable(
     lastUpdated: HTMLParagraphElement,
     pageLabel: HTMLSpanElement,
     prevButton: HTMLButtonElement,
-    nextButton: HTMLButtonElement
+    nextButton: HTMLButtonElement,
+    sortButtons: HTMLButtonElement[],
+    sortIndicators: HTMLSpanElement[]
 ): Promise<void> {
     const [courses, countMeta, updatedMeta] = await Promise.all([
         getCoursesPage(
@@ -147,15 +205,18 @@ async function loadCourseTable(
         getMeta(COURSE_REMOTE_UPDATED_KEY),
     ]);
 
+    updateSortControls(sortButtons, sortIndicators, state);
+    const sortedCourses = sortCourses(courses, state);
+
     updateCourseCount(count, courses.length, countMeta?.value);
     updateLastUpdated(lastUpdated, updatedMeta?.value);
 
     rows.replaceChildren();
-    for (const course of courses) {
+    for (const course of sortedCourses) {
         rows.append(createCourseRow(course));
     }
 
-    if (courses.length === 0) {
+    if (sortedCourses.length === 0) {
         empty.classList.remove('hidden');
     } else {
         empty.classList.add('hidden');
@@ -167,7 +228,7 @@ async function loadCourseTable(
         nextButton,
         state.pageIndex,
         countMeta?.value,
-        courses.length
+        sortedCourses.length
     );
 }
 
@@ -272,8 +333,8 @@ function createCourseRow(course: CourseRowData): HTMLTableRowElement {
 
     row.append(createCourseCell(course.code));
     row.append(createCourseCell(course.name ?? emptyValue));
-    row.append(createCourseCell(formatCoursePoints(course.points)));
-    row.append(createCourseCell(course.faculty ?? emptyValue));
+    row.append(createCourseCell(formatCourseNumber(course.points)));
+    row.append(createCourseCell(formatCourseNumber(course.median)));
 
     return row;
 }
@@ -285,13 +346,104 @@ function createCourseCell(text: string): HTMLTableCellElement {
     return cell;
 }
 
-function formatCoursePoints(points?: number): string {
-    if (points === undefined || !Number.isFinite(points)) {
+function formatCourseNumber(value?: number): string {
+    if (value === undefined || !Number.isFinite(value)) {
         return getEmptyValueLabel();
     }
-    return points.toString();
+    return value.toString();
 }
 
 function getEmptyValueLabel(): string {
     return COURSE_EMPTY_VALUE;
+}
+
+function parseSortKey(value: string | undefined): CourseSortKey | undefined {
+    if (
+        value === 'code' ||
+        value === 'name' ||
+        value === 'points' ||
+        value === 'median'
+    ) {
+        return value;
+    }
+    return undefined;
+}
+
+function updateSortControls(
+    buttons: HTMLButtonElement[],
+    indicators: HTMLSpanElement[],
+    state: CourseTableState
+): void {
+    for (const button of buttons) {
+        const key = parseSortKey(button.dataset.sortKey);
+        if (key === undefined) {
+            continue;
+        }
+        const isActive = key === state.sortKey;
+        button.classList.toggle('text-text', isActive);
+        button.classList.toggle('text-text-muted', !isActive);
+        button.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+    }
+
+    for (const indicator of indicators) {
+        const key = parseSortKey(indicator.dataset.sortKey);
+        if (key === undefined) {
+            continue;
+        }
+        if (key !== state.sortKey) {
+            indicator.textContent = '';
+            continue;
+        }
+        indicator.textContent = state.sortDirection === 'asc' ? '^' : 'v';
+    }
+}
+
+function sortCourses(
+    courses: CourseRowData[],
+    state: CourseTableState
+): CourseRowData[] {
+    const sorted = [...courses];
+    const direction = state.sortDirection === 'asc' ? 1 : -1;
+
+    sorted.sort((left, right) => {
+        const leftValue = getCourseSortValue(left, state.sortKey);
+        const rightValue = getCourseSortValue(right, state.sortKey);
+
+        if (leftValue === undefined && rightValue === undefined) {
+            return 0;
+        }
+        if (leftValue === undefined) {
+            return 1;
+        }
+        if (rightValue === undefined) {
+            return -1;
+        }
+
+        if (typeof leftValue === 'number' && typeof rightValue === 'number') {
+            return (leftValue - rightValue) * direction;
+        }
+
+        return (
+            leftValue.toString().localeCompare(rightValue.toString(), 'he') *
+            direction
+        );
+    });
+
+    return sorted;
+}
+
+function getCourseSortValue(
+    course: CourseRowData,
+    key: CourseSortKey
+): string | number | undefined {
+    switch (key) {
+        case 'code':
+            return course.code;
+        case 'name':
+            return course.name;
+        case 'points':
+            return course.points;
+        case 'median':
+            return course.median;
+    }
 }

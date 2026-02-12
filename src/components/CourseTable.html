@@ -16,10 +16,66 @@
             <table class="w-full text-xs">
                 <thead class="text-text-muted">
                     <tr class="border-border/60 border-b">
-                        <th class="py-2 text-start font-medium">קוד</th>
-                        <th class="py-2 text-start font-medium">שם</th>
-                        <th class="py-2 text-start font-medium">נק״ז</th>
-                        <th class="py-2 text-start font-medium">פקולטה</th>
+                        <th class="py-2 text-start font-medium">
+                            <button
+                                type="button"
+                                class="text-text-muted hover:text-text focus-visible:ring-accent/60 flex items-center gap-2 rounded-md transition duration-200 ease-out focus-visible:ring-2"
+                                data-course-sort
+                                data-sort-key="code"
+                            >
+                                <span>קוד</span>
+                                <span
+                                    class="text-[10px]"
+                                    data-sort-indicator
+                                    data-sort-key="code"
+                                ></span>
+                            </button>
+                        </th>
+                        <th class="py-2 text-start font-medium">
+                            <button
+                                type="button"
+                                class="text-text-muted hover:text-text focus-visible:ring-accent/60 flex items-center gap-2 rounded-md transition duration-200 ease-out focus-visible:ring-2"
+                                data-course-sort
+                                data-sort-key="name"
+                            >
+                                <span>שם</span>
+                                <span
+                                    class="text-[10px]"
+                                    data-sort-indicator
+                                    data-sort-key="name"
+                                ></span>
+                            </button>
+                        </th>
+                        <th class="py-2 text-start font-medium">
+                            <button
+                                type="button"
+                                class="text-text-muted hover:text-text focus-visible:ring-accent/60 flex items-center gap-2 rounded-md transition duration-200 ease-out focus-visible:ring-2"
+                                data-course-sort
+                                data-sort-key="points"
+                            >
+                                <span>נק״ז</span>
+                                <span
+                                    class="text-[10px]"
+                                    data-sort-indicator
+                                    data-sort-key="points"
+                                ></span>
+                            </button>
+                        </th>
+                        <th class="py-2 text-start font-medium">
+                            <button
+                                type="button"
+                                class="text-text-muted hover:text-text focus-visible:ring-accent/60 flex items-center gap-2 rounded-md transition duration-200 ease-out focus-visible:ring-2"
+                                data-course-sort
+                                data-sort-key="median"
+                            >
+                                <span>חציון</span>
+                                <span
+                                    class="text-[10px]"
+                                    data-sort-indicator
+                                    data-sort-key="median"
+                                ></span>
+                            </button>
+                        </th>
                     </tr>
                 </thead>
                 <tbody
