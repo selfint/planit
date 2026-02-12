@@ -119,11 +119,13 @@ describe('pwa lib', () => {
 
         options?.onNeedRefresh?.();
 
-        const event = dispatchEventSpy.mock.calls[0]?.[0] as Event | undefined;
+        const event = dispatchEventSpy.mock.calls
+            .map((call) => call[0] as Event)
+            .find((candidate) => candidate.type === PWA_UPDATE_EVENT);
         expect(event?.type).toBe(PWA_UPDATE_EVENT);
     });
 
-    it('checks for updates when back online or visible', () => {
+    it('checks for updates when back online or visible', async () => {
         let options: RegisterOptions | undefined;
         registerSW.mockImplementation((opts): (() => Promise<void>) => {
             options = opts;
@@ -154,8 +156,12 @@ describe('pwa lib', () => {
             update,
         } as unknown as ServiceWorkerRegistration);
 
+        await Promise.resolve();
+
         window.dispatchEvent(new Event('online'));
+        await Promise.resolve();
         document.dispatchEvent(new Event('visibilitychange'));
+        await Promise.resolve();
 
         expect(update).toHaveBeenCalledTimes(3);
     });

@@ -6,6 +6,7 @@ export type UpdateSW = (reloadPage?: boolean) => Promise<void>;
 export function initPWA(): void {
     let swActivated = false;
     let pendingUpdate = false;
+    let pendingInitialUpdate = false;
     let bannerShown = false;
     let updateSW: UpdateSW | null = null;
     let checkForUpdate: (() => Promise<void>) | null = null;
@@ -40,6 +41,8 @@ export function initPWA(): void {
                 void updateSW(true);
                 return;
             }
+            pendingInitialUpdate = true;
+            return;
         }
 
         if ('onLine' in navigator && !navigator.onLine) {
@@ -112,6 +115,10 @@ export function initPWA(): void {
                 }
             },
         });
+        if (pendingInitialUpdate && updateSW !== null) {
+            pendingInitialUpdate = false;
+            void updateSW(true);
+        }
         isInitialLoad = false;
     });
 }
