@@ -15,11 +15,6 @@ export type CourseRecord = {
     about?: string;
     points?: number;
     name?: string;
-    nameSort?: string;
-    pointsSortAsc?: number;
-    pointsSortDesc?: number;
-    medianSortAsc?: number;
-    medianSortDesc?: number;
     connections?: {
         dependencies?: string[][];
         adjacent?: string[];
@@ -52,32 +47,15 @@ function openDb(): Promise<IDBDatabase> {
                 db.createObjectStore(STORE_META, { keyPath: 'key' });
             }
 
-            if (!courseStore.indexNames.contains('nameSort')) {
-                courseStore.createIndex('nameSort', 'nameSort');
+            if (!courseStore.indexNames.contains('name')) {
+                courseStore.createIndex('name', 'name');
             }
-            if (!courseStore.indexNames.contains('pointsSortAsc')) {
-                courseStore.createIndex('pointsSortAsc', 'pointsSortAsc');
+            if (!courseStore.indexNames.contains('points')) {
+                courseStore.createIndex('points', 'points');
             }
-            if (!courseStore.indexNames.contains('pointsSortDesc')) {
-                courseStore.createIndex('pointsSortDesc', 'pointsSortDesc');
+            if (!courseStore.indexNames.contains('median')) {
+                courseStore.createIndex('median', 'median');
             }
-            if (!courseStore.indexNames.contains('medianSortAsc')) {
-                courseStore.createIndex('medianSortAsc', 'medianSortAsc');
-            }
-            if (!courseStore.indexNames.contains('medianSortDesc')) {
-                courseStore.createIndex('medianSortDesc', 'medianSortDesc');
-            }
-
-            const cursorRequest = courseStore.openCursor();
-            cursorRequest.onsuccess = (): void => {
-                const cursor = cursorRequest.result;
-                if (cursor === null) {
-                    return;
-                }
-                const value = cursor.value as CourseRecord;
-                cursor.update(normalizeCourseForIndex(value));
-                cursor.continue();
-            };
         };
 
         request.onsuccess = (): void => {
@@ -148,7 +126,7 @@ export async function putCourses(courses: CourseRecord[]): Promise<void> {
         const store = tx.objectStore(STORE_COURSES);
 
         for (const course of courses) {
-            store.put(normalizeCourseForIndex(course));
+            store.put(course);
         }
 
         tx.oncomplete = (): void => {
@@ -193,32 +171,93 @@ export async function getCoursesPageSorted(
 
     return new Promise((resolve, reject) => {
         const results: CourseRecord[] = [];
-        let skipped = false;
         const tx = db.transaction(STORE_COURSES, 'readonly');
         const store = tx.objectStore(STORE_COURSES);
-        const source = getCourseSortSource(store, sortKey, sortDirection);
-        const direction = getCursorDirection(sortKey, sortDirection);
-        const request = source.openCursor(null, direction);
+        const source = getCourseSortSource(store, sortKey);
+        const direction = getCursorDirection(sortDirection);
+        let definedCount = 0;
+        let requestedMissingPass = false;
 
-        request.onsuccess = (): void => {
-            const cursor = request.result;
-            if (cursor === null || results.length >= limit) {
+        const countRequest = source.count();
+        countRequest.onsuccess = (): void => {
+            definedCount = countRequest.result;
+            runDefinedPass();
+        };
+        countRequest.onerror = (): void => {
+            reject(countRequest.error ?? new Error('Failed to count courses'));
+        };
+
+        function runDefinedPass(): void {
+            const request = source.openCursor(null, direction);
+            let skipped = false;
+
+            request.onsuccess = (): void => {
+                const cursor = request.result;
+                if (cursor === null || results.length >= limit) {
+                    if (!requestedMissingPass) {
+                        requestedMissingPass = true;
+                        runMissingPass();
+                    }
+                    return;
+                }
+
+                if (!skipped && offset > 0) {
+                    skipped = true;
+                    cursor.advance(offset);
+                    return;
+                }
+
+                const value = cursor.value as CourseRecord;
+                if (isMissingSortValue(value, sortKey)) {
+                    cursor.continue();
+                    return;
+                }
+
+                results.push(value);
+                cursor.continue();
+            };
+
+            request.onerror = (): void => {
+                reject(request.error ?? new Error('Failed to read courses'));
+            };
+        }
+
+        function runMissingPass(): void {
+            const missingNeeded = limit - results.length;
+            if (missingNeeded <= 0) {
                 return;
             }
 
-            if (!skipped && offset > 0) {
-                skipped = true;
-                cursor.advance(offset);
-                return;
-            }
+            const missingSkip = Math.max(0, offset - definedCount);
+            const request = store.openCursor();
+            let skipped = false;
 
-            results.push(cursor.value as CourseRecord);
-            cursor.continue();
-        };
+            request.onsuccess = (): void => {
+                const cursor = request.result;
+                if (cursor === null || results.length >= limit) {
+                    return;
+                }
 
-        request.onerror = (): void => {
-            reject(request.error ?? new Error('Failed to read courses'));
-        };
+                const value = cursor.value as CourseRecord;
+                if (!isMissingSortValue(value, sortKey)) {
+                    cursor.continue();
+                    return;
+                }
+
+                if (!skipped && missingSkip > 0) {
+                    skipped = true;
+                    cursor.advance(missingSkip);
+                    return;
+                }
+
+                results.push(value);
+                cursor.continue();
+            };
+
+            request.onerror = (): void => {
+                reject(request.error ?? new Error('Failed to read courses'));
+            };
+        }
 
         tx.oncomplete = (): void => {
             db.close();
@@ -283,56 +322,42 @@ export async function getCoursesPage(
     });
 }
 
-function normalizeCourseForIndex(course: CourseRecord): CourseRecord {
-    const points = normalizeSortNumber(course.points);
-    const median = normalizeSortNumber(course.median);
-
-    return {
-        ...course,
-        nameSort: course.name ?? '',
-        pointsSortAsc: points ?? Number.POSITIVE_INFINITY,
-        pointsSortDesc:
-            points !== undefined ? -points : Number.POSITIVE_INFINITY,
-        medianSortAsc: median ?? Number.POSITIVE_INFINITY,
-        medianSortDesc:
-            median !== undefined ? -median : Number.POSITIVE_INFINITY,
-    };
-}
-
-function normalizeSortNumber(value: number | undefined): number | undefined {
-    if (value === undefined || !Number.isFinite(value)) {
-        return undefined;
-    }
-    return value;
-}
-
 function getCourseSortSource(
     store: IDBObjectStore,
-    sortKey: 'code' | 'name' | 'points' | 'median',
-    sortDirection: 'asc' | 'desc'
+    sortKey: 'code' | 'name' | 'points' | 'median'
 ): IDBObjectStore | IDBIndex {
     switch (sortKey) {
         case 'code':
             return store;
         case 'name':
-            return store.index('nameSort');
+            return store.index('name');
         case 'points':
-            return store.index(
-                sortDirection === 'asc' ? 'pointsSortAsc' : 'pointsSortDesc'
-            );
+            return store.index('points');
         case 'median':
-            return store.index(
-                sortDirection === 'asc' ? 'medianSortAsc' : 'medianSortDesc'
-            );
+            return store.index('median');
     }
 }
 
-function getCursorDirection(
-    sortKey: 'code' | 'name' | 'points' | 'median',
-    sortDirection: 'asc' | 'desc'
-): IDBCursorDirection {
-    if (sortKey === 'points' || sortKey === 'median') {
-        return 'next';
-    }
+function getCursorDirection(sortDirection: 'asc' | 'desc'): IDBCursorDirection {
     return sortDirection === 'desc' ? 'prev' : 'next';
+}
+
+function isMissingSortValue(
+    course: CourseRecord,
+    sortKey: 'code' | 'name' | 'points' | 'median'
+): boolean {
+    switch (sortKey) {
+        case 'code':
+            return course.code.length === 0;
+        case 'name':
+            return course.name === undefined || course.name === null;
+        case 'points':
+            return (
+                course.points === undefined || !Number.isFinite(course.points)
+            );
+        case 'median':
+            return (
+                course.median === undefined || !Number.isFinite(course.median)
+            );
+    }
 }

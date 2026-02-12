@@ -24,7 +24,8 @@ It pairs the template in `src/components/CourseTable.html` with logic in
 
 - Sort state lives in `CourseTableState` (`sortKey`, `sortDirection`).
 - Clicking a column header toggles direction or switches the sort key.
-- Sorting is applied in IndexedDB using indices for each sort key/direction.
+- Sorting uses IndexedDB indices for defined values, then appends missing
+  values with a second cursor pass so they always appear last.
 - The active sort indicator is an inline SVG chevron.
 
 ## Pagination
@@ -47,5 +48,5 @@ It pairs the template in `src/components/CourseTable.html` with logic in
 
 ## Notes
 
-- Sorting uses IndexedDB indices; missing numeric values are normalized to
-  sort last in either direction.
+- Sorting uses IndexedDB indices plus a second pass to keep missing values
+  at the end without changing stored course records.
