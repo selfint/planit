@@ -11,7 +11,7 @@ type TranslationData = {
     [key: string]: unknown;
 };
 
-let activeTranslations: TranslationData = translations;
+const activeTranslations: TranslationData = translations;
 
 type InitI18nOptions = {
     lang?: string;
@@ -20,7 +20,7 @@ type InitI18nOptions = {
 
 function getValue(data: TranslationData, path: string[]): unknown {
     return path.reduce<unknown>((acc, key) => {
-        if (acc && typeof acc === 'object' && key in acc) {
+        if (acc !== null && typeof acc === 'object' && key in acc) {
             return (acc as Record<string, unknown>)[key];
         }
         return undefined;
@@ -28,19 +28,19 @@ function getValue(data: TranslationData, path: string[]): unknown {
 }
 
 function applyMeta(meta?: TranslationMeta): void {
-    if (!meta) {
+    if (meta === undefined) {
         return;
     }
 
-    if (meta.lang) {
+    if (typeof meta.lang === 'string' && meta.lang.length > 0) {
         document.documentElement.lang = meta.lang;
     }
 
-    if (meta.dir) {
+    if (typeof meta.dir === 'string' && meta.dir.length > 0) {
         document.documentElement.dir = meta.dir;
     }
 
-    if (meta.title) {
+    if (typeof meta.title === 'string' && meta.title.length > 0) {
         document.title = meta.title;
     }
 }
@@ -83,14 +83,14 @@ function applyTranslations(root: ParentNode, data: TranslationData): void {
     nodes.forEach((node) => {
         Array.from(node.attributes).forEach((attribute) => {
             const info = parseI18nAttribute(attribute.name);
-            if (!info) {
+            if (info === null) {
                 return;
             }
             const value = getValue(data, info.path);
             if (typeof value !== 'string') {
                 return;
             }
-            if (info.attribute) {
+            if (typeof info.attribute === 'string') {
                 node.setAttribute(info.attribute, value);
             } else {
                 node.textContent = value;
@@ -99,9 +99,19 @@ function applyTranslations(root: ParentNode, data: TranslationData): void {
     });
 }
 
-export async function initI18n(options: InitI18nOptions = {}): Promise<void> {
+export function initI18n(options: InitI18nOptions = {}): void {
     const root = options.root ?? document;
-    const lang = options.lang ?? activeTranslations.meta?.lang ?? 'he';
+    const meta = activeTranslations.meta;
+    let lang = options.lang;
+    if (
+        lang === undefined &&
+        meta !== undefined &&
+        typeof meta.lang === 'string' &&
+        meta.lang.length > 0
+    ) {
+        lang = meta.lang;
+    }
+    lang ??= 'he';
 
     applyMeta(activeTranslations.meta);
     applyTranslations(root, activeTranslations);

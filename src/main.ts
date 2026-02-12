@@ -28,13 +28,15 @@ function initApp(): HTMLDivElement {
     return app;
 }
 
-async function main(): Promise<void> {
-    initApp();
-    await initI18n();
-    initPWA();
+function main(): void {
+    try {
+        initApp();
+        initI18n();
+        initPWA();
+    } catch (err: unknown) {
+        console.error('Failed to start app:', err);
+        process.exit(1);
+    }
 }
 
-main().catch((err: unknown) => {
-    console.error('Failed to start app:', err);
-    process.exit(1);
-});
+main();

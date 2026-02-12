@@ -1,6 +1,6 @@
 import { getCoursesPage, getMeta } from '../db/indexeddb';
-import { initCourseSync } from '../sync/courseSync';
 import i18n from '../i18n/he.json';
+import { initCourseSync } from '../sync/courseSync';
 
 import templateHtml from './CourseTable.html?raw';
 
@@ -183,9 +183,9 @@ function updateCourseCount(
     metaValue: unknown
 ): void {
     const totalCount = parseMetaCount(metaValue);
-    const prefix = i18n.courseTable?.countPrefix ?? 'Showing';
-    const suffix = i18n.courseTable?.countSuffix ?? 'courses';
-    const joiner = i18n.courseTable?.countOfJoiner ?? 'of';
+    const prefix = i18n.courseTable.countPrefix;
+    const suffix = i18n.courseTable.countSuffix;
+    const joiner = i18n.courseTable.countOfJoiner;
     if (totalCount !== undefined && totalCount > visibleCount) {
         count.textContent = `${prefix} ${String(visibleCount)} ${joiner} ${String(totalCount)} ${suffix}`;
         return;
@@ -213,12 +213,11 @@ function updateLastUpdated(
     metaValue: unknown
 ): void {
     const formattedDate = formatRemoteUpdatedAt(metaValue);
-    if (!formattedDate) {
-        element.textContent =
-            i18n.courseTable?.lastUpdateEmpty ?? 'Last update: —';
+    if (formattedDate === undefined) {
+        element.textContent = i18n.courseTable.lastUpdateEmpty;
         return;
     }
-    const label = i18n.courseTable?.lastUpdateLabel ?? 'Last update';
+    const label = i18n.courseTable.lastUpdateLabel;
     element.textContent = `${label}: ${formattedDate}`;
 }
 
@@ -249,8 +248,8 @@ function updateCoursePagination(
             ? Math.max(1, Math.ceil(totalCount / COURSE_TABLE_LIMIT))
             : pageIndex + 1;
     const currentPage = Math.min(pageIndex + 1, totalPages);
-    const pageLabel = i18n.courseTable?.pagination?.pageLabel ?? 'Page';
-    const pageJoiner = i18n.courseTable?.pagination?.pageOfJoiner ?? 'of';
+    const pageLabel = i18n.courseTable.pagination.pageLabel;
+    const pageJoiner = i18n.courseTable.pagination.pageOfJoiner;
     label.textContent = `${pageLabel} ${String(currentPage)} ${pageJoiner} ${String(totalPages)}`;
 
     prevButton.disabled = pageIndex <= 0;
@@ -300,5 +299,5 @@ function formatCoursePoints(points?: number): string {
 }
 
 function getEmptyValueLabel(): string {
-    return i18n.common?.emptyValue ?? '—';
+    return i18n.common.emptyValue;
 }
