@@ -44,9 +44,9 @@
     // Use 'forwardPorts' to make a list of ports inside the container available locally.
     "forwardPorts": [
         // vite dev
-        5137,
+        5173,
         // vite preview
-        4137,
+        4173,
         // storybook
         6006
     ],
