@@ -331,13 +331,23 @@ function createCourseRow(course: CourseRowData): HTMLTableRowElement {
     row.className = 'text-text';
     const emptyValue = getEmptyValueLabel();
 
-    row.append(createCourseCell(course.code, 'whitespace-nowrap'));
-    row.append(createCourseCell(course.name ?? emptyValue, 'w-full'));
     row.append(
-        createCourseCell(formatCourseNumber(course.points), 'whitespace-nowrap')
+        createCourseCell(course.code, 'whitespace-nowrap overflow-hidden')
     );
     row.append(
-        createCourseCell(formatCourseNumber(course.median), 'whitespace-nowrap')
+        createCourseCell(course.name ?? emptyValue, 'w-full whitespace-normal')
+    );
+    row.append(
+        createCourseCell(
+            formatCourseNumber(course.points),
+            'whitespace-nowrap overflow-hidden'
+        )
+    );
+    row.append(
+        createCourseCell(
+            formatCourseNumber(course.median),
+            'whitespace-nowrap overflow-hidden'
+        )
     );
 
     return row;
