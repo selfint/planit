@@ -2,7 +2,7 @@ import translations from './i18n/he.json';
 
 type TranslationMeta = {
     lang?: string;
-    dir?: string;
+    dir?: 'ltr' | 'rtl';
     title?: string;
 };
 
@@ -11,7 +11,7 @@ type TranslationData = {
     [key: string]: unknown;
 };
 
-const activeTranslations: TranslationData = translations;
+const activeTranslations = translations as TranslationData;
 
 type InitI18nOptions = {
     lang?: string;
