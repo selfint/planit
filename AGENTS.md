@@ -82,13 +82,13 @@ sequenceDiagram
 ## Style guide
 
 This section defines the visual language, component patterns, and Tailwind CSS v4 rules for Planit.
-It is optimized for a professional minimalist PWA with RTL and LTR support, based on the current design assets in `src/assets`.
+It is optimized for a professional minimalist PWA in Hebrew with RTL layout, based on the current design assets in `src/assets`.
 
 ### Goals
 
 - Professional, minimalist, calm.
 - Dark-first UI with high legibility and subtle depth.
-- Support RTL and LTR layout and typography.
+- Support RTL layout and Hebrew typography.
 - Tailwind v4 utilities only; no raw CSS unless impossible with Tailwind.
 
 ### Brand and Theme
@@ -183,7 +183,7 @@ When using a JS config, explicitly load it with `@config` and avoid unsupported 
 
 ## Directionality and PWA Requirements
 
-- Use logical start/end utilities instead of left/right.
+- The app is always RTL. Use logical start/end utilities instead of left/right.
 - Use Tailwind start/end variants for spacing and positioning.
 - Respect `env(safe-area-inset-*)` for PWA safe areas.
 

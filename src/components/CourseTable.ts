@@ -6,6 +6,14 @@ import templateHtml from './CourseTable.html?raw';
 const COURSE_TABLE_LIMIT = 12;
 const COURSE_COUNT_KEY = 'courseDataCount';
 const COURSE_REMOTE_UPDATED_KEY = 'courseDataRemoteUpdatedAt';
+const COURSE_COUNT_PREFIX = 'מוצגים';
+const COURSE_COUNT_SUFFIX = 'קורסים';
+const COURSE_COUNT_JOINER = 'מתוך';
+const COURSE_LAST_UPDATE_EMPTY = 'עדכון אחרון: —';
+const COURSE_LAST_UPDATE_LABEL = 'עדכון אחרון';
+const COURSE_PAGE_LABEL = 'עמוד';
+const COURSE_PAGE_JOINER = 'מתוך';
+const COURSE_EMPTY_VALUE = '—';
 
 type CourseRowData = {
     code: string;
@@ -169,13 +177,14 @@ function updateCourseCount(
     metaValue: unknown
 ): void {
     const totalCount = parseMetaCount(metaValue);
+    const prefix = COURSE_COUNT_PREFIX;
+    const suffix = COURSE_COUNT_SUFFIX;
+    const joiner = COURSE_COUNT_JOINER;
     if (totalCount !== undefined && totalCount > visibleCount) {
-        count.textContent = `Showing ${String(visibleCount)} of ${String(
-            totalCount
-        )} courses`;
+        count.textContent = `${prefix} ${String(visibleCount)} ${joiner} ${String(totalCount)} ${suffix}`;
         return;
     }
-    count.textContent = `Showing ${String(visibleCount)} courses`;
+    count.textContent = `${prefix} ${String(visibleCount)} ${suffix}`;
 }
 
 function parseMetaCount(value: unknown): number | undefined {
@@ -197,8 +206,13 @@ function updateLastUpdated(
     element: HTMLParagraphElement,
     metaValue: unknown
 ): void {
-    const formatted = formatRemoteUpdatedAt(metaValue);
-    element.textContent = formatted ?? 'Last update: —';
+    const formattedDate = formatRemoteUpdatedAt(metaValue);
+    if (formattedDate === undefined) {
+        element.textContent = COURSE_LAST_UPDATE_EMPTY;
+        return;
+    }
+    const label = COURSE_LAST_UPDATE_LABEL;
+    element.textContent = `${label}: ${formattedDate}`;
 }
 
 function formatRemoteUpdatedAt(metaValue: unknown): string | undefined {
@@ -211,7 +225,7 @@ function formatRemoteUpdatedAt(metaValue: unknown): string | undefined {
         return undefined;
     }
 
-    return `Last update: ${date.toLocaleDateString()}`;
+    return date.toLocaleDateString();
 }
 
 function updateCoursePagination(
@@ -228,7 +242,9 @@ function updateCoursePagination(
             ? Math.max(1, Math.ceil(totalCount / COURSE_TABLE_LIMIT))
             : pageIndex + 1;
     const currentPage = Math.min(pageIndex + 1, totalPages);
-    label.textContent = `Page ${String(currentPage)} of ${String(totalPages)}`;
+    const pageLabel = COURSE_PAGE_LABEL;
+    const pageJoiner = COURSE_PAGE_JOINER;
+    label.textContent = `${pageLabel} ${String(currentPage)} ${pageJoiner} ${String(totalPages)}`;
 
     prevButton.disabled = pageIndex <= 0;
     nextButton.disabled =
@@ -252,11 +268,12 @@ function togglePaginationButtonState(button: HTMLButtonElement): void {
 function createCourseRow(course: CourseRowData): HTMLTableRowElement {
     const row = document.createElement('tr');
     row.className = 'text-text';
+    const emptyValue = getEmptyValueLabel();
 
     row.append(createCourseCell(course.code));
-    row.append(createCourseCell(course.name ?? '—'));
+    row.append(createCourseCell(course.name ?? emptyValue));
     row.append(createCourseCell(formatCoursePoints(course.points)));
-    row.append(createCourseCell(course.faculty ?? '—'));
+    row.append(createCourseCell(course.faculty ?? emptyValue));
 
     return row;
 }
@@ -270,7 +287,11 @@ function createCourseCell(text: string): HTMLTableCellElement {
 
 function formatCoursePoints(points?: number): string {
     if (points === undefined || !Number.isFinite(points)) {
-        return '—';
+        return getEmptyValueLabel();
     }
     return points.toString();
+}
+
+function getEmptyValueLabel(): string {
+    return COURSE_EMPTY_VALUE;
 }

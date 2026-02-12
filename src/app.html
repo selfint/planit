@@ -11,102 +11,52 @@
                 class="border-border/60 bg-surface-1/80 flex flex-col gap-5 rounded-3xl border p-6 shadow-sm"
             >
                 <div class="flex flex-col gap-2">
-                    <p class="text-text-muted text-xs" data-i18n="hero.welcome">
-                        Welcome back
-                    </p>
-                    <h1 class="text-2xl font-medium" data-i18n="hero.headline">
-                        Map your semesters with clarity.
+                    <p class="text-text-muted text-xs">ברוך שובך</p>
+                    <h1 class="text-2xl font-medium">
+                        תכנן את הסמסטרים שלך בבהירות.
                     </h1>
-                    <p
-                        class="text-text-muted text-xs"
-                        data-i18n="hero.subtitle"
-                    >
-                        Planit keeps your degree plan offline-first, then syncs
-                        updates when you are online.
+                    <p class="text-text-muted text-xs">
+                        Planit שומרת את תכנית התואר שלך אופליין תחילה, ואז
+                        מסנכרנת עדכונים כשיש חיבור.
                     </p>
                 </div>
                 <div class="grid gap-3 sm:grid-cols-3">
                     <div
                         class="border-border/60 bg-surface-2/80 rounded-2xl border p-4"
                     >
-                        <p
-                            class="text-text-muted text-xs"
-                            data-i18n="summary.currentPlan"
-                        >
-                            Current plan
-                        </p>
-                        <p
-                            class="mt-2 text-lg font-medium"
-                            data-i18n="summary.currentTerm"
-                        >
-                            Spring 2026
-                        </p>
-                        <p
-                            class="text-text-muted mt-1 text-xs"
-                            data-i18n="summary.creditsTracked"
-                        >
-                            12 credits tracked
+                        <p class="text-text-muted text-xs">התכנית הנוכחית</p>
+                        <p class="mt-2 text-lg font-medium">אביב 2026</p>
+                        <p class="text-text-muted mt-1 text-xs">
+                            12 נק״ז במעקב
                         </p>
                     </div>
                     <div
                         class="border-border/60 bg-surface-2/80 rounded-2xl border p-4"
                     >
-                        <p
-                            class="text-text-muted text-xs"
-                            data-i18n="summary.requirements"
-                        >
-                            Requirements
-                        </p>
-                        <p
-                            class="mt-2 text-lg font-medium"
-                            data-i18n="summary.requirementsProgress"
-                        >
-                            68%
-                        </p>
-                        <p
-                            class="text-text-muted mt-1 text-xs"
-                            data-i18n="summary.requirementsStatus"
-                        >
-                            On track
-                        </p>
+                        <p class="text-text-muted text-xs">דרישות</p>
+                        <p class="mt-2 text-lg font-medium">68%</p>
+                        <p class="text-text-muted mt-1 text-xs">במסלול</p>
                     </div>
                     <div
                         class="border-border/60 bg-surface-2/80 rounded-2xl border p-4"
                     >
-                        <p
-                            class="text-text-muted text-xs"
-                            data-i18n="summary.nextSync"
-                        >
-                            Next sync
-                        </p>
-                        <p
-                            class="mt-2 text-lg font-medium"
-                            data-i18n="summary.nextSyncStatus"
-                        >
-                            Ready
-                        </p>
-                        <p
-                            class="text-text-muted mt-1 text-xs"
-                            data-i18n="summary.nextSyncDetail"
-                        >
-                            Waiting for connection
-                        </p>
+                        <p class="text-text-muted text-xs">הסנכרון הבא</p>
+                        <p class="mt-2 text-lg font-medium">מוכן</p>
+                        <p class="text-text-muted mt-1 text-xs">ממתין לחיבור</p>
                     </div>
                 </div>
                 <div class="flex flex-wrap gap-3">
                     <button
                         type="button"
                         class="bg-accent text-accent-contrast rounded-full px-4 py-2 text-xs font-medium shadow-sm"
-                        data-i18n="actions.startPlanning"
                     >
-                        Start planning
+                        <span>התחל לתכנן</span>
                     </button>
                     <button
                         type="button"
                         class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text rounded-full border px-4 py-2 text-xs font-medium transition duration-200 ease-out"
-                        data-i18n="actions.reviewRequirements"
                     >
-                        Review requirements
+                        <span>סקירת דרישות</span>
                     </button>
                 </div>
                 <div data-course-table></div>
@@ -115,61 +65,31 @@
                 <div
                     class="border-border/60 bg-surface-1/80 rounded-3xl border p-5 shadow-sm"
                 >
-                    <p
-                        class="text-text-muted text-xs"
-                        data-i18n="sync.overview"
-                    >
-                        Sync overview
-                    </p>
-                    <p
-                        class="mt-2 text-lg font-medium"
-                        data-i18n="sync.catalogsCourses"
-                    >
-                        Catalogs + Courses
-                    </p>
-                    <p
-                        class="text-text-muted mt-2 text-xs"
-                        data-i18n="sync.lastRefreshed"
-                    >
-                        Last refreshed: not yet synced
+                    <p class="text-text-muted text-xs">סקירת סנכרון</p>
+                    <p class="mt-2 text-lg font-medium">קטלוגים + קורסים</p>
+                    <p class="text-text-muted mt-2 text-xs">
+                        ריענון אחרון: טרם סונכרן
                     </p>
                     <div
                         class="text-text-muted mt-4 flex items-center gap-3 text-xs"
                     >
                         <span class="bg-warning size-2 rounded-full"></span>
-                        <span data-i18n="sync.pendingNetwork"
-                            >Pending network</span
-                        >
+                        <span>ממתין לרשת</span>
                     </div>
                 </div>
                 <div
                     class="border-border/60 bg-surface-1/80 rounded-3xl border p-5 shadow-sm"
                 >
-                    <p
-                        class="text-text-muted text-xs"
-                        data-i18n="storage.offlineStorage"
-                    >
-                        Offline storage
-                    </p>
-                    <p
-                        class="mt-2 text-lg font-medium"
-                        data-i18n="storage.indexedDbReady"
-                    >
-                        IndexedDB ready
-                    </p>
-                    <p
-                        class="text-text-muted mt-2 text-xs"
-                        data-i18n="storage.plansLocal"
-                    >
-                        Your plans stay local until you sync.
+                    <p class="text-text-muted text-xs">אחסון אופליין</p>
+                    <p class="mt-2 text-lg font-medium">IndexedDB מוכן</p>
+                    <p class="text-text-muted mt-2 text-xs">
+                        התכניות שלך נשארות מקומיות עד הסנכרון.
                     </p>
                     <div
                         class="text-text-muted mt-4 flex items-center gap-3 text-xs"
                     >
                         <span class="bg-success size-2 rounded-full"></span>
-                        <span data-i18n="storage.encrypted"
-                            >Encrypted on device</span
-                        >
+                        <span>מוצפן במכשיר</span>
                     </div>
                 </div>
             </aside>
@@ -180,13 +100,13 @@
         >
             <div class="flex items-center gap-2">
                 <span class="bg-info size-2 rounded-full"></span>
-                <span data-i18n="footer.tagline">
-                    Planit PWA - Offline-first planner
-                </span>
+                <span>Planit PWA - מתכנן אופליין תחילה</span>
             </div>
             <div class="flex flex-wrap items-center gap-4">
-                <span data-i18n="footer.safeArea">Safe-area aware</span>
-                <span data-i18n="footer.build">Build 0.0.0</span>
+                <span>מותאם ל-Safe Area</span>
+                <span>
+                    <span>Build 0.0.0</span>
+                </span>
             </div>
         </footer>
     </div>
