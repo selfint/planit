@@ -30,8 +30,8 @@ function initApp(): HTMLDivElement {
 
 function main(): void {
     try {
-        initApp();
-        initI18n();
+        const app = initApp();
+        initI18n({ root: app });
         initPWA();
     } catch (err: unknown) {
         console.error('Failed to start app:', err);

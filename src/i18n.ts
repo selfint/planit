@@ -15,7 +15,7 @@ const activeTranslations: TranslationData = translations;
 
 type InitI18nOptions = {
     lang?: string;
-    root?: ParentNode;
+    root: ParentNode;
 };
 
 function getValue(data: TranslationData, path: string[]): unknown {
@@ -99,8 +99,8 @@ function applyTranslations(root: ParentNode, data: TranslationData): void {
     });
 }
 
-export function initI18n(options: InitI18nOptions = {}): void {
-    const root = options.root ?? document;
+export function initI18n(options: InitI18nOptions): void {
+    const root = options.root;
     const meta = activeTranslations.meta;
     let lang = options.lang;
     if (

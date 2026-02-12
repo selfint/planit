@@ -54,7 +54,7 @@
     "footer": {
         "tagline": "Planit PWA - מתכנן אופליין תחילה",
         "safeArea": "מותאם ל-Safe Area",
-        "build": "Build 0.0.0"
+        "buildLabel": "Build"
     },
     "courseTable": {
         "title": "נתוני קורסים",
