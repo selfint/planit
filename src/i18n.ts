@@ -1,7 +1,7 @@
 import translations from './i18n/he.json';
 
 type TranslationMeta = {
-    lang?: string;
+    lang: 'he';
     dir?: 'ltr' | 'rtl';
     title?: string;
 };
