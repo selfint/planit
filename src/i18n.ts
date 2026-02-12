@@ -18,13 +18,17 @@ type InitI18nOptions = {
     root: ParentNode;
 };
 
-function getValue(data: TranslationData, path: string[]): unknown {
-    return path.reduce<unknown>((acc, key) => {
+function getValue(data: TranslationData, path: string[]): string {
+    const value = path.reduce<unknown>((acc, key) => {
         if (acc !== null && typeof acc === 'object' && key in acc) {
             return (acc as Record<string, unknown>)[key];
         }
-        return undefined;
+        throw new Error(`Missing translation key: ${path.join('.')}`);
     }, data);
+    if (typeof value !== 'string') {
+        throw new Error(`Translation value is not a string: ${path.join('.')}`);
+    }
+    return value;
 }
 
 function applyMeta(meta?: TranslationMeta): void {
@@ -87,9 +91,6 @@ function applyTranslations(root: ParentNode, data: TranslationData): void {
                 return;
             }
             const value = getValue(data, info.path);
-            if (typeof value !== 'string') {
-                return;
-            }
             if (typeof info.attribute === 'string') {
                 node.setAttribute(info.attribute, value);
             } else {
