@@ -45,3 +45,8 @@ Short summary of the module's responsibilities.
 
 - Point to the related test file(s).
 ```
+
+## Directory Contract
+
+- `src/lib/<Module>.ts`
+- `src/lib/<Module>.md`
