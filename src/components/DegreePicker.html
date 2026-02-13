@@ -32,6 +32,45 @@
                 ></select>
             </label>
         </div>
+        <div class="border-border/60 bg-surface-2/70 rounded-2xl border p-3">
+            <p class="text-text-muted mb-2 text-xs">פרטי קטלוג</p>
+            <div class="border-border/50 overflow-hidden rounded-2xl border">
+                <table class="w-full text-xs">
+                    <tbody class="divide-border/40 divide-y" data-catalog-rows>
+                        <tr>
+                            <td class="text-text-muted px-3 py-2">מזהה</td>
+                            <td class="text-text px-3 py-2" data-catalog-id>
+                                —
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-text-muted px-3 py-2">שם</td>
+                            <td class="text-text px-3 py-2" data-catalog-name>
+                                —
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-text-muted px-3 py-2">פקולטות</td>
+                            <td
+                                class="text-text px-3 py-2"
+                                data-catalog-faculty
+                            >
+                                —
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="text-text-muted px-3 py-2">תכניות</td>
+                            <td
+                                class="text-text px-3 py-2"
+                                data-catalog-program
+                            >
+                                —
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
         <p class="text-text-muted text-xs" data-degree-status></p>
     </section>
 </template>

@@ -44,12 +44,27 @@ export function DegreePicker(): HTMLElement {
     const status = root.querySelector<HTMLParagraphElement>(
         '[data-degree-status]'
     );
+    const catalogIdValue =
+        root.querySelector<HTMLTableCellElement>('[data-catalog-id]');
+    const catalogNameValue = root.querySelector<HTMLTableCellElement>(
+        '[data-catalog-name]'
+    );
+    const catalogFacultyValue = root.querySelector<HTMLTableCellElement>(
+        '[data-catalog-faculty]'
+    );
+    const catalogProgramValue = root.querySelector<HTMLTableCellElement>(
+        '[data-catalog-program]'
+    );
 
     if (
         catalogSelect === null ||
         facultySelect === null ||
         programSelect === null ||
-        status === null
+        status === null ||
+        catalogIdValue === null ||
+        catalogNameValue === null ||
+        catalogFacultyValue === null ||
+        catalogProgramValue === null
     ) {
         throw new Error('DegreePicker required elements not found');
     }
@@ -68,7 +83,11 @@ export function DegreePicker(): HTMLElement {
                 catalogSelect,
                 facultySelect,
                 programSelect,
-                status
+                status,
+                catalogIdValue,
+                catalogNameValue,
+                catalogFacultyValue,
+                catalogProgramValue
             );
             return;
         }
@@ -117,7 +136,11 @@ export function DegreePicker(): HTMLElement {
                 catalogSelect,
                 facultySelect,
                 programSelect,
-                status
+                status,
+                catalogIdValue,
+                catalogNameValue,
+                catalogFacultyValue,
+                catalogProgramValue
             );
         },
     });
@@ -127,7 +150,11 @@ export function DegreePicker(): HTMLElement {
         catalogSelect,
         facultySelect,
         programSelect,
-        status
+        status,
+        catalogIdValue,
+        catalogNameValue,
+        catalogFacultyValue,
+        catalogProgramValue
     );
 
     return root;
@@ -138,7 +165,11 @@ async function loadCatalogs(
     catalogSelect: HTMLSelectElement,
     facultySelect: HTMLSelectElement,
     programSelect: HTMLSelectElement,
-    status: HTMLParagraphElement
+    status: HTMLParagraphElement,
+    catalogIdValue: HTMLTableCellElement,
+    catalogNameValue: HTMLTableCellElement,
+    catalogFacultyValue: HTMLTableCellElement,
+    catalogProgramValue: HTMLTableCellElement
 ): Promise<void> {
     state.catalogs = await getCatalogs();
     const storedSelection = await getActiveRequirementsSelection();
@@ -155,7 +186,11 @@ async function loadCatalogs(
         catalogSelect,
         facultySelect,
         programSelect,
-        status
+        status,
+        catalogIdValue,
+        catalogNameValue,
+        catalogFacultyValue,
+        catalogProgramValue
     );
 }
 
@@ -164,7 +199,11 @@ function updateCatalogOptions(
     catalogSelect: HTMLSelectElement,
     facultySelect: HTMLSelectElement,
     programSelect: HTMLSelectElement,
-    status: HTMLParagraphElement
+    status: HTMLParagraphElement,
+    catalogIdValue: HTMLTableCellElement,
+    catalogNameValue: HTMLTableCellElement,
+    catalogFacultyValue: HTMLTableCellElement,
+    catalogProgramValue: HTMLTableCellElement
 ): void {
     const catalogIds = Object.keys(state.catalogs).sort();
     setSelectOptions(
@@ -185,6 +224,14 @@ function updateCatalogOptions(
         programSelect.disabled = true;
         setSelectOptions(facultySelect, [], 'בחר פקולטה');
         setSelectOptions(programSelect, [], 'בחר תכנית');
+        updateCatalogTable(
+            catalogIdValue,
+            catalogNameValue,
+            catalogFacultyValue,
+            catalogProgramValue,
+            '',
+            undefined
+        );
         updateStatus(
             status,
             catalogIds.length === 0
@@ -196,6 +243,14 @@ function updateCatalogOptions(
 
     updateFacultyOptions(state, facultySelect, programSelect);
     updateProgramOptions(state, programSelect);
+    updateCatalogTable(
+        catalogIdValue,
+        catalogNameValue,
+        catalogFacultyValue,
+        catalogProgramValue,
+        catalogSelect.value,
+        getRecord(state.catalogs[catalogSelect.value])
+    );
     if (
         state.selection?.programId &&
         programSelect.value === state.selection.programId
@@ -327,6 +382,43 @@ function getNodeLabel(value: unknown, fallback: string): string {
         return english;
     }
     return fallback;
+}
+
+function updateCatalogTable(
+    idCell: HTMLTableCellElement,
+    nameCell: HTMLTableCellElement,
+    facultyCell: HTMLTableCellElement,
+    programCell: HTMLTableCellElement,
+    catalogId: string,
+    catalogData: Record<string, unknown> | undefined
+): void {
+    if (catalogData === undefined) {
+        idCell.textContent = '—';
+        nameCell.textContent = '—';
+        facultyCell.textContent = '—';
+        programCell.textContent = '—';
+        return;
+    }
+
+    const label = getNodeLabel(catalogData, catalogId);
+    const facultyEntries = Object.keys(catalogData).filter(
+        (key) => !isLabelKey(key)
+    );
+    let programCount = 0;
+    for (const facultyId of facultyEntries) {
+        const facultyData = getRecord(catalogData[facultyId]);
+        if (facultyData === undefined) {
+            continue;
+        }
+        programCount += Object.keys(facultyData).filter(
+            (key) => !isLabelKey(key)
+        ).length;
+    }
+
+    idCell.textContent = catalogId.length > 0 ? catalogId : '—';
+    nameCell.textContent = label.length > 0 ? label : '—';
+    facultyCell.textContent = facultyEntries.length.toString();
+    programCell.textContent = programCount.toString();
 }
 
 function updateStatus(element: HTMLParagraphElement, message: string): void {
