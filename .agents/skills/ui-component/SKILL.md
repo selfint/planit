@@ -22,6 +22,12 @@ The app is always RTL and in Hebrew; inline all copy in Hebrew.
 7. Add a concise Markdown doc in `src/components/<Component>.md` following the structure below.
 8. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
 
+## Workflow: Storybook
+
+1. Create `src/components/<Component>.stories.ts` alongside the component.
+2. Define `Default` and `Dark` stories, setting `globals: { theme: 'dark' }` for dark.
+3. Rely on `.storybook/preview.ts` for the wrapper; do not create custom preview shells.
+
 ## Component Contract
 
 - Files:
