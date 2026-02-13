@@ -22,6 +22,9 @@ Build UI components as four files (.html, .ts, .stories.ts, .md). Use <template>
 9. Define `Default` and `Dark` stories, setting `globals: { theme: 'dark' }` for dark.
 10. Rely on `.storybook/preview.ts` for the wrapper; do not create custom preview shells.
 11. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
+12. For async or data-driven components, add skeleton placeholders in the
+    template using the shared `skeleton-shimmer` utility and a `data-skeleton`
+    attribute that the TS layer toggles off once data is populated.
 
 ## Component Contract
 
@@ -60,6 +63,9 @@ files:
 - Use class toggles or data attributes for stateful styling.
 - Keep DOM queries scoped to the cloned root element.
 - Use `replaceWith(Component())` when swapping placeholders.
+- When data is not yet available, keep `data-skeleton="true"` on the root and
+  rely on `skeleton-shimmer` placeholders in the HTML. Remove the attribute when
+  real data is rendered.
 
 ## Storybook Integration
 

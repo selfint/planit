@@ -164,6 +164,8 @@ Rules:
 - 150-250ms for most transitions.
 - Use easing that feels calm and responsive (ease-out).
 - Animate only what helps comprehension (panel open, hover, focus).
+- For loading states, use the shared `skeleton-shimmer` utility and show
+  skeleton placeholders until data is populated.
 
 ## Tailwind v4 Rules
 
