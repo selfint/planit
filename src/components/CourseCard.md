@@ -3,8 +3,9 @@
 ## Overview
 
 CourseCard renders a compact course tile matching the course card layout in
-`src/assets/course-pic.webp`. It shows a status dot, two numeric meta values,
-the course title, and the course code.
+`src/assets/course-pic.webp`. It accepts a `CourseRecord` from
+`src/lib/indexeddb.ts` and shows a status dot, two numeric meta values, the
+course title, and the course code.
 
 ## Template Structure
 
@@ -14,14 +15,15 @@ the course title, and the course code.
 
 ## Data Flow
 
-1. `CourseCard()` clones the HTML template.
-2. Optional data overrides default values for title, code, points, median, and
-   status color class.
-3. Text content and status dot class are applied to data-role elements.
+1. `CourseCard(course, options)` clones the HTML template.
+2. Course data populates title, code, points, and median; empty values fall back
+   to `—` and a default title.
+3. Optional `statusClass` overrides the status dot color.
 
 ## Dependencies
 
 - Template: `src/components/CourseCard.html`.
+- Types: `src/lib/indexeddb.ts` (`CourseRecord`).
 
 ## Notes
 
