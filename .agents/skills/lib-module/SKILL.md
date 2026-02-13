@@ -49,7 +49,7 @@ Short summary of the module's responsibilities.
 
 ## Tests
 
-- Describe what the module tests cover and the behaviors they validate.
+- Provide a bullet for each test in `<Module>.test.ts`, explaining what it validates and how.
 ```
 
 ## Verification Script
