@@ -1,0 +1,72 @@
+<template>
+    <section
+        class="border-border/60 bg-surface-1/80 flex flex-col gap-4 rounded-3xl border p-5 shadow-sm"
+        data-component="DegreePicker"
+    >
+        <div class="flex flex-col gap-1">
+            <p class="text-text-muted text-xs">בחירת תואר</p>
+            <p class="text-lg font-medium">
+                בחר קטלוג ותכנית כדי לטעון דרישות.
+            </p>
+        </div>
+        <div class="flex flex-col gap-3">
+            <label class="text-text-muted flex flex-col gap-2 text-xs">
+                <span>קטלוג</span>
+                <select
+                    class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                    data-degree-catalog
+                ></select>
+            </label>
+            <label class="text-text-muted flex flex-col gap-2 text-xs">
+                <span>פקולטה</span>
+                <select
+                    class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                    data-degree-faculty
+                ></select>
+            </label>
+            <label class="text-text-muted flex flex-col gap-2 text-xs">
+                <span>תכנית</span>
+                <select
+                    class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                    data-degree-program
+                ></select>
+            </label>
+            <label class="text-text-muted flex flex-col gap-2 text-xs">
+                <span>מסלול</span>
+                <select
+                    class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                    data-degree-path
+                ></select>
+            </label>
+            <p class="text-text-muted hidden text-xs" data-path-empty></p>
+        </div>
+        <div class="border-border/60 bg-surface-2/70 rounded-2xl border p-3">
+            <p class="text-text-muted mb-2 text-xs">דרישות במסלול</p>
+            <div class="border-border/50 overflow-hidden rounded-2xl border">
+                <table class="w-full text-xs">
+                    <thead class="bg-surface-1/60 text-text-muted">
+                        <tr>
+                            <th class="px-3 py-2 text-start font-medium">
+                                דרישה
+                            </th>
+                            <th class="px-3 py-2 text-start font-medium">
+                                סה״כ קורסים
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody
+                        class="divide-border/40 divide-y"
+                        data-requirement-rows
+                    >
+                        <tr>
+                            <td class="text-text px-3 py-2" colspan="2">
+                                בחר תכנית ומסלול כדי לראות דרישות.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <p class="text-text-muted text-xs" data-degree-status></p>
+    </section>
+</template>

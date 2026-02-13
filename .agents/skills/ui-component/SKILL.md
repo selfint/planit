@@ -1,25 +1,23 @@
 ---
 name: ui-component
-description: Create or update UI components in vanilla TypeScript + Vite + Tailwind projects where each component is split into src/components/Component.html (markup + Tailwind) and src/components/Component.ts (logic). Use when asked to build new UI components, refactor components into HTML+TS pairs, or wire template-based UI logic with <template>.
+description: Build or update UI components using vanilla HTML and TypeScript (using <template>), with Storybook support, and documentation in a Markdown file (in total, 4 files per component). Use when asked to create new components, refactor UI into HTML+TS templates, or add stories/docs for existing components in this codebase.
 ---
 
 # Ui Component
 
 ## Overview
 
-Build UI components as paired files: HTML for structure/styling and TypeScript for behavior, using <template> for DOM cloning.
-Each component also ships with a short Markdown doc that explains how it works.
-The app is always RTL and in Hebrew; inline all copy in Hebrew.
+Build UI components as four files (.html, .ts, .stories.ts, .md). Use <template> cloning and data attributes for wiring, keep UI copy in Hebrew (RTL), and keep the docs concise and technical.
 
 ## Workflow
 
 1. Confirm or create the component set at src/components/<Component>.html, src/components/<Component>.ts, src/components/<Component>.stories.ts, and src/components/<Component>.md.
 2. Put all markup and Tailwind classes in the HTML file inside a <template>.
 3. Keep logic, state, and event wiring in the TS file; do not embed scripts in HTML.
-4. Put all text in Hebrew; except for PlanIt and other english-only phrases.
+4. In the .html file, put all text in Hebrew; except for PlanIt and other english-only phrases.
 5. Use data attributes in the HTML to target elements from TS.
 6. Export a component factory (e.g., `AppHeader()`) that returns a root element.
-7. Add a concise Markdown doc in `src/components/<Component>.md` following the structure below.
+7. Add a concise Markdown doc in `src/components/<Component>.md` following the structure below. Component `.md` docs are always written in English.
 8. Create `src/components/<Component>.stories.ts` alongside the component.
 9. Define `Default` and `Dark` stories, setting `globals: { theme: 'dark' }` for dark.
 10. Rely on `.storybook/preview.ts` for the wrapper; do not create custom preview shells.
@@ -45,6 +43,7 @@ The app is always RTL and in Hebrew; inline all copy in Hebrew.
 
 - Use `src/components/<Component>.md` to explain the component behavior.
 - Keep it short and technical; follow the CourseTable example.
+- Write the documentation in English.
 - Recommended sections: Overview, Template Structure, Data Flow, Dependencies, Notes.
 
 ## Verification Script
