@@ -20,7 +20,7 @@ Provides catalog, faculty, program, and path selection and renders program requi
 7. Path options are detected from the top-level requirements nodes whose `en` label includes “path”.
 8. The path picker is always visible. It is disabled and shows the empty placeholder when no path options exist.
 9. If paths exist, the path picker is required and the table shows a prompt until a path is selected.
-10. Selecting a path persists `requirementsActivePath` and filters the requirements tree to the selected path’s nested nodes.
+10. Selecting a path persists `requirementsActivePath` and filters the requirements tree to the selected path’s nested nodes plus elective nodes ("elective" in `en`).
 11. The table renders only requirement nodes that contain courses, using a space-separated breadcrumb label built from ancestor nodes.
 12. If a selected path contains no course-bearing nodes, the table shows an empty-path message.
 

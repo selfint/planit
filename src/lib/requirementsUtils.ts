@@ -56,9 +56,14 @@ export function filterRequirementsByPath(
         return root;
     }
 
+    const electives = root.nested.filter((node) => isElectiveNode(node));
+    const selectedNested = Array.isArray(selected.nested)
+        ? selected.nested
+        : [];
+
     return {
         ...root,
-        nested: Array.isArray(selected.nested) ? selected.nested : [],
+        nested: [...selectedNested, ...electives],
     };
 }
 
@@ -116,4 +121,11 @@ function isPathNode(node: RequirementNode): boolean {
         return false;
     }
     return node.en.toLowerCase().includes('path');
+}
+
+function isElectiveNode(node: RequirementNode): boolean {
+    if (typeof node.en !== 'string') {
+        return false;
+    }
+    return node.en.toLowerCase().includes('elective');
 }

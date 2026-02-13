@@ -40,6 +40,11 @@ describe('requirements utils', () => {
                     ],
                 },
                 { name: 'REQ_1', en: 'Mandatory', courses: ['002'] },
+                {
+                    name: 'EL_1',
+                    en: 'All-Technion Electives',
+                    courses: ['003'],
+                },
             ],
         };
 
@@ -47,6 +52,7 @@ describe('requirements utils', () => {
 
         expect(filtered.nested?.map((node) => node.name)).toEqual([
             'REQ_IN_PATH',
+            'EL_1',
         ]);
     });
 
