@@ -30,4 +30,7 @@ IndexedDB access layer for courses, catalogs, requirements, and metadata.
 
 ## Tests
 
-- Covers store setup, metadata helpers, and course paging/sorting behaviors.
+- Stores and reads meta entries through the meta helpers.
+- Writes courses and paginates results via course lookup helpers.
+- Writes catalogs and reads them back through catalog helpers.
+- Replaces requirements with copy-on-write semantics.

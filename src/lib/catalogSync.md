@@ -29,4 +29,6 @@ Syncs the remote `catalogs.json` into IndexedDB with metadata for caching and fr
 
 ## Tests
 
-- Covers metadata caching, conditional fetch behavior, and offline/skip paths.
+- Returns `offline` and avoids fetch calls when `navigator.onLine` is false.
+- Skips updates when remote metadata matches stored values and handles 304 responses.
+- Updates catalogs, count, and metadata when remote data changes.

@@ -30,4 +30,5 @@ Fetches program requirements and stores them in IndexedDB with copy-on-write rep
 
 ## Tests
 
-- Covers success/failure responses, COW replacement, and offline behavior.
+- Returns `offline` and avoids fetch calls when `navigator.onLine` is false.
+- Stores requirements with COW replacement and updates sync metadata.

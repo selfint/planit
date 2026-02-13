@@ -29,4 +29,6 @@ Syncs the remote `courseData.json` into IndexedDB with metadata for caching and 
 
 ## Tests
 
-- Covers skip/update logic, metadata handling, and offline behavior.
+- Returns `offline` and avoids fetch calls when `navigator.onLine` is false.
+- Skips updates when remote metadata matches stored values and handles 304 responses.
+- Updates courses, count, and metadata when remote data changes.

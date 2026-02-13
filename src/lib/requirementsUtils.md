@@ -29,4 +29,7 @@ Helpers for detecting requirement paths, filtering by selected path, and countin
 
 ## Tests
 
-- Covers path detection, elective filtering, and recursive course counting.
+- Detects path options from top-level nested entries.
+- Filters requirements to selected path and appends elective nodes.
+- Returns empty nested when a selected path has no requirements.
+- Counts unique courses recursively across nested requirements.
