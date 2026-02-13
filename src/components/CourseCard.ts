@@ -98,7 +98,7 @@ function applySkeleton(root: HTMLElement): void {
 
     if (statusDot !== null) {
         statusDot.className =
-            'h-2.5 w-2.5 rounded-none bg-gradient-to-l from-surface-2/85 via-surface-1/60 to-surface-2/85 animate-shimmer contrast-105 dark:from-surface-2/96 dark:via-surface-1/10 dark:to-surface-2/96 dark:contrast-110';
+            'h-3 w-3 rounded-none bg-gradient-to-l from-surface-2/85 via-surface-1/60 to-surface-2/85 animate-shimmer contrast-105 dark:from-surface-2/96 dark:via-surface-1/10 dark:to-surface-2/96 dark:contrast-110';
     }
     if (points !== null) {
         applySkeletonBlock(points, 'w-7', 'h-3');
