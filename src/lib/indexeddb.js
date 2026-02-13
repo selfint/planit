@@ -56,6 +56,7 @@ export const STORE_REQUIREMENTS = 'requirements';
 /** @typedef {'code' | 'name' | 'points' | 'median'} CourseSortKey */
 /** @typedef {'asc' | 'desc'} CourseSortDirection */
 /** @typedef {Omit<IDBCursorWithValue, 'value'> & { value: CourseRecord }} CourseCursor */
+/** @typedef {Omit<IDBCursorWithValue, 'value'> & { value: CatalogRecord }} CatalogCursor */
 
 /**
  * @returns {Promise<IDBDatabase>}
@@ -271,12 +272,12 @@ export async function getCatalogs() {
         const request = store.openCursor();
 
         request.onsuccess = () => {
-            const cursor = request.result;
+            const cursor = /** @type {CatalogCursor | null} */ (request.result);
             if (cursor === null) {
                 return;
             }
 
-            const value = /** @type {CatalogRecord} */ (cursor.value);
+            const value = cursor.value;
             results[value.id] = value.data;
             cursor.continue();
         };
