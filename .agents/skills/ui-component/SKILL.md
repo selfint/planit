@@ -46,11 +46,10 @@ The app is always RTL and in Hebrew; inline all copy in Hebrew.
 
 ## Verification Script
 
-Run this check to ensure every component has the required files:
+Run the repository check script to ensure every component has the required
+files:
 
-```bash
-node -e "const fs=require('fs');const path=require('path');const dir='src/components';const required=['.ts','.html','.stories.ts','.md'];const entries=fs.readdirSync(dir).filter(f=>!f.startsWith('.'));const names=new Set(entries.map(f=>f.replace(/\.stories\.ts$|\.html$|\.ts$|\.md$/,'')));const missing=[];for(const name of names){for(const ext of required){const file=path.join(dir,`${name}${ext}`);if(!fs.existsSync(file))missing.push(file);}}if(missing.length){console.error('Missing component files:\n'+missing.join('\n'));process.exit(1);}console.log('All components have .ts, .html, .stories.ts, and .md files.');"
-```
+`python .agents/skills/ui-component/scripts/verify_components.py`
 
 ## Implementation Notes
 
