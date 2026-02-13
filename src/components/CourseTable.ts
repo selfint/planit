@@ -6,7 +6,7 @@ import templateHtml from './CourseTable.html?raw';
 const COURSE_TABLE_LIMIT = 12;
 const COURSE_COUNT_KEY = 'courseDataCount';
 const COURSE_REMOTE_UPDATED_KEY = 'courseDataRemoteUpdatedAt';
-const COURSE_COUNT_SUFFIX = 'courses';
+const COURSE_COUNT_SUFFIX = 'קורסים';
 const COURSE_LAST_UPDATE_EMPTY = 'עדכון אחרון: —';
 const COURSE_LAST_UPDATE_LABEL = 'עדכון אחרון';
 const COURSE_PAGE_LABEL = 'עמוד';
