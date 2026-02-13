@@ -9,6 +9,12 @@ description: Document src/lib modules with adjacent .md files using a standard f
 
 Document each `src/lib` module with a concise Markdown file next to it. Use a consistent format that explains purpose, exports, data flow, dependencies, notes, and tests.
 
+Directory structure per module:
+
+- `src/lib/<Module>.ts`
+- `src/lib/<Module>.test.ts`
+- `src/lib/<Module>.md`
+
 ## Workflow
 
 1. Identify the `src/lib` module file(s) that need documentation.
@@ -45,9 +51,3 @@ Short summary of the module's responsibilities.
 
 - Describe what the module tests cover and the behaviors they validate.
 ```
-
-## Directory Contract
-
-- `src/lib/<Module>.ts`
-- `src/lib/<Module>.test.ts`
-- `src/lib/<Module>.md`
