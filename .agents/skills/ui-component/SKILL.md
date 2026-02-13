@@ -8,23 +8,27 @@ description: Create or update UI components in vanilla TypeScript + Vite + Tailw
 ## Overview
 
 Build UI components as paired files: HTML for structure/styling and TypeScript for behavior, using <template> for DOM cloning.
+Each component also ships with a short Markdown doc that explains how it works.
 The app is always RTL and in Hebrew; inline all copy in Hebrew.
 
 ## Workflow
 
-1. Confirm or create the component pair at src/components/<Component>.html and src/components/<Component>.ts.
+1. Confirm or create the component set at src/components/<Component>.html, src/components/<Component>.ts, src/components/<Component>.stories.ts, and src/components/<Component>.md.
 2. Put all markup and Tailwind classes in the HTML file inside a <template>.
 3. Keep logic, state, and event wiring in the TS file; do not embed scripts in HTML.
 4. Put all text in Hebrew; except for PlanIt and other english-only phrases.
 5. Use data attributes in the HTML to target elements from TS.
 6. Export a component factory (e.g., `AppHeader()`) that returns a root element.
-7. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
+7. Add a concise Markdown doc in `src/components/<Component>.md` following the structure below.
+8. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
 
 ## Component Contract
 
 - Files:
     - src/components/<Component>.html
     - src/components/<Component>.ts
+    - src/components/<Component>.stories.ts
+    - src/components/<Component>.md
 - HTML:
     - Wrap the component in a single <template> element.
     - Keep UI-only concerns here: structure, Tailwind classes, semantic tags.
@@ -33,6 +37,20 @@ The app is always RTL and in Hebrew; inline all copy in Hebrew.
     - Import the HTML as text (`?raw` with Vite).
     - Clone the template into a root element.
     - Bind events and return a single root element.
+
+## Documentation File
+
+- Use `src/components/<Component>.md` to explain the component behavior.
+- Keep it short and technical; follow the CourseTable example.
+- Recommended sections: Overview, Template Structure, Data Flow, Dependencies, Notes.
+
+## Verification Script
+
+Run this check to ensure every component has the required files:
+
+```bash
+node -e "const fs=require('fs');const path=require('path');const dir='src/components';const required=['.ts','.html','.stories.ts','.md'];const entries=fs.readdirSync(dir).filter(f=>!f.startsWith('.'));const names=new Set(entries.map(f=>f.replace(/\.stories\.ts$|\.html$|\.ts$|\.md$/,'')));const missing=[];for(const name of names){for(const ext of required){const file=path.join(dir,`${name}${ext}`);if(!fs.existsSync(file))missing.push(file);}}if(missing.length){console.error('Missing component files:\n'+missing.join('\n'));process.exit(1);}console.log('All components have .ts, .html, .stories.ts, and .md files.');"
+```
 
 ## Implementation Notes
 
