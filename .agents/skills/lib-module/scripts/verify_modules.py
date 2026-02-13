@@ -7,7 +7,9 @@ import sys
 from typing import Iterable, List, Sequence, Tuple
 
 
-ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..", ".."))
+ROOT = os.path.abspath(
+    os.path.join(os.path.dirname(__file__), "..", "..", "..", "..")
+)
 LIB_DIR = os.path.join(ROOT, "src", "lib")
 
 
