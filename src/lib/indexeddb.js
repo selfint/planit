@@ -36,18 +36,22 @@ export const STORE_REQUIREMENTS = 'requirements';
  * }} CourseRecord
  */
 
-export type CatalogRecord = {
-    id: string;
-    data: unknown;
-};
+/**
+ * @typedef {{
+ *   id: string,
+ *   data: unknown
+ * }} CatalogRecord
+ */
 
-export type RequirementRecord = {
-    programId: string;
-    catalogId: string;
-    facultyId: string;
-    path?: string;
-    data: unknown;
-};
+/**
+ * @typedef {{
+ *   programId: string,
+ *   catalogId: string,
+ *   facultyId: string,
+ *   path?: string,
+ *   data: unknown
+ * }} RequirementRecord
+ */
 
 /** @typedef {'code' | 'name' | 'points' | 'median'} CourseSortKey */
 /** @typedef {'asc' | 'desc'} CourseSortDirection */
@@ -141,37 +145,46 @@ async function withStore(storeName, mode, fn) {
     });
 }
 
-async function withStores(
-    storeNames: string[],
-    mode: IDBTransactionMode,
-    fn: (stores: Record<string, IDBObjectStore>) => void
-): Promise<void> {
+/**
+ * @param {string[]} storeNames
+ * @param {IDBTransactionMode} mode
+ * @param {(stores: Record<string, IDBObjectStore>) => void} fn
+ * @returns {Promise<void>}
+ */
+async function withStores(storeNames, mode, fn) {
     const db = await openDb();
 
     return new Promise((resolve, reject) => {
         const tx = db.transaction(storeNames, mode);
-        const stores: Record<string, IDBObjectStore> = {};
+        /** @type {Record<string, IDBObjectStore>} */
+        const stores = {};
         for (const name of storeNames) {
             stores[name] = tx.objectStore(name);
         }
         fn(stores);
 
-        tx.oncomplete = (): void => {
+        tx.oncomplete = () => {
             db.close();
-            resolve();
+            resolve(undefined);
         };
-        tx.onerror = (): void => {
+        tx.onerror = () => {
             reject(tx.error ?? new Error('IndexedDB transaction failed'));
         };
-        tx.onabort = (): void => {
+        tx.onabort = () => {
             reject(tx.error ?? new Error('IndexedDB transaction aborted'));
         };
     });
 }
 
-export async function getMeta(key: string): Promise<MetaEntry | undefined> {
-    const entry = await withStore<MetaEntry>(STORE_META, 'readonly', (store) =>
-        store.get(key)
+/**
+ * @param {string} key
+ * @returns {Promise<MetaEntry | undefined>}
+ */
+export async function getMeta(key) {
+    const entry = await withStore(
+        STORE_META,
+        'readonly',
+        (store) => /** @type {IDBRequest<MetaEntry>} */ (store.get(key))
     );
     return entry;
 }
@@ -204,7 +217,7 @@ export async function putCourses(courses) {
 
         tx.oncomplete = () => {
             db.close();
-            resolve();
+            resolve(undefined);
         };
         tx.onerror = () => {
             reject(tx.error ?? new Error('Failed to save courses'));
@@ -215,84 +228,96 @@ export async function putCourses(courses) {
     });
 }
 
-export async function putCatalogs(
-    catalogs: Record<string, unknown>
-): Promise<void> {
+/**
+ * @param {Record<string, unknown>} catalogs
+ * @returns {Promise<void>}
+ */
+export async function putCatalogs(catalogs) {
     const db = await openDb();
 
-    await new Promise<void>((resolve, reject) => {
+    await new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_CATALOGS, 'readwrite');
         const store = tx.objectStore(STORE_CATALOGS);
 
         for (const [id, data] of Object.entries(catalogs)) {
-            store.put({ id, data } satisfies CatalogRecord);
+            store.put(/** @type {CatalogRecord} */ ({ id, data }));
         }
 
-        tx.oncomplete = (): void => {
+        tx.oncomplete = () => {
             db.close();
-            resolve();
+            resolve(undefined);
         };
-        tx.onerror = (): void => {
+        tx.onerror = () => {
             reject(tx.error ?? new Error('Failed to save catalogs'));
         };
-        tx.onabort = (): void => {
+        tx.onabort = () => {
             reject(tx.error ?? new Error('Catalog transaction aborted'));
         };
     });
 }
 
-export async function getCatalogs(): Promise<Record<string, unknown>> {
+/**
+ * @returns {Promise<Record<string, unknown>>}
+ */
+export async function getCatalogs() {
     const db = await openDb();
 
     return new Promise((resolve, reject) => {
-        const results: Record<string, unknown> = {};
+        /** @type {Record<string, unknown>} */
+        const results = {};
         const tx = db.transaction(STORE_CATALOGS, 'readonly');
         const store = tx.objectStore(STORE_CATALOGS);
+        /** @type {IDBRequest<IDBCursorWithValue | null>} */
         const request = store.openCursor();
 
-        request.onsuccess = (): void => {
+        request.onsuccess = () => {
             const cursor = request.result;
             if (cursor === null) {
                 return;
             }
 
-            const value = cursor.value as CatalogRecord;
+            const value = /** @type {CatalogRecord} */ (cursor.value);
             results[value.id] = value.data;
             cursor.continue();
         };
 
-        request.onerror = (): void => {
+        request.onerror = () => {
             reject(request.error ?? new Error('Failed to read catalogs'));
         };
 
-        tx.oncomplete = (): void => {
+        tx.oncomplete = () => {
             db.close();
             resolve(results);
         };
-        tx.onerror = (): void => {
+        tx.onerror = () => {
             reject(tx.error ?? new Error('Catalog transaction failed'));
         };
-        tx.onabort = (): void => {
+        tx.onabort = () => {
             reject(tx.error ?? new Error('Catalog transaction aborted'));
         };
     });
 }
 
-export async function getRequirement(
-    programId: string
-): Promise<RequirementRecord | undefined> {
-    const requirement = await withStore<RequirementRecord>(
+/**
+ * @param {string} programId
+ * @returns {Promise<RequirementRecord | undefined>}
+ */
+export async function getRequirement(programId) {
+    const requirement = await withStore(
         STORE_REQUIREMENTS,
         'readonly',
-        (store) => store.get(programId)
+        (store) =>
+            /** @type {IDBRequest<RequirementRecord>} */ (store.get(programId))
     );
     return requirement;
 }
 
-export async function replaceRequirementsWithCow(
-    record: RequirementRecord,
-    previousProgramId?: string
-): Promise<void> {
+/**
+ * @param {RequirementRecord} record
+ * @param {string | undefined} previousProgramId
+ * @returns {Promise<void>}
+ */
+export async function replaceRequirementsWithCow(record, previousProgramId) {
     await withStores(
         [STORE_REQUIREMENTS, STORE_META],
         'readwrite',
@@ -325,10 +350,12 @@ export async function replaceRequirementsWithCow(
     );
 }
 
-export async function getCourse(
-    code: string
-): Promise<CourseRecord | undefined> {
-    const course = await withStore<CourseRecord>(
+/**
+ * @param {string} code
+ * @returns {Promise<CourseRecord | undefined>}
+ */
+export async function getCourse(code) {
+    const course = await withStore(
         STORE_COURSES,
         'readonly',
         (store) => /** @type {IDBRequest<CourseRecord>} */ (store.get(code))

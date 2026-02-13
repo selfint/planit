@@ -30,7 +30,7 @@ import {
 /** @template T */
 class FakeRequest {
     /** @type {T} */
-    result;
+    result = /** @type {T} */ (/** @type {unknown} */ (undefined));
     /** @type {Error | null} */
     error = null;
     /** @type {RequestCallback<T> | null} */
@@ -46,7 +46,7 @@ class FakeRequest {
 
     fireSuccess() {
         this.onsuccess?.call(
-            /** @type {IDBRequest<T>} */ (this),
+            /** @type {IDBRequest<T>} */ (/** @type {unknown} */ (this)),
             new Event('success')
         );
         this.afterSuccess?.();
@@ -96,7 +96,9 @@ class FakeCursor {
         }
 
         this.value = this.values[this.index];
-        this.request.result = /** @type {IDBCursorWithValue} */ (this);
+        this.request.result = /** @type {IDBCursorWithValue} */ (
+            /** @type {unknown} */ (this)
+        );
         queueMicrotask(() => {
             this.request.fireSuccess();
         });
@@ -131,7 +133,9 @@ class FakeObjectStore {
         queueMicrotask(() => {
             request.fireSuccess();
         });
-        return /** @type {IDBRequest<unknown>} */ (request);
+        return /** @type {IDBRequest<unknown>} */ (
+            /** @type {unknown} */ (request)
+        );
     }
 
     /** @param {unknown} value */
@@ -146,17 +150,22 @@ class FakeObjectStore {
         }
     }
 
-    delete(key: string): IDBRequest<unknown> {
-        const request = new FakeRequest<unknown>();
+    /** @param {string} key */
+    delete(key) {
+        /** @type {FakeRequest<unknown>} */
+        const request = new FakeRequest();
         this.store.data.delete(key);
         this.transaction.trackRequest(request);
         queueMicrotask(() => {
             request.fireSuccess();
         });
-        return request as unknown as IDBRequest<unknown>;
+        return /** @type {IDBRequest<unknown>} */ (
+            /** @type {unknown} */ (request)
+        );
     }
 
-    createIndex(name: string): void {
+    /** @param {string} name */
+    createIndex(name) {
         this.store.indexNames.add(name);
     }
 
@@ -172,17 +181,21 @@ class FakeObjectStore {
                 request.fireSuccess();
             });
             return /** @type {IDBRequest<IDBCursorWithValue | null>} */ (
-                request
+                /** @type {unknown} */ (request)
             );
         }
 
         const cursor = new FakeCursor(values, request);
-        request.result = /** @type {IDBCursorWithValue} */ (cursor);
+        request.result = /** @type {IDBCursorWithValue} */ (
+            /** @type {unknown} */ (cursor)
+        );
         this.transaction.trackCursorRequest(request, cursor);
         queueMicrotask(() => {
             request.fireSuccess();
         });
-        return /** @type {IDBRequest<IDBCursorWithValue | null>} */ (request);
+        return /** @type {IDBRequest<IDBCursorWithValue | null>} */ (
+            /** @type {unknown} */ (request)
+        );
     }
 }
 
@@ -254,7 +267,7 @@ class FakeTransaction {
         this.finished = true;
         queueMicrotask(() => {
             this.oncomplete?.call(
-                /** @type {IDBTransaction} */ (this),
+                /** @type {IDBTransaction} */ (/** @type {unknown} */ (this)),
                 new Event('complete')
             );
         });
@@ -322,7 +335,9 @@ function createFakeIndexedDB() {
             const isNew = existing === undefined;
             const db = existing ?? new FakeDatabase();
             dbs.set(name, db);
-            request.result = /** @type {IDBDatabase} */ (db);
+            request.result = /** @type {IDBDatabase} */ (
+                /** @type {unknown} */ (db)
+            );
 
             if (isNew) {
                 const upgradeTransaction = new FakeTransaction(db.getStores());
@@ -333,7 +348,9 @@ function createFakeIndexedDB() {
             queueMicrotask(() => {
                 if (isNew) {
                     request.onupgradeneeded?.call(
-                        /** @type {IDBOpenDBRequest} */ (request),
+                        /** @type {IDBOpenDBRequest} */ (
+                            /** @type {unknown} */ (request)
+                        ),
                         new Event('upgradeneeded')
                     );
                 }
@@ -343,7 +360,9 @@ function createFakeIndexedDB() {
                 request.fireSuccess();
             });
 
-            return /** @type {IDBOpenDBRequest} */ (request);
+            return /** @type {IDBOpenDBRequest} */ (
+                /** @type {unknown} */ (request)
+            );
         },
     });
 }
