@@ -79,12 +79,7 @@ files:
 
 Use this shape unless the codebase already provides a different pattern:
 
-Files:
-
-- `src/components/Component.html`
-- `src/components/Component.ts`
-- `src/components/Component.stories.ts`
-- `src/components/Component.md`
+### Component.html
 
 ```html
 <template>
@@ -94,6 +89,8 @@ Files:
     </section>
 </template>
 ```
+
+### Component.ts
 
 ```ts
 import templateHtml from './Component.html?raw';
@@ -117,4 +114,53 @@ export function Component(): HTMLElement {
 
     return root;
 }
+```
+
+### Component.stories.ts
+
+```ts
+import type { Meta, StoryObj } from '@storybook/html';
+
+import { Component } from './Component';
+
+const meta: Meta = {
+    title: 'Components/Component',
+    render: () => Component(),
+};
+
+export default meta;
+
+type Story = StoryObj;
+
+export const Default: Story = {};
+
+export const Dark: Story = {
+    globals: { theme: 'dark' },
+};
+```
+
+### Component.md
+
+```markdown
+# Component
+
+## Overview
+
+Describe what the component renders and where it is used.
+
+## Template Structure
+
+- Note key layout regions and slots.
+
+## Data Flow
+
+1. Outline how the TS wires the template and any events.
+
+## Dependencies
+
+- List related modules or assets.
+
+## Notes
+
+- Mention constraints or gotchas.
 ```
