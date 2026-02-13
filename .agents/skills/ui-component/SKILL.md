@@ -49,7 +49,7 @@ The app is always RTL and in Hebrew; inline all copy in Hebrew.
 Run the repository check script to ensure every component has the required
 files:
 
-`python .agents/skills/ui-component/scripts/verify_components.py`
+`python3 .agents/skills/ui-component/scripts/verify_components.py`
 
 ## Implementation Notes
 
