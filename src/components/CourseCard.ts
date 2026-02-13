@@ -29,12 +29,16 @@ export function CourseCard(
     const statusClass = options?.statusClass ?? DEFAULT_STATUS_CLASS;
     const emptyValue = options?.emptyValue ?? DEFAULT_EMPTY_VALUE;
     const titleText = course.name ?? DEFAULT_TITLE;
+    const hasTests = Array.isArray(course.tests)
+        ? course.tests.some((test) => test !== null)
+        : false;
+    const shapeClass = hasTests ? 'rounded-full' : 'rounded-[3px]';
 
     const statusDot = root.querySelector<HTMLSpanElement>(
         "[data-role='status-dot']"
     );
     if (statusDot !== null) {
-        statusDot.className = `size-2 rounded-full ${statusClass}`;
+        statusDot.className = `h-2.5 w-2.5 ${shapeClass} ${statusClass}`;
     }
 
     const points = root.querySelector<HTMLSpanElement>(
