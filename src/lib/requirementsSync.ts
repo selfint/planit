@@ -5,6 +5,7 @@ const REQUIREMENTS_META_KEYS = {
     activeCatalogId: 'requirementsActiveCatalogId',
     activeFacultyId: 'requirementsActiveFacultyId',
     activeProgramId: 'requirementsActiveProgramId',
+    activePath: 'requirementsActivePath',
     lastSync: 'requirementsLastSync',
 };
 
@@ -12,6 +13,7 @@ export type RequirementsSelection = {
     catalogId: string;
     facultyId: string;
     programId: string;
+    path?: string;
 };
 
 export type RequirementsSyncResult = {
@@ -30,11 +32,13 @@ function buildRequirementsUrl(selection: RequirementsSelection): string {
 export async function getActiveRequirementsSelection(): Promise<
     RequirementsSelection | undefined
 > {
-    const [catalogEntry, facultyEntry, programEntry] = await Promise.all([
-        getMeta(REQUIREMENTS_META_KEYS.activeCatalogId),
-        getMeta(REQUIREMENTS_META_KEYS.activeFacultyId),
-        getMeta(REQUIREMENTS_META_KEYS.activeProgramId),
-    ]);
+    const [catalogEntry, facultyEntry, programEntry, pathEntry] =
+        await Promise.all([
+            getMeta(REQUIREMENTS_META_KEYS.activeCatalogId),
+            getMeta(REQUIREMENTS_META_KEYS.activeFacultyId),
+            getMeta(REQUIREMENTS_META_KEYS.activeProgramId),
+            getMeta(REQUIREMENTS_META_KEYS.activePath),
+        ]);
 
     const catalogId =
         typeof catalogEntry?.value === 'string'
@@ -48,6 +52,8 @@ export async function getActiveRequirementsSelection(): Promise<
         typeof programEntry?.value === 'string'
             ? programEntry.value
             : undefined;
+    const pathValue =
+        typeof pathEntry?.value === 'string' ? pathEntry.value : undefined;
 
     if (
         catalogId === undefined ||
@@ -60,7 +66,15 @@ export async function getActiveRequirementsSelection(): Promise<
         return undefined;
     }
 
-    return { catalogId, facultyId, programId };
+    return {
+        catalogId,
+        facultyId,
+        programId,
+        path:
+            typeof pathValue === 'string' && pathValue.length > 0
+                ? pathValue
+                : undefined,
+    };
 }
 
 export async function syncRequirements(
@@ -93,6 +107,7 @@ export async function syncRequirements(
             catalogId: selection.catalogId,
             facultyId: selection.facultyId,
             programId: selection.programId,
+            path: selection.path,
             data,
         },
         previousProgramId

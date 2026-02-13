@@ -41,6 +41,7 @@ export type RequirementRecord = {
     programId: string;
     catalogId: string;
     facultyId: string;
+    path?: string;
     data: unknown;
 };
 
@@ -293,6 +294,10 @@ export async function replaceRequirementsWithCow(
             stores[STORE_META].put({
                 key: 'requirementsActiveProgramId',
                 value: record.programId,
+            });
+            stores[STORE_META].put({
+                key: 'requirementsActivePath',
+                value: record.path ?? '',
             });
         }
     );

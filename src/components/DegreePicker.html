@@ -9,7 +9,7 @@
                 בחר קטלוג ותכנית כדי לטעון דרישות.
             </p>
         </div>
-        <div class="grid gap-3 md:grid-cols-3">
+        <div class="flex flex-col gap-3">
             <label class="text-text-muted flex flex-col gap-2 text-xs">
                 <span>קטלוג</span>
                 <select
@@ -31,40 +31,36 @@
                     data-degree-program
                 ></select>
             </label>
+            <label class="text-text-muted flex flex-col gap-2 text-xs">
+                <span>מסלול</span>
+                <select
+                    class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm"
+                    data-degree-path
+                ></select>
+                <span class="text-text-muted text-xs" data-path-empty></span>
+            </label>
         </div>
         <div class="border-border/60 bg-surface-2/70 rounded-2xl border p-3">
-            <p class="text-text-muted mb-2 text-xs">פרטי קטלוג</p>
+            <p class="text-text-muted mb-2 text-xs">דרישות במסלול</p>
             <div class="border-border/50 overflow-hidden rounded-2xl border">
                 <table class="w-full text-xs">
-                    <tbody class="divide-border/40 divide-y" data-catalog-rows>
+                    <thead class="bg-surface-1/60 text-text-muted">
                         <tr>
-                            <td class="text-text-muted px-3 py-2">מזהה</td>
-                            <td class="text-text px-3 py-2" data-catalog-id>
-                                —
-                            </td>
+                            <th class="px-3 py-2 text-start font-medium">
+                                דרישה
+                            </th>
+                            <th class="px-3 py-2 text-start font-medium">
+                                סה״כ קורסים
+                            </th>
                         </tr>
+                    </thead>
+                    <tbody
+                        class="divide-border/40 divide-y"
+                        data-requirement-rows
+                    >
                         <tr>
-                            <td class="text-text-muted px-3 py-2">שם</td>
-                            <td class="text-text px-3 py-2" data-catalog-name>
-                                —
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-text-muted px-3 py-2">פקולטות</td>
-                            <td
-                                class="text-text px-3 py-2"
-                                data-catalog-faculty
-                            >
-                                —
-                            </td>
-                        </tr>
-                        <tr>
-                            <td class="text-text-muted px-3 py-2">תכניות</td>
-                            <td
-                                class="text-text px-3 py-2"
-                                data-catalog-program
-                            >
-                                —
+                            <td class="text-text px-3 py-2" colspan="2">
+                                בחר תכנית ומסלול כדי לראות דרישות.
                             </td>
                         </tr>
                     </tbody>

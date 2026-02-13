@@ -1,5 +1,5 @@
 import { initCatalogSync } from '$lib/catalogSync';
-import { getCatalogs } from '$lib/indexeddb';
+import { getCatalogs, getRequirement, setMeta } from '$lib/indexeddb';
 import {
     getActiveRequirementsSelection,
     syncRequirements,
@@ -13,11 +13,21 @@ type SelectionState = {
     catalogId: string;
     facultyId: string;
     programId: string;
+    path?: string;
 };
 
 type PickerState = {
     catalogs: CatalogMap;
     selection?: SelectionState;
+    requirement?: RequirementNode;
+};
+
+type RequirementNode = {
+    name?: string;
+    en?: string;
+    he?: string;
+    courses?: string[];
+    nested?: RequirementNode[];
 };
 
 export function DegreePicker(): HTMLElement {
@@ -44,16 +54,11 @@ export function DegreePicker(): HTMLElement {
     const status = root.querySelector<HTMLParagraphElement>(
         '[data-degree-status]'
     );
-    const catalogIdValue =
-        root.querySelector<HTMLTableCellElement>('[data-catalog-id]');
-    const catalogNameValue = root.querySelector<HTMLTableCellElement>(
-        '[data-catalog-name]'
-    );
-    const catalogFacultyValue = root.querySelector<HTMLTableCellElement>(
-        '[data-catalog-faculty]'
-    );
-    const catalogProgramValue = root.querySelector<HTMLTableCellElement>(
-        '[data-catalog-program]'
+    const pathSelect =
+        root.querySelector<HTMLSelectElement>('[data-degree-path]');
+    const pathEmpty = root.querySelector<HTMLSpanElement>('[data-path-empty]');
+    const requirementRows = root.querySelector<HTMLTableSectionElement>(
+        '[data-requirement-rows]'
     );
 
     if (
@@ -61,10 +66,9 @@ export function DegreePicker(): HTMLElement {
         facultySelect === null ||
         programSelect === null ||
         status === null ||
-        catalogIdValue === null ||
-        catalogNameValue === null ||
-        catalogFacultyValue === null ||
-        catalogProgramValue === null
+        pathSelect === null ||
+        pathEmpty === null ||
+        requirementRows === null
     ) {
         throw new Error('DegreePicker required elements not found');
     }
@@ -72,6 +76,7 @@ export function DegreePicker(): HTMLElement {
     const state: PickerState = {
         catalogs: {},
         selection: undefined,
+        requirement: undefined,
     };
 
     catalogSelect.addEventListener('change', () => {
@@ -83,11 +88,10 @@ export function DegreePicker(): HTMLElement {
                 catalogSelect,
                 facultySelect,
                 programSelect,
-                status,
-                catalogIdValue,
-                catalogNameValue,
-                catalogFacultyValue,
-                catalogProgramValue
+                pathSelect,
+                pathEmpty,
+                requirementRows,
+                status
             );
             return;
         }
@@ -95,9 +99,11 @@ export function DegreePicker(): HTMLElement {
             catalogId,
             facultyId: '',
             programId: '',
+            path: undefined,
         };
         updateFacultyOptions(state, facultySelect, programSelect);
         updateProgramOptions(state, programSelect);
+        resetRequirementView(pathSelect, pathEmpty, requirementRows);
         updateStatus(status, 'בחר פקולטה כדי להמשיך.');
     });
 
@@ -109,8 +115,10 @@ export function DegreePicker(): HTMLElement {
             ...state.selection,
             facultyId: facultySelect.value,
             programId: '',
+            path: undefined,
         };
         updateProgramOptions(state, programSelect);
+        resetRequirementView(pathSelect, pathEmpty, requirementRows);
         updateStatus(status, 'בחר תכנית כדי לטעון דרישות.');
     });
 
