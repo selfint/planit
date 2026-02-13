@@ -98,7 +98,7 @@ function applySkeleton(root: HTMLElement): void {
 
     if (statusDot !== null) {
         statusDot.className =
-            'h-2.5 w-2.5 rounded-none bg-gradient-to-l from-surface-2/70 via-surface-1/70 to-surface-2/70 animate-shimmer';
+            'h-2.5 w-2.5 rounded-none bg-gradient-to-l from-surface-2/90 via-surface-1/30 to-surface-2/90 animate-shimmer';
     }
     if (points !== null) {
         applySkeletonBlock(points, 'w-7', 'h-3');
@@ -123,9 +123,9 @@ function applySkeletonBlock(
     element.classList.add(
         'animate-shimmer',
         'bg-gradient-to-l',
-        'from-surface-2/70',
-        'via-surface-1/70',
-        'to-surface-2/70',
+        'from-surface-2/90',
+        'via-surface-1/30',
+        'to-surface-2/90',
         'text-transparent',
         'rounded-md',
         widthClass,

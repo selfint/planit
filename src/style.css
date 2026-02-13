@@ -40,5 +40,5 @@
 
 @utility animate-shimmer {
     background-size: 200% 100%;
-    animation: shimmer 1.6s ease-in-out infinite;
+    animation: shimmer 1.44s ease-in-out infinite;
 }
