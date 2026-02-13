@@ -122,7 +122,7 @@ function applySkeletonBlock(
     element.textContent = '';
     element.classList.add(
         'animate-pulse',
-        'bg-surface-2/100',
+        'bg-surface-2',
         'dark:bg-surface-2/85',
         'text-transparent',
         'rounded-md',
