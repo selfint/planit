@@ -51,3 +51,10 @@ Short summary of the module's responsibilities.
 
 - Describe what the module tests cover and the behaviors they validate.
 ```
+
+## Verification Script
+
+Run the repository check script to ensure every lib module has the required
+files:
+
+`python3 .agents/skills/lib-module/scripts/verify_modules.py`
