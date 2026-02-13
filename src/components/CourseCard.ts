@@ -8,6 +8,13 @@ export type CourseCardOptions = {
 };
 
 const DEFAULT_STATUS_CLASS = 'bg-success';
+const STATUS_CLASSES = [
+    'bg-success',
+    'bg-warning',
+    'bg-info',
+    'bg-danger',
+    'bg-accent',
+];
 const DEFAULT_EMPTY_VALUE = '—';
 const DEFAULT_TITLE = 'קורס ללא שם';
 
@@ -34,7 +41,10 @@ export function CourseCard(
     root.removeAttribute('data-skeleton');
     root.removeAttribute('aria-busy');
 
-    const statusClass = options?.statusClass ?? DEFAULT_STATUS_CLASS;
+    const statusClass =
+        options?.statusClass ??
+        getStatusClassFromCode(course.code) ??
+        DEFAULT_STATUS_CLASS;
     const emptyValue = options?.emptyValue ?? DEFAULT_EMPTY_VALUE;
     const titleText = course.name ?? DEFAULT_TITLE;
     const hasTests = Array.isArray(course.tests)
@@ -101,4 +111,17 @@ function formatCourseNumber(
         return emptyValue;
     }
     return value.toString();
+}
+
+function getStatusClassFromCode(code: string): string | undefined {
+    const normalized = code.trim();
+    if (normalized.length === 0) {
+        return undefined;
+    }
+    let hash = 0;
+    for (let index = 0; index < normalized.length; index += 1) {
+        hash =
+            (hash * 31 + normalized.charCodeAt(index)) % STATUS_CLASSES.length;
+    }
+    return STATUS_CLASSES[hash];
 }
