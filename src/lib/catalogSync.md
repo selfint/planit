@@ -29,4 +29,4 @@ Syncs the remote `catalogs.json` into IndexedDB with metadata for caching and fr
 
 ## Tests
 
-- `src/lib/catalogSync.test.ts`
+- Covers metadata caching, conditional fetch behavior, and offline/skip paths.

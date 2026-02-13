@@ -29,4 +29,4 @@ Helpers for detecting requirement paths, filtering by selected path, and countin
 
 ## Tests
 
-- `src/lib/requirementsUtils.test.ts`
+- Covers path detection, elective filtering, and recursive course counting.

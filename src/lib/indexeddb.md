@@ -30,4 +30,4 @@ IndexedDB access layer for courses, catalogs, requirements, and metadata.
 
 ## Tests
 
-- `src/lib/indexeddb.test.ts`
+- Covers store setup, metadata helpers, and course paging/sorting behaviors.

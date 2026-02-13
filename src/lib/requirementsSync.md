@@ -30,4 +30,4 @@ Fetches program requirements and stores them in IndexedDB with copy-on-write rep
 
 ## Tests
 
-- `src/lib/requirementsSync.test.ts`
+- Covers success/failure responses, COW replacement, and offline behavior.
