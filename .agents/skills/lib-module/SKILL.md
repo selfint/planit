@@ -1,6 +1,6 @@
 ---
 name: lib-module
-description: Document src/lib modules with adjacent .md files using a standard format. Use when asked to add or update documentation for lib module files.
+description: Document src/lib modules with adjacent .md files using a standard format. Use when asked to add or update documentation for lib module files, or whenever any file in src/lib is changed or added.
 ---
 
 # Lib Module
