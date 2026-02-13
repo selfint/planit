@@ -6,9 +6,7 @@ import templateHtml from './CourseTable.html?raw';
 const COURSE_TABLE_LIMIT = 12;
 const COURSE_COUNT_KEY = 'courseDataCount';
 const COURSE_REMOTE_UPDATED_KEY = 'courseDataRemoteUpdatedAt';
-const COURSE_COUNT_PREFIX = 'מוצגים';
-const COURSE_COUNT_SUFFIX = 'קורסים';
-const COURSE_COUNT_JOINER = 'מתוך';
+const COURSE_COUNT_SUFFIX = 'courses';
 const COURSE_LAST_UPDATE_EMPTY = 'עדכון אחרון: —';
 const COURSE_LAST_UPDATE_LABEL = 'עדכון אחרון';
 const COURSE_PAGE_LABEL = 'עמוד';
@@ -238,14 +236,9 @@ function updateCourseCount(
     metaValue: unknown
 ): void {
     const totalCount = parseMetaCount(metaValue);
-    const prefix = COURSE_COUNT_PREFIX;
     const suffix = COURSE_COUNT_SUFFIX;
-    const joiner = COURSE_COUNT_JOINER;
-    if (totalCount !== undefined && totalCount > visibleCount) {
-        count.textContent = `${prefix} ${String(visibleCount)} ${joiner} ${String(totalCount)} ${suffix}`;
-        return;
-    }
-    count.textContent = `${prefix} ${String(visibleCount)} ${suffix}`;
+    const displayedCount = totalCount ?? visibleCount;
+    count.textContent = `${String(displayedCount)} ${suffix}`;
 }
 
 function parseMetaCount(value: unknown): number | undefined {
