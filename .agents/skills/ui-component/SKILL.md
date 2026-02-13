@@ -125,17 +125,27 @@ import { Component } from './Component';
 
 const meta: Meta = {
     title: 'Components/Component',
-    render: () => Component(),
 };
 
 export default meta;
 
-type Story = StoryObj;
+export type Story = StoryObj;
 
-export const Default: Story = {};
+export const Default: Story = {
+    render: () => Component(),
+    globals: {
+        theme: 'light',
+    },
+};
 
 export const Dark: Story = {
+    render: () => Component(),
     globals: { theme: 'dark' },
+    parameters: {
+        backgrounds: {
+            default: 'dark',
+        },
+    },
 };
 ```
 
