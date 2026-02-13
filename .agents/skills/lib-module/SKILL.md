@@ -1,6 +1,6 @@
 ---
 name: lib-module
-description: Document src/lib modules with adjacent .md files using a standard format. Use when asked to add or update documentation for lib module files, or whenever any file in src/lib is changed or added.
+description: Use whenever a src/lib module is created or edited. Ensure the module has .ts, .test.ts, and .md files, and document it with adjacent .md using a standard format.
 ---
 
 # Lib Module
