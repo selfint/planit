@@ -32,7 +32,7 @@ export function CourseCard(
     const hasTests = Array.isArray(course.tests)
         ? course.tests.some((test) => test !== null)
         : false;
-    const shapeClass = hasTests ? 'rounded-full' : 'rounded-[3px]';
+    const shapeClass = hasTests ? 'rounded-full' : 'rounded-none';
 
     const statusDot = root.querySelector<HTMLSpanElement>(
         "[data-role='status-dot']"
