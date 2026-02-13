@@ -8,52 +8,49 @@ import { UpdateBanner } from './components/UpdateBanner';
 import appTemplate from './app.html?raw';
 import { initPWA } from '$lib/pwa';
 
-function initApp(): HTMLDivElement {
-    const app = document.querySelector<HTMLDivElement>('#app');
-    if (app === null) {
+/**
+ * @returns {HTMLDivElement}
+ */
+function initApp() {
+    const app = document.querySelector('#app');
+    if (!(app instanceof HTMLDivElement)) {
         throw new Error('Missing #app element');
     }
     app.innerHTML = appTemplate;
 
-    const headerHost = app.querySelector<HTMLElement>('[data-app-header]');
-    if (headerHost !== null) {
+    const headerHost = app.querySelector('[data-app-header]');
+    if (headerHost instanceof HTMLElement) {
         headerHost.replaceWith(AppHeader());
     }
 
-    const updateBannerHost = app.querySelector<HTMLElement>(
-        '[data-update-banner]'
-    );
-    if (updateBannerHost !== null) {
+    const updateBannerHost = app.querySelector('[data-update-banner]');
+    if (updateBannerHost instanceof HTMLElement) {
         updateBannerHost.replaceWith(UpdateBanner());
     }
 
-    const plannerOverviewHost = app.querySelector<HTMLElement>(
-        '[data-planner-overview]'
-    );
-    if (plannerOverviewHost !== null) {
+    const plannerOverviewHost = app.querySelector('[data-planner-overview]');
+    if (plannerOverviewHost instanceof HTMLElement) {
         plannerOverviewHost.replaceWith(PlannerOverview());
     }
 
-    const statusSidebarHost = app.querySelector<HTMLElement>(
-        '[data-status-sidebar]'
-    );
-    if (statusSidebarHost !== null) {
+    const statusSidebarHost = app.querySelector('[data-status-sidebar]');
+    if (statusSidebarHost instanceof HTMLElement) {
         statusSidebarHost.replaceWith(StatusSidebar());
     }
 
-    const footerHost = app.querySelector<HTMLElement>('[data-app-footer]');
-    if (footerHost !== null) {
+    const footerHost = app.querySelector('[data-app-footer]');
+    if (footerHost instanceof HTMLElement) {
         footerHost.replaceWith(AppFooter());
     }
 
     return app;
 }
 
-function main(): void {
+function main() {
     try {
         initApp();
         initPWA();
-    } catch (err: unknown) {
+    } catch (err) {
         console.error('Failed to start app:', err);
         process.exit(1);
     }

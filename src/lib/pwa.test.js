@@ -3,26 +3,30 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { PWA_UPDATE_EVENT, initPWA } from '$lib/pwa';
 
-type RegisterSW = (options?: {
-    immediate?: boolean;
-    onRegisteredSW?: (
-        swUrl: string,
-        registration: ServiceWorkerRegistration | undefined
-    ) => void;
-    onNeedRefresh?: () => void;
-}) => () => Promise<void>;
+/**
+ * @typedef {(options?: {
+ *   immediate?: boolean,
+ *   onRegisteredSW?: (
+ *     swUrl: string,
+ *     registration: ServiceWorkerRegistration | undefined
+ *   ) => void,
+ *   onNeedRefresh?: () => void
+ * }) => () => Promise<void>} RegisterSW
+ */
 
 const { registerSW } = vi.hoisted(() => ({
-    registerSW: vi.fn<RegisterSW>(),
+    registerSW: /** @type {import('vitest').MockInstance<RegisterSW>} */ (
+        vi.fn()
+    ),
 }));
 
 vi.mock('virtual:pwa-register', () => ({
     registerSW,
 }));
 
-type RegisterOptions = Parameters<RegisterSW>[0];
+/** @typedef {Parameters<RegisterSW>[0]} RegisterOptions */
 
-function fireLoad(): void {
+function fireLoad() {
     window.dispatchEvent(new Event('load'));
 }
 
@@ -48,16 +52,16 @@ describe('pwa lib', () => {
     });
 
     it('checks for updates on the interval', async () => {
-        let options: RegisterOptions | undefined;
-        registerSW.mockImplementation((opts): (() => Promise<void>) => {
+        /** @type {RegisterOptions | undefined} */
+        let options;
+        registerSW.mockImplementation((opts) => {
             options = opts;
-            return (): Promise<void> => Promise.resolve();
+            return () => Promise.resolve();
         });
         vi.stubGlobal(
             'fetch',
-            vi.fn(
-                (): Promise<Response> =>
-                    Promise.resolve({ status: 200 } as Response)
+            vi.fn(() =>
+                Promise.resolve(/** @type {Response} */ ({ status: 200 }))
             )
         );
         Object.defineProperty(window.navigator, 'onLine', {
@@ -69,10 +73,13 @@ describe('pwa lib', () => {
         fireLoad();
 
         const update = vi.fn();
-        options?.onRegisteredSW?.('sw.js', {
-            active: { state: 'activated' },
-            update,
-        } as unknown as ServiceWorkerRegistration);
+        options?.onRegisteredSW?.(
+            'sw.js',
+            /** @type {ServiceWorkerRegistration} */ ({
+                active: { state: 'activated' },
+                update,
+            })
+        );
 
         await vi.advanceTimersByTimeAsync(10 * 60 * 1000);
 
@@ -81,10 +88,11 @@ describe('pwa lib', () => {
     });
 
     it('auto-updates on initial load when refresh is needed', () => {
-        const updateSW = vi.fn<() => Promise<void>>(
-            (): Promise<void> => Promise.resolve()
-        );
-        registerSW.mockImplementation((opts): (() => Promise<void>) => {
+        const updateSW =
+            /** @type {import('vitest').MockInstance<() => Promise<void>>} */ (
+                vi.fn(() => Promise.resolve())
+            );
+        registerSW.mockImplementation((opts) => {
             opts?.onNeedRefresh?.();
             return updateSW;
         });
@@ -100,11 +108,13 @@ describe('pwa lib', () => {
     });
 
     it('dispatches update event when refresh is needed mid-session', () => {
-        let options: RegisterOptions | undefined;
-        const updateSW = vi.fn<() => Promise<void>>(
-            (): Promise<void> => Promise.resolve()
-        );
-        registerSW.mockImplementation((opts): (() => Promise<void>) => {
+        /** @type {RegisterOptions | undefined} */
+        let options;
+        const updateSW =
+            /** @type {import('vitest').MockInstance<() => Promise<void>>} */ (
+                vi.fn(() => Promise.resolve())
+            );
+        registerSW.mockImplementation((opts) => {
             options = opts;
             return updateSW;
         });
@@ -126,16 +136,16 @@ describe('pwa lib', () => {
     });
 
     it('checks for updates when back online or visible', async () => {
-        let options: RegisterOptions | undefined;
-        registerSW.mockImplementation((opts): (() => Promise<void>) => {
+        /** @type {RegisterOptions | undefined} */
+        let options;
+        registerSW.mockImplementation((opts) => {
             options = opts;
-            return (): Promise<void> => Promise.resolve();
+            return () => Promise.resolve();
         });
         vi.stubGlobal(
             'fetch',
-            vi.fn(
-                (): Promise<Response> =>
-                    Promise.resolve({ status: 200 } as Response)
+            vi.fn(() =>
+                Promise.resolve(/** @type {Response} */ ({ status: 200 }))
             )
         );
         Object.defineProperty(window.navigator, 'onLine', {
@@ -151,10 +161,13 @@ describe('pwa lib', () => {
         fireLoad();
 
         const update = vi.fn();
-        options?.onRegisteredSW?.('sw.js', {
-            active: { state: 'activated' },
-            update,
-        } as unknown as ServiceWorkerRegistration);
+        options?.onRegisteredSW?.(
+            'sw.js',
+            /** @type {ServiceWorkerRegistration} */ ({
+                active: { state: 'activated' },
+                update,
+            })
+        );
 
         await Promise.resolve();
 

@@ -13,15 +13,20 @@ const mockGetMeta = vi.mocked(getMeta);
 const mockSetMeta = vi.mocked(setMeta);
 const mockPutCourses = vi.mocked(putCourses);
 
-function stubNavigator(online: boolean): void {
+/** @param {boolean} online */
+function stubNavigator(online) {
     vi.stubGlobal('navigator', { onLine: online });
 }
 
-function stubFetch(impl: (input: RequestInfo) => Promise<Response>): void {
+/**
+ * @param {(input: RequestInfo) => Promise<Response>} impl
+ */
+function stubFetch(impl) {
     vi.stubGlobal('fetch', vi.fn(impl));
 }
 
-function getRequestUrl(input: RequestInfo): string {
+/** @param {RequestInfo} input */
+function getRequestUrl(input) {
     if (typeof input === 'string') {
         return input;
     }
@@ -37,7 +42,12 @@ function getRequestUrl(input: RequestInfo): string {
     return '';
 }
 
-function makeJsonResponse(data: unknown, init?: ResponseInit): Response {
+/**
+ * @param {unknown} data
+ * @param {ResponseInit | undefined} init
+ * @returns {Response}
+ */
+function makeJsonResponse(data, init) {
     return new Response(JSON.stringify(data), init);
 }
 

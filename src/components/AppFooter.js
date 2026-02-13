@@ -1,6 +1,9 @@
 import templateHtml from './AppFooter.html?raw';
 
-export function AppFooter(): HTMLElement {
+/**
+ * @returns {HTMLElement}
+ */
+export function AppFooter() {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -12,8 +15,8 @@ export function AppFooter(): HTMLElement {
         throw new Error('AppFooter template root not found');
     }
 
-    const buildSha = root.querySelector<HTMLElement>('[data-build-sha]');
-    if (buildSha !== null) {
+    const buildSha = root.querySelector('[data-build-sha]');
+    if (buildSha instanceof HTMLElement) {
         buildSha.textContent = `Build ${__BUILD_SHA__}`;
     }
 

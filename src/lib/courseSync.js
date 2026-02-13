@@ -1,5 +1,6 @@
 import { getMeta, putCourses, setMeta } from '$lib/indexeddb';
-import type { CourseRecord } from '$lib/indexeddb';
+
+/** @typedef {import('$lib/indexeddb').CourseRecord} CourseRecord */
 
 const COURSE_DATA_URL =
     'https://raw.githubusercontent.com/selfint/degree-planner/main/static/courseData.json';
@@ -13,21 +14,31 @@ const COURSE_META_KEYS = {
     lastChecked: 'courseDataLastChecked',
 };
 
-export type CourseSyncResult = {
-    status: 'updated' | 'skipped' | 'offline';
-    count?: number;
-};
+/**
+ * @typedef {{
+ *   status: 'updated' | 'skipped' | 'offline',
+ *   count?: number
+ * }} CourseSyncResult
+ */
 
-export type CourseSyncOptions = {
-    onSync?: (result: CourseSyncResult) => void;
-    onError?: (error: unknown) => void;
-};
+/**
+ * @typedef {{
+ *   onSync?: (result: CourseSyncResult) => void,
+ *   onError?: (error: unknown) => void
+ * }} CourseSyncOptions
+ */
 
-function isOnline(): boolean {
+/**
+ * @returns {boolean}
+ */
+function isOnline() {
     return 'onLine' in navigator ? navigator.onLine : true;
 }
 
-async function fetchCourseData(): Promise<Response> {
+/**
+ * @returns {Promise<Response>}
+ */
+async function fetchCourseData() {
     const [etagEntry, lastModifiedEntry] = await Promise.all([
         getMeta(COURSE_META_KEYS.etag),
         getMeta(COURSE_META_KEYS.lastModified),
@@ -51,7 +62,10 @@ async function fetchCourseData(): Promise<Response> {
     return fetch(COURSE_DATA_URL, { headers });
 }
 
-async function fetchRemoteUpdatedAt(): Promise<string | undefined> {
+/**
+ * @returns {Promise<string | undefined>}
+ */
+async function fetchRemoteUpdatedAt() {
     const response = await fetch(
         'https://api.github.com/repos/selfint/degree-planner/commits?path=static/courseData.json&per_page=1',
         {
@@ -69,9 +83,9 @@ async function fetchRemoteUpdatedAt(): Promise<string | undefined> {
         );
     }
 
-    const data = (await response.json()) as {
-        commit?: { committer?: { date?: string } };
-    }[];
+    const raw = /** @type {unknown} */ (await response.json());
+    const data =
+        /** @type {{ commit?: { committer?: { date?: string } } }[]} */ (raw);
     const date = data[0]?.commit?.committer?.date;
     if (typeof date === 'string' && date.length > 0) {
         return date;
@@ -80,9 +94,11 @@ async function fetchRemoteUpdatedAt(): Promise<string | undefined> {
     return undefined;
 }
 
-async function shouldFetchCourseData(
-    remoteUpdatedAt: string | undefined
-): Promise<boolean> {
+/**
+ * @param {string | undefined} remoteUpdatedAt
+ * @returns {Promise<boolean>}
+ */
+async function shouldFetchCourseData(remoteUpdatedAt) {
     const [storedRemote, lastSync] = await Promise.all([
         getMeta(COURSE_META_KEYS.remoteUpdatedAt),
         getMeta(COURSE_META_KEYS.lastSync),
@@ -107,12 +123,16 @@ async function shouldFetchCourseData(
     return lastSync?.value === undefined;
 }
 
-export async function syncCourseData(): Promise<CourseSyncResult> {
+/**
+ * @returns {Promise<CourseSyncResult>}
+ */
+export async function syncCourseData() {
     if (!isOnline()) {
         return { status: 'offline' };
     }
 
-    let remoteUpdatedAt: string | undefined;
+    /** @type {string | undefined} */
+    let remoteUpdatedAt;
     try {
         remoteUpdatedAt = await fetchRemoteUpdatedAt();
     } catch (error) {
@@ -151,7 +171,8 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
         );
     }
 
-    const data = (await response.json()) as Record<string, CourseRecord>;
+    const raw = /** @type {unknown} */ (await response.json());
+    const data = /** @type {Record<string, CourseRecord>} */ (raw);
     const courses = Object.values(data);
 
     await putCourses(courses);
@@ -184,8 +205,12 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
     return { status: 'updated', count: courses.length };
 }
 
-export function initCourseSync(options?: CourseSyncOptions): void {
-    async function runSync(): Promise<void> {
+/**
+ * @param {CourseSyncOptions | undefined} options
+ * @returns {void}
+ */
+export function initCourseSync(options) {
+    async function runSync() {
         try {
             const result = await syncCourseData();
             options?.onSync?.(result);
@@ -195,7 +220,7 @@ export function initCourseSync(options?: CourseSyncOptions): void {
         }
     }
 
-    function handleOnline(): void {
+    function handleOnline() {
         void runSync();
     }
 

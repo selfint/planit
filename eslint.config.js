@@ -12,8 +12,8 @@ export default defineConfig(
         ignores: [
             'dist/',
             'node_modules/',
-            'vite.config.ts',
-            'prettier.config.ts',
+            'vite.config.js',
+            'prettier.config.js',
         ],
     },
     {
@@ -21,7 +21,7 @@ export default defineConfig(
         languageOptions: { parser: eslintParserHTML },
     },
     {
-        files: ['src/**/*.{js,ts,html}'],
+        files: ['src/**/*.{js,html}'],
         extends: [
             eslintPluginBetterTailwindcss.configs['recommended-error'],
             eslintPluginBetterTailwindcss.configs['stylistic-error'],
@@ -40,7 +40,7 @@ export default defineConfig(
         },
     },
     {
-        files: ['{src,tests}/**/*.{js,mjs,cjs,ts,mts,cts}'],
+        files: ['{src,tests}/**/*.{js,mjs,cjs}'],
         languageOptions: {
             globals: {
                 ...globals.browser,
@@ -48,7 +48,7 @@ export default defineConfig(
             },
             parserOptions: {
                 projectService: {
-                    allowDefaultProject: ['*.config.js', '*.config.ts'],
+                    allowDefaultProject: ['*.config.js'],
                     defaultProject: 'tsconfig.json',
                 },
             },
@@ -112,6 +112,12 @@ export default defineConfig(
                     allowNumber: true,
                 },
             ],
+        },
+    },
+    {
+        files: ['{src,tests}/**/*.{js,mjs,cjs}'],
+        rules: {
+            '@typescript-eslint/explicit-function-return-type': 'off',
         },
     },
 

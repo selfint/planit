@@ -1,20 +1,20 @@
-import type { Meta, StoryObj } from '@storybook/html';
-
 import { PWA_UPDATE_EVENT } from '$lib/pwa';
 
 import { UpdateBanner } from './UpdateBanner';
 
-const meta: Meta = {
+/** @type {import('@storybook/html').Meta} */
+const meta = {
     title: 'Components/UpdateBanner',
 };
 
 export default meta;
 
-export type Story = StoryObj;
+/** @typedef {import('@storybook/html').StoryObj} Story */
 
-function renderBanner(): HTMLElement {
+/** @returns {HTMLElement} */
+function renderBanner() {
     const banner = UpdateBanner();
-    const updateSW = (): Promise<void> => Promise.resolve();
+    const updateSW = () => Promise.resolve();
     window.dispatchEvent(
         new CustomEvent(PWA_UPDATE_EVENT, {
             detail: { updateSW },
@@ -23,14 +23,16 @@ function renderBanner(): HTMLElement {
     return banner;
 }
 
-export const Default: Story = {
+/** @type {Story} */
+export const Default = {
     render: () => renderBanner(),
     globals: {
         theme: 'light',
     },
 };
 
-export const Dark: Story = {
+/** @type {Story} */
+export const Dark = {
     render: () => renderBanner(),
     globals: {
         theme: 'dark',

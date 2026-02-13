@@ -1,40 +1,40 @@
 ---
 name: ui-component
-description: Build or update UI components using vanilla HTML and TypeScript (using <template>), with Storybook support, and documentation in a Markdown file (in total, 4 files per component). Use when asked to create new components, refactor UI into HTML+TS templates, or add stories/docs for existing components in this codebase.
+description: Build or update UI components using vanilla HTML and JavaScript + JSDoc (using <template>), with Storybook support, and documentation in a Markdown file (in total, 4 files per component). Use when asked to create new components, refactor UI into HTML+TS templates, or add stories/docs for existing components in this codebase.
 ---
 
 # Ui Component
 
 ## Overview
 
-Build UI components as four files (.html, .ts, .stories.ts, .md). Use <template> cloning and data attributes for wiring, keep UI copy in Hebrew (RTL), and keep the docs concise and technical.
+Build UI components as four files (.html, .js, .stories.js, .md). Use <template> cloning and data attributes for wiring, keep UI copy in Hebrew (RTL), and keep the docs concise and technical.
 
 ## Workflow
 
-1. Confirm or create the component set at src/components/<Component>.html, src/components/<Component>.ts, src/components/<Component>.stories.ts, and src/components/<Component>.md.
+1. Confirm or create the component set at src/components/<Component>.html, src/components/<Component>.js, src/components/<Component>.stories.js, and src/components/<Component>.md.
 2. Put all markup and Tailwind classes in the HTML file inside a <template>.
-3. Keep logic, state, and event wiring in the TS file; do not embed scripts in HTML.
-4. In the .html file, put all text in Hebrew; except for PlanIt and other english-only phrases.
-5. Use data attributes in the HTML to target elements from TS.
+3. Keep logic, state, and event wiring in the JS file; do not embed scripts in HTML.
+4. Put all text in Hebrew; except for PlanIt and other english-only phrases.
+5. Use data attributes in the HTML to target elements from JS.
 6. Export a component factory (e.g., `AppHeader()`) that returns a root element.
-7. Add a concise Markdown doc in `src/components/<Component>.md` following the structure below. Component `.md` docs are always written in English.
-8. Create `src/components/<Component>.stories.ts` alongside the component.
+7. Add a concise Markdown doc in `src/components/<Component>.md` following the structure below.
+8. Create `src/components/<Component>.stories.js` alongside the component.
 9. Define `Default` and `Dark` stories, setting `globals: { theme: 'dark' }` for dark.
-10. Rely on `.storybook/preview.ts` for the wrapper; do not create custom preview shells.
+10. Rely on `.storybook/preview.js` for the wrapper; do not create custom preview shells.
 11. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
 
 ## Component Contract
 
 - Files:
     - src/components/<Component>.html
-    - src/components/<Component>.ts
-    - src/components/<Component>.stories.ts
+    - src/components/<Component>.js
+    - src/components/<Component>.stories.js
     - src/components/<Component>.md
 - HTML:
     - Wrap the component in a single <template> element.
     - Keep UI-only concerns here: structure, Tailwind classes, semantic tags.
     - Use data attributes like data-role, data-action, data-slot for hooks.
-- TypeScript:
+- JavaScript:
     - Import the HTML as text (`?raw` with Vite).
     - Clone the template into a root element.
     - Bind events and return a single root element.
@@ -56,17 +56,17 @@ files:
 ## Implementation Notes
 
 - Prefer small, explicit factories: `Component()` returns an element.
-- Keep state in TS; avoid inline styles or JS in HTML.
+- Keep state in JS; avoid inline styles or JS in HTML.
 - Use class toggles or data attributes for stateful styling.
 - Keep DOM queries scoped to the cloned root element.
 - Use `replaceWith(Component())` when swapping placeholders.
 
 ## Storybook Integration
 
-- Story files live next to components: src/components/<Component>.stories.ts.
+- Story files live next to components: src/components/<Component>.stories.js.
 - Use the global Storybook theme toolbar and backgrounds.
 - Define two stories: `Default` (light) and `Dark` (set `globals: { theme: 'dark' }`).
-- Do not build custom preview wrappers; rely on `.storybook/preview.ts` for theme wrapping.
+- Do not build custom preview wrappers; rely on `.storybook/preview.js` for theme wrapping.
 
 ## Dark Mode Behavior
 
@@ -89,12 +89,15 @@ Use this shape unless the codebase already provides a different pattern:
 </template>
 ```
 
-### Component.ts
+### Component.js
 
-```ts
+```js
 import templateHtml from './Component.html?raw';
 
-export function Component(): HTMLElement {
+/**
+ * @returns {HTMLElement}
+ */
+export function Component() {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -106,8 +109,8 @@ export function Component(): HTMLElement {
         throw new Error('Component template root not found');
     }
 
-    const title = root.querySelector<HTMLElement>("[data-role='title']");
-    if (title !== null) {
+    const title = root.querySelector("[data-role='title']");
+    if (title instanceof HTMLElement) {
         title.textContent = 'Title';
     }
 
@@ -115,29 +118,30 @@ export function Component(): HTMLElement {
 }
 ```
 
-### Component.stories.ts
+### Component.stories.js
 
-```ts
-import type { Meta, StoryObj } from '@storybook/html';
-
+```js
 import { Component } from './Component';
 
-const meta: Meta = {
+/** @type {import('@storybook/html').Meta} */
+const meta = {
     title: 'Components/Component',
 };
 
 export default meta;
 
-export type Story = StoryObj;
+/** @typedef {import('@storybook/html').StoryObj} Story */
 
-export const Default: Story = {
+/** @type {Story} */
+export const Default = {
     render: () => Component(),
     globals: {
         theme: 'light',
     },
 };
 
-export const Dark: Story = {
+/** @type {Story} */
+export const Dark = {
     render: () => Component(),
     globals: { theme: 'dark' },
     parameters: {
@@ -163,7 +167,7 @@ Describe what the component renders and where it is used.
 
 ## Data Flow
 
-1. Outline how the TS wires the template and any events.
+1. Outline how the JS wires the template and any events.
 
 ## Dependencies
 

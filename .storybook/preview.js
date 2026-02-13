@@ -1,12 +1,13 @@
 import './preview.css';
 
-import type { Decorator, Preview } from '@storybook/html';
+/**
+ * @typedef {'light' | 'dark'} ThemeMode
+ */
 
-type ThemeMode = 'light' | 'dark';
-
-const themeDecorator: Decorator = (Story, context) => {
+/** @type {import('@storybook/html').Decorator} */
+const themeDecorator = (Story, context) => {
     const wrapper = document.createElement('div');
-    const theme = (context.globals.theme as ThemeMode) ?? 'light';
+    const theme = /** @type {ThemeMode} */ (context.globals.theme ?? 'light');
 
     wrapper.dataset.theme = theme;
     wrapper.className = 'min-h-screen text-text md:p-6';
@@ -22,7 +23,8 @@ const themeDecorator: Decorator = (Story, context) => {
     return wrapper;
 };
 
-const preview: Preview = {
+/** @type {import('@storybook/html').Preview} */
+const preview = {
     decorators: [themeDecorator],
     globalTypes: {
         theme: {

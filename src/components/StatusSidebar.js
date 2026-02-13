@@ -1,6 +1,9 @@
 import templateHtml from './StatusSidebar.html?raw';
 
-export function StatusSidebar(): HTMLElement {
+/**
+ * @returns {HTMLElement}
+ */
+export function StatusSidebar() {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;

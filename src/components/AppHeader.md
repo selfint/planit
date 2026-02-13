@@ -4,7 +4,7 @@
 
 AppHeader renders the top navigation header with the Planit logo, title lockup,
 status chips, and primary section tabs. It pairs the template in
-`src/components/AppHeader.html` with logic in `src/components/AppHeader.ts`.
+`src/components/AppHeader.html` with logic in `src/components/AppHeader.js`.
 
 ## Template Structure
 

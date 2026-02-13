@@ -1,11 +1,17 @@
 import { defineConfig } from 'vitest/config';
-import type { Plugin } from 'vite';
 import { resolve } from 'node:path';
+
+/**
+ * @typedef {import('vite').Plugin} Plugin
+ */
 
 const VIRTUAL_PWA_REGISTER_ID = 'virtual:pwa-register';
 const RESOLVED_VIRTUAL_PWA_REGISTER_ID = `\0${VIRTUAL_PWA_REGISTER_ID}`;
 
-function virtualPwaRegister(): Plugin {
+/**
+ * @returns {Plugin}
+ */
+function virtualPwaRegister() {
     return {
         name: 'vitest-virtual-pwa-register',
         resolveId(id) {
@@ -33,6 +39,6 @@ export default defineConfig({
     },
     test: {
         environment: 'node',
-        include: ['src/**/*.test.{ts,js}', 'src/**/*.spec.{ts,js}'],
+        include: ['src/**/*.test.js', 'src/**/*.spec.js'],
     },
 });

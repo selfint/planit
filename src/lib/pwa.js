@@ -1,20 +1,25 @@
 import { registerSW } from 'virtual:pwa-register';
 
 export const PWA_UPDATE_EVENT = 'planit:pwa-update';
-export type UpdateSW = (reloadPage?: boolean) => Promise<void>;
 
-export function initPWA(): void {
+/**
+ * @typedef {(reloadPage?: boolean) => Promise<void>} UpdateSW
+ */
+
+export function initPWA() {
     let swActivated = false;
     let pendingUpdate = false;
     let pendingInitialUpdate = false;
     let bannerShown = false;
-    let updateSW: UpdateSW | null = null;
-    let checkForUpdate: (() => Promise<void>) | null = null;
+    /** @type {UpdateSW | null} */
+    let updateSW = null;
+    /** @type {(() => Promise<void>) | null} */
+    let checkForUpdate = null;
     let isInitialLoad = true;
     // check for updates every 10 minutes
     const period = 10 * 60 * 1000;
 
-    const dispatchUpdateAvailable = (): void => {
+    const dispatchUpdateAvailable = () => {
         if (updateSW === null) {
             return;
         }
@@ -31,7 +36,7 @@ export function initPWA(): void {
         );
     };
 
-    const handleUpdateAvailable = (): void => {
+    const handleUpdateAvailable = () => {
         if (isInitialLoad) {
             if ('onLine' in navigator && !navigator.onLine) {
                 pendingUpdate = true;
@@ -101,7 +106,7 @@ export function initPWA(): void {
                         return;
                     }
                     installing.addEventListener('statechange', (e) => {
-                        const sw = e.target as ServiceWorker;
+                        const sw = /** @type {ServiceWorker} */ (e.target);
                         swActivated = sw.state === 'activated';
                         if (swActivated) {
                             checkForUpdate = registerPeriodicSync(
@@ -125,17 +130,17 @@ export function initPWA(): void {
 
 /**
  * This function will register a periodic sync check.
+ * @param {number} period
+ * @param {string} swUrl
+ * @param {ServiceWorkerRegistration} r
+ * @returns {() => Promise<void>}
  */
-function registerPeriodicSync(
-    period: number,
-    swUrl: string,
-    r: ServiceWorkerRegistration
-): () => Promise<void> {
+function registerPeriodicSync(period, swUrl, r) {
     if (period <= 0) {
-        return async (): Promise<void> => Promise.resolve();
+        return async () => Promise.resolve();
     }
 
-    const checkForSwUpdate = async (): Promise<void> => {
+    const checkForSwUpdate = async () => {
         if ('onLine' in navigator && !navigator.onLine) {
             return;
         }
@@ -153,7 +158,7 @@ function registerPeriodicSync(
         }
     };
 
-    setInterval((): void => {
+    setInterval(() => {
         void checkForSwUpdate();
     }, period);
 

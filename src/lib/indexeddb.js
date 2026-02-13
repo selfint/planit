@@ -6,31 +6,35 @@ export const STORE_META = 'meta';
 export const STORE_CATALOGS = 'catalogs';
 export const STORE_REQUIREMENTS = 'requirements';
 
-export type MetaEntry = {
-    key: string;
-    value: unknown;
-};
+/**
+ * @typedef {{
+ *   key: string,
+ *   value: unknown
+ * }} MetaEntry
+ */
 
-export type CourseRecord = {
-    code: string;
-    median?: number;
-    about?: string;
-    points?: number;
-    name?: string;
-    connections?: {
-        dependencies?: string[][];
-        adjacent?: string[];
-        exclusive?: string[];
-    };
-    seasons?: string[];
-    faculty?: string;
-    current?: boolean;
-    tests?: ({
-        year: number;
-        monthIndex: number;
-        day: number;
-    } | null)[];
-};
+/**
+ * @typedef {{
+ *   code: string,
+ *   median?: number,
+ *   about?: string,
+ *   points?: number,
+ *   name?: string,
+ *   connections?: {
+ *     dependencies?: string[][],
+ *     adjacent?: string[],
+ *     exclusive?: string[]
+ *   },
+ *   seasons?: string[],
+ *   faculty?: string,
+ *   current?: boolean,
+ *   tests?: ({
+ *     year: number,
+ *     monthIndex: number,
+ *     day: number
+ *   } | null)[]
+ * }} CourseRecord
+ */
 
 export type CatalogRecord = {
     id: string;
@@ -45,11 +49,18 @@ export type RequirementRecord = {
     data: unknown;
 };
 
-function openDb(): Promise<IDBDatabase> {
+/** @typedef {'code' | 'name' | 'points' | 'median'} CourseSortKey */
+/** @typedef {'asc' | 'desc'} CourseSortDirection */
+/** @typedef {Omit<IDBCursorWithValue, 'value'> & { value: CourseRecord }} CourseCursor */
+
+/**
+ * @returns {Promise<IDBDatabase>}
+ */
+function openDb() {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
 
-        request.onupgradeneeded = (): void => {
+        request.onupgradeneeded = () => {
             const db = request.result;
             const tx = request.transaction;
             if (tx === null) {
@@ -81,21 +92,24 @@ function openDb(): Promise<IDBDatabase> {
             }
         };
 
-        request.onsuccess = (): void => {
+        request.onsuccess = () => {
             resolve(request.result);
         };
 
-        request.onerror = (): void => {
+        request.onerror = () => {
             reject(request.error ?? new Error('Failed to open IndexedDB'));
         };
     });
 }
 
-async function withStore<T>(
-    storeName: string,
-    mode: IDBTransactionMode,
-    fn: (store: IDBObjectStore) => IDBRequest<T> | null
-): Promise<T | undefined> {
+/**
+ * @template T
+ * @param {string} storeName
+ * @param {IDBTransactionMode} mode
+ * @param {(store: IDBObjectStore) => IDBRequest<T> | null} fn
+ * @returns {Promise<T | undefined>}
+ */
+async function withStore(storeName, mode, fn) {
     const db = await openDb();
 
     return new Promise((resolve, reject) => {
@@ -104,24 +118,24 @@ async function withStore<T>(
         const request = fn(store);
 
         if (request !== null) {
-            request.onsuccess = (): void => {
+            request.onsuccess = () => {
                 resolve(request.result);
             };
-            request.onerror = (): void => {
+            request.onerror = () => {
                 reject(request.error ?? new Error('IndexedDB request failed'));
             };
         }
 
-        tx.oncomplete = (): void => {
+        tx.oncomplete = () => {
             db.close();
             if (request === null) {
                 resolve(undefined);
             }
         };
-        tx.onerror = (): void => {
+        tx.onerror = () => {
             reject(tx.error ?? new Error('IndexedDB transaction failed'));
         };
-        tx.onabort = (): void => {
+        tx.onabort = () => {
             reject(tx.error ?? new Error('IndexedDB transaction aborted'));
         };
     });
@@ -162,17 +176,25 @@ export async function getMeta(key: string): Promise<MetaEntry | undefined> {
     return entry;
 }
 
-export async function setMeta(entry: MetaEntry): Promise<void> {
+/**
+ * @param {MetaEntry} entry
+ * @returns {Promise<void>}
+ */
+export async function setMeta(entry) {
     await withStore(STORE_META, 'readwrite', (store) => {
         store.put(entry);
         return null;
     });
 }
 
-export async function putCourses(courses: CourseRecord[]): Promise<void> {
+/**
+ * @param {CourseRecord[]} courses
+ * @returns {Promise<void>}
+ */
+export async function putCourses(courses) {
     const db = await openDb();
 
-    await new Promise<void>((resolve, reject) => {
+    await new Promise((resolve, reject) => {
         const tx = db.transaction(STORE_COURSES, 'readwrite');
         const store = tx.objectStore(STORE_COURSES);
 
@@ -180,14 +202,14 @@ export async function putCourses(courses: CourseRecord[]): Promise<void> {
             store.put(course);
         }
 
-        tx.oncomplete = (): void => {
+        tx.oncomplete = () => {
             db.close();
             resolve();
         };
-        tx.onerror = (): void => {
+        tx.onerror = () => {
             reject(tx.error ?? new Error('Failed to save courses'));
         };
-        tx.onabort = (): void => {
+        tx.onabort = () => {
             reject(tx.error ?? new Error('Course transaction aborted'));
         };
     });
@@ -309,21 +331,32 @@ export async function getCourse(
     const course = await withStore<CourseRecord>(
         STORE_COURSES,
         'readonly',
-        (store) => store.get(code)
+        (store) => /** @type {IDBRequest<CourseRecord>} */ (store.get(code))
     );
     return course;
 }
 
-export async function getCourses(limit: number): Promise<CourseRecord[]> {
+/**
+ * @param {number} limit
+ * @returns {Promise<CourseRecord[]>}
+ */
+export async function getCourses(limit) {
     return getCoursesPage(limit, 0);
 }
 
+/**
+ * @param {number} limit
+ * @param {number} offset
+ * @param {CourseSortKey} sortKey
+ * @param {CourseSortDirection} sortDirection
+ * @returns {Promise<CourseRecord[]>}
+ */
 export async function getCoursesPageSorted(
-    limit: number,
-    offset: number,
-    sortKey: 'code' | 'name' | 'points' | 'median',
-    sortDirection: 'asc' | 'desc'
-): Promise<CourseRecord[]> {
+    limit,
+    offset,
+    sortKey,
+    sortDirection
+) {
     if (limit <= 0 || offset < 0) {
         return [];
     }
@@ -331,7 +364,8 @@ export async function getCoursesPageSorted(
     const db = await openDb();
 
     return new Promise((resolve, reject) => {
-        const results: CourseRecord[] = [];
+        /** @type {CourseRecord[]} */
+        const results = [];
         const tx = db.transaction(STORE_COURSES, 'readonly');
         const store = tx.objectStore(STORE_COURSES);
         const source = getCourseSortSource(store, sortKey);
@@ -340,20 +374,23 @@ export async function getCoursesPageSorted(
         let requestedMissingPass = false;
 
         const countRequest = source.count();
-        countRequest.onsuccess = (): void => {
+        countRequest.onsuccess = () => {
             definedCount = countRequest.result;
             runDefinedPass();
         };
-        countRequest.onerror = (): void => {
+        countRequest.onerror = () => {
             reject(countRequest.error ?? new Error('Failed to count courses'));
         };
 
-        function runDefinedPass(): void {
+        function runDefinedPass() {
+            /** @type {IDBRequest<IDBCursorWithValue | null>} */
             const request = source.openCursor(null, direction);
             let skipped = false;
 
-            request.onsuccess = (): void => {
-                const cursor = request.result;
+            request.onsuccess = () => {
+                const cursor = /** @type {CourseCursor | null} */ (
+                    request.result
+                );
                 if (cursor === null || results.length >= limit) {
                     if (!requestedMissingPass) {
                         requestedMissingPass = true;
@@ -368,7 +405,7 @@ export async function getCoursesPageSorted(
                     return;
                 }
 
-                const value = cursor.value as CourseRecord;
+                const value = cursor.value;
                 if (isMissingSortValue(value, sortKey)) {
                     cursor.continue();
                     return;
@@ -378,28 +415,31 @@ export async function getCoursesPageSorted(
                 cursor.continue();
             };
 
-            request.onerror = (): void => {
+            request.onerror = () => {
                 reject(request.error ?? new Error('Failed to read courses'));
             };
         }
 
-        function runMissingPass(): void {
+        function runMissingPass() {
             const missingNeeded = limit - results.length;
             if (missingNeeded <= 0) {
                 return;
             }
 
             const missingSkip = Math.max(0, offset - definedCount);
+            /** @type {IDBRequest<IDBCursorWithValue | null>} */
             const request = store.openCursor();
             let skipped = false;
 
-            request.onsuccess = (): void => {
-                const cursor = request.result;
+            request.onsuccess = () => {
+                const cursor = /** @type {CourseCursor | null} */ (
+                    request.result
+                );
                 if (cursor === null || results.length >= limit) {
                     return;
                 }
 
-                const value = cursor.value as CourseRecord;
+                const value = cursor.value;
                 if (!isMissingSortValue(value, sortKey)) {
                     cursor.continue();
                     return;
@@ -415,28 +455,30 @@ export async function getCoursesPageSorted(
                 cursor.continue();
             };
 
-            request.onerror = (): void => {
+            request.onerror = () => {
                 reject(request.error ?? new Error('Failed to read courses'));
             };
         }
 
-        tx.oncomplete = (): void => {
+        tx.oncomplete = () => {
             db.close();
             resolve(results);
         };
-        tx.onerror = (): void => {
+        tx.onerror = () => {
             reject(tx.error ?? new Error('Course transaction failed'));
         };
-        tx.onabort = (): void => {
+        tx.onabort = () => {
             reject(tx.error ?? new Error('Course transaction aborted'));
         };
     });
 }
 
-export async function getCoursesPage(
-    limit: number,
-    offset: number
-): Promise<CourseRecord[]> {
+/**
+ * @param {number} limit
+ * @param {number} offset
+ * @returns {Promise<CourseRecord[]>}
+ */
+export async function getCoursesPage(limit, offset) {
     if (limit <= 0 || offset < 0) {
         return [];
     }
@@ -444,14 +486,16 @@ export async function getCoursesPage(
     const db = await openDb();
 
     return new Promise((resolve, reject) => {
-        const results: CourseRecord[] = [];
+        /** @type {CourseRecord[]} */
+        const results = [];
         let skipped = false;
         const tx = db.transaction(STORE_COURSES, 'readonly');
         const store = tx.objectStore(STORE_COURSES);
+        /** @type {IDBRequest<IDBCursorWithValue | null>} */
         const request = store.openCursor();
 
-        request.onsuccess = (): void => {
-            const cursor = request.result;
+        request.onsuccess = () => {
+            const cursor = /** @type {CourseCursor | null} */ (request.result);
             if (cursor === null || results.length >= limit) {
                 return;
             }
@@ -462,31 +506,33 @@ export async function getCoursesPage(
                 return;
             }
 
-            results.push(cursor.value as CourseRecord);
+            results.push(cursor.value);
             cursor.continue();
         };
 
-        request.onerror = (): void => {
+        request.onerror = () => {
             reject(request.error ?? new Error('Failed to read courses'));
         };
 
-        tx.oncomplete = (): void => {
+        tx.oncomplete = () => {
             db.close();
             resolve(results);
         };
-        tx.onerror = (): void => {
+        tx.onerror = () => {
             reject(tx.error ?? new Error('Course transaction failed'));
         };
-        tx.onabort = (): void => {
+        tx.onabort = () => {
             reject(tx.error ?? new Error('Course transaction aborted'));
         };
     });
 }
 
-function getCourseSortSource(
-    store: IDBObjectStore,
-    sortKey: 'code' | 'name' | 'points' | 'median'
-): IDBObjectStore | IDBIndex {
+/**
+ * @param {IDBObjectStore} store
+ * @param {CourseSortKey} sortKey
+ * @returns {IDBObjectStore | IDBIndex}
+ */
+function getCourseSortSource(store, sortKey) {
     switch (sortKey) {
         case 'code':
             return store;
@@ -499,14 +545,20 @@ function getCourseSortSource(
     }
 }
 
-function getCursorDirection(sortDirection: 'asc' | 'desc'): IDBCursorDirection {
+/**
+ * @param {CourseSortDirection} sortDirection
+ * @returns {IDBCursorDirection}
+ */
+function getCursorDirection(sortDirection) {
     return sortDirection === 'desc' ? 'prev' : 'next';
 }
 
-function isMissingSortValue(
-    course: CourseRecord,
-    sortKey: 'code' | 'name' | 'points' | 'median'
-): boolean {
+/**
+ * @param {CourseRecord} course
+ * @param {CourseSortKey} sortKey
+ * @returns {boolean}
+ */
+function isMissingSortValue(course, sortKey) {
     switch (sortKey) {
         case 'code':
             return course.code.length === 0;

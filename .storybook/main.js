@@ -1,8 +1,8 @@
-import type { StorybookConfig } from '@storybook/html-vite';
 import tailwindcss from '@tailwindcss/vite';
 import { resolve } from 'node:path';
 
-const config: StorybookConfig = {
+/** @type {import('@storybook/html-vite').StorybookConfig} */
+const config = {
     stories: ['../src/**/*.stories.@(ts|tsx|js|jsx|mdx)'],
     addons: [
         '@storybook/addon-links',

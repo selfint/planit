@@ -4,7 +4,7 @@
 
 AppFooter renders the bottom meta bar with a PWA status line and build
 information. It pairs the template in `src/components/AppFooter.html` with
-logic in `src/components/AppFooter.ts`.
+logic in `src/components/AppFooter.js`.
 
 ## Template Structure
 

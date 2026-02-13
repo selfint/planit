@@ -4,7 +4,7 @@ from pathlib import Path
 import sys
 
 
-REQUIRED_EXTENSIONS = ('.ts', '.html', '.stories.ts', '.md')
+REQUIRED_EXTENSIONS = ('.js', '.html', '.stories.js', '.md')
 
 
 def find_repo_root(start: Path) -> Path | None:
@@ -28,10 +28,10 @@ def main() -> int:
         name = path.name
         if name.startswith('.'):
             continue
-        if name.endswith('.stories.ts'):
-            component_names.add(name[: -len('.stories.ts')])
+        if name.endswith('.stories.js'):
+            component_names.add(name[: -len('.stories.js')])
             continue
-        for ext in ('.ts', '.html', '.md'):
+        for ext in ('.js', '.html', '.md'):
             if name.endswith(ext):
                 component_names.add(name[: -len(ext)])
                 break
@@ -49,7 +49,7 @@ def main() -> int:
             print(entry, file=sys.stderr)
         return 1
 
-    print('All components have .ts, .html, .stories.ts, and .md files.')
+    print('All components have .js, .html, .stories.js, and .md files.')
     return 0
 
 

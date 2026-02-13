@@ -2,7 +2,10 @@ import logoUrl from '../assets/logo.webp';
 import templateHtml from './AppHeader.html?raw';
 import titleSvg from '../assets/Title.svg?raw';
 
-export function AppHeader(): HTMLElement {
+/**
+ * @returns {HTMLElement}
+ */
+export function AppHeader() {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -14,16 +17,16 @@ export function AppHeader(): HTMLElement {
         throw new Error('AppHeader template root not found');
     }
 
-    const logo = root.querySelector<HTMLImageElement>('[data-logo]');
-    if (logo !== null) {
+    const logo = root.querySelector('[data-logo]');
+    if (logo instanceof HTMLImageElement) {
         logo.src = logoUrl;
     }
 
-    const title = root.querySelector<HTMLDivElement>('[data-title]');
-    if (title !== null) {
+    const title = root.querySelector('[data-title]');
+    if (title instanceof HTMLDivElement) {
         title.innerHTML = titleSvg;
-        const svg = title.querySelector<SVGElement>('svg');
-        if (svg !== null) {
+        const svg = title.querySelector('svg');
+        if (svg instanceof SVGElement) {
             svg.setAttribute('class', 'h-full w-auto');
         }
     }

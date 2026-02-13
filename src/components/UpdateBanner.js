@@ -1,10 +1,15 @@
-import { PWA_UPDATE_EVENT, type UpdateSW } from '$lib/pwa';
+import { PWA_UPDATE_EVENT } from '$lib/pwa';
 
 import templateHtml from './UpdateBanner.html?raw';
 
-type UpdateDetail = { updateSW?: UpdateSW };
+/** @typedef {import('$lib/pwa').UpdateSW} UpdateSW */
 
-export function UpdateBanner(): HTMLElement {
+/** @typedef {{ updateSW?: UpdateSW }} UpdateDetail */
+
+/**
+ * @returns {HTMLElement}
+ */
+export function UpdateBanner() {
     const host = document.createElement('div');
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
@@ -17,21 +22,21 @@ export function UpdateBanner(): HTMLElement {
         throw new Error('UpdateBanner template root not found');
     }
 
-    const action = root.querySelector<HTMLButtonElement>(
-        '[data-update-action]'
-    );
-    if (action === null) {
+    const action = root.querySelector('[data-update-action]');
+    if (!(action instanceof HTMLButtonElement)) {
         throw new Error('UpdateBanner action not found');
     }
 
-    let pendingUpdate: UpdateSW | null = null;
+    /** @type {UpdateSW | null} */
+    let pendingUpdate = null;
 
-    const showBanner = (updateSW: UpdateSW): void => {
+    /** @param {UpdateSW} updateSW */
+    const showBanner = (updateSW) => {
         pendingUpdate = updateSW;
         host.append(root);
     };
 
-    const hideBanner = (): void => {
+    const hideBanner = () => {
         root.remove();
     };
 
@@ -49,7 +54,7 @@ export function UpdateBanner(): HTMLElement {
         if ('onLine' in navigator && !navigator.onLine) {
             return;
         }
-        const detail = (event as CustomEvent<UpdateDetail>).detail;
+        const detail = /** @type {CustomEvent<UpdateDetail>} */ (event).detail;
         if (typeof detail.updateSW !== 'function') {
             return;
         }

@@ -4,7 +4,7 @@
 
 CourseTable renders a paged, sortable view of courses stored in IndexedDB.
 It pairs the template in `src/components/CourseTable.html` with logic in
-`src/components/CourseTable.ts` and updates itself on sync events.
+`src/components/CourseTable.js` and updates itself on sync events.
 
 ## Template Structure
 
@@ -42,8 +42,8 @@ It pairs the template in `src/components/CourseTable.html` with logic in
 
 ## Dependencies
 
-- Data access: `src/db/indexeddb.ts` (`getAllCourses`, `getMeta`).
-- Sync: `src/sync/courseSync` (`initCourseSync`).
+- Data access: `src/lib/indexeddb.js` (`getCoursesPageSorted`, `getMeta`).
+- Sync: `src/lib/courseSync.js` (`initCourseSync`).
 - Template: `src/components/CourseTable.html`.
 
 ## Notes

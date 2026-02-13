@@ -12,29 +12,41 @@ import {
     setMeta,
 } from '$lib/indexeddb';
 
-type StoreConfig = {
-    keyPath: string;
-    data: Map<string, unknown>;
-    indexNames: Set<string>;
-};
+/**
+ * @typedef {{
+ *   keyPath: string,
+ *   data: Map<string, unknown>,
+ *   indexNames: Set<string>
+ * }} StoreConfig
+ */
 
-type StoreMap = Map<string, StoreConfig>;
+/** @typedef {Map<string, StoreConfig>} StoreMap */
 
-type RequestCallback<T> = ((this: IDBRequest<T>, ev: Event) => unknown) | null;
+/**
+ * @template T
+ * @typedef {(this: IDBRequest<T>, ev: Event) => unknown} RequestCallback
+ */
 
-class FakeRequest<T> {
-    result!: T;
-    error: Error | null = null;
-    onsuccess: RequestCallback<T> = null;
-    onerror: RequestCallback<T> = null;
-    onupgradeneeded: ((this: IDBOpenDBRequest, ev: Event) => unknown) | null =
-        null;
-    transaction: FakeTransaction | null = null;
-    afterSuccess: (() => void) | null = null;
+/** @template T */
+class FakeRequest {
+    /** @type {T} */
+    result;
+    /** @type {Error | null} */
+    error = null;
+    /** @type {RequestCallback<T> | null} */
+    onsuccess = null;
+    /** @type {RequestCallback<T> | null} */
+    onerror = null;
+    /** @type {((this: IDBOpenDBRequest, ev: Event) => unknown) | null} */
+    onupgradeneeded = null;
+    /** @type {FakeTransaction | null} */
+    transaction = null;
+    /** @type {(() => void) | null} */
+    afterSuccess = null;
 
-    fireSuccess(): void {
+    fireSuccess() {
         this.onsuccess?.call(
-            this as unknown as IDBRequest<T>,
+            /** @type {IDBRequest<T>} */ (this),
             new Event('success')
         );
         this.afterSuccess?.();
@@ -42,34 +54,39 @@ class FakeRequest<T> {
 }
 
 class FakeCursor {
-    value: unknown;
-    private index = 0;
-    private readonly values: unknown[];
-    private readonly request: FakeRequest<IDBCursorWithValue | null>;
+    /** @type {unknown} */
+    value;
+    index = 0;
+    /** @type {unknown[]} */
+    values;
+    /** @type {FakeRequest<IDBCursorWithValue | null>} */
+    request;
     requested = false;
 
-    constructor(
-        values: unknown[],
-        request: FakeRequest<IDBCursorWithValue | null>
-    ) {
+    /**
+     * @param {unknown[]} values
+     * @param {FakeRequest<IDBCursorWithValue | null>} request
+     */
+    constructor(values, request) {
         this.values = values;
         this.request = request;
         this.value = values[0];
     }
 
-    advance(count: number): void {
+    /** @param {number} count */
+    advance(count) {
         this.index += count;
         this.requested = true;
         this.updateRequest();
     }
 
-    continue(): void {
+    continue() {
         this.index += 1;
         this.requested = true;
         this.updateRequest();
     }
 
-    private updateRequest(): void {
+    updateRequest() {
         if (this.index >= this.values.length) {
             this.request.result = null;
             queueMicrotask(() => {
@@ -79,7 +96,7 @@ class FakeCursor {
         }
 
         this.value = this.values[this.index];
-        this.request.result = this as unknown as IDBCursorWithValue;
+        this.request.result = /** @type {IDBCursorWithValue} */ (this);
         queueMicrotask(() => {
             this.request.fireSuccess();
         });
@@ -87,32 +104,42 @@ class FakeCursor {
 }
 
 class FakeObjectStore {
-    private readonly store: StoreConfig;
-    private readonly transaction: FakeTransaction;
-    readonly indexNames = {
-        contains: (name: string): boolean => this.store.indexNames.has(name),
+    /** @type {StoreConfig} */
+    store;
+    /** @type {FakeTransaction} */
+    transaction;
+    indexNames = {
+        /** @param {string} name */
+        contains: (name) => this.store.indexNames.has(name),
     };
 
-    constructor(store: StoreConfig, transaction: FakeTransaction) {
+    /**
+     * @param {StoreConfig} store
+     * @param {FakeTransaction} transaction
+     */
+    constructor(store, transaction) {
         this.store = store;
         this.transaction = transaction;
     }
 
-    get(key: string): IDBRequest<unknown> {
-        const request = new FakeRequest<unknown>();
+    /** @param {string} key */
+    get(key) {
+        /** @type {FakeRequest<unknown>} */
+        const request = new FakeRequest();
         request.result = this.store.data.get(key);
         this.transaction.trackRequest(request);
         queueMicrotask(() => {
             request.fireSuccess();
         });
-        return request as unknown as IDBRequest<unknown>;
+        return /** @type {IDBRequest<unknown>} */ (request);
     }
 
-    put(value: unknown): void {
+    /** @param {unknown} value */
+    put(value) {
         if (typeof value !== 'object' || value === null) {
             return;
         }
-        const record = value as Record<string, unknown>;
+        const record = /** @type {Record<string, unknown>} */ (value);
         const keyValue = record[this.store.keyPath];
         if (typeof keyValue === 'string' && keyValue.length > 0) {
             this.store.data.set(keyValue, value);
@@ -133,8 +160,10 @@ class FakeObjectStore {
         this.store.indexNames.add(name);
     }
 
-    openCursor(): IDBRequest<IDBCursorWithValue | null> {
-        const request = new FakeRequest<IDBCursorWithValue | null>();
+    /** @returns {IDBRequest<IDBCursorWithValue | null>} */
+    openCursor() {
+        /** @type {FakeRequest<IDBCursorWithValue | null>} */
+        const request = new FakeRequest();
         const values = Array.from(this.store.data.values());
         if (values.length === 0) {
             request.result = null;
@@ -142,29 +171,36 @@ class FakeObjectStore {
             queueMicrotask(() => {
                 request.fireSuccess();
             });
-            return request as unknown as IDBRequest<IDBCursorWithValue | null>;
+            return /** @type {IDBRequest<IDBCursorWithValue | null>} */ (
+                request
+            );
         }
 
         const cursor = new FakeCursor(values, request);
-        request.result = cursor as unknown as IDBCursorWithValue;
+        request.result = /** @type {IDBCursorWithValue} */ (cursor);
         this.transaction.trackCursorRequest(request, cursor);
         queueMicrotask(() => {
             request.fireSuccess();
         });
-        return request as unknown as IDBRequest<IDBCursorWithValue | null>;
+        return /** @type {IDBRequest<IDBCursorWithValue | null>} */ (request);
     }
 }
 
 class FakeTransaction {
-    oncomplete: ((this: IDBTransaction, ev: Event) => unknown) | null = null;
-    onerror: ((this: IDBTransaction, ev: Event) => unknown) | null = null;
-    onabort: ((this: IDBTransaction, ev: Event) => unknown) | null = null;
+    /** @type {((this: IDBTransaction, ev: Event) => unknown) | null} */
+    oncomplete = null;
+    /** @type {((this: IDBTransaction, ev: Event) => unknown) | null} */
+    onerror = null;
+    /** @type {((this: IDBTransaction, ev: Event) => unknown) | null} */
+    onabort = null;
 
-    private pending = 0;
-    private finished = false;
-    private readonly stores: StoreMap;
+    pending = 0;
+    finished = false;
+    /** @type {StoreMap} */
+    stores;
 
-    constructor(stores: StoreMap) {
+    /** @param {StoreMap} stores */
+    constructor(stores) {
         this.stores = stores;
         queueMicrotask(() => {
             if (this.pending === 0) {
@@ -173,7 +209,8 @@ class FakeTransaction {
         });
     }
 
-    objectStore(name: string): FakeObjectStore {
+    /** @param {string} name */
+    objectStore(name) {
         const store = this.stores.get(name);
         if (store === undefined) {
             throw new Error(`Missing store ${name}`);
@@ -181,9 +218,10 @@ class FakeTransaction {
         return new FakeObjectStore(store, this);
     }
 
-    trackRequest<T>(request: FakeRequest<T>): void {
+    /** @template T @param {FakeRequest<T>} request */
+    trackRequest(request) {
         this.pending += 1;
-        request.afterSuccess = (): void => {
+        request.afterSuccess = () => {
             this.pending -= 1;
             if (this.pending <= 0) {
                 this.finish();
@@ -191,12 +229,13 @@ class FakeTransaction {
         };
     }
 
-    trackCursorRequest(
-        request: FakeRequest<IDBCursorWithValue | null>,
-        cursor: FakeCursor
-    ): void {
+    /**
+     * @param {FakeRequest<IDBCursorWithValue | null>} request
+     * @param {FakeCursor} cursor
+     */
+    trackCursorRequest(request, cursor) {
         this.pending += 1;
-        request.afterSuccess = (): void => {
+        request.afterSuccess = () => {
             if (cursor.requested) {
                 cursor.requested = false;
                 return;
@@ -208,14 +247,14 @@ class FakeTransaction {
         };
     }
 
-    private finish(): void {
+    finish() {
         if (this.finished) {
             return;
         }
         this.finished = true;
         queueMicrotask(() => {
             this.oncomplete?.call(
-                this as unknown as IDBTransaction,
+                /** @type {IDBTransaction} */ (this),
                 new Event('complete')
             );
         });
@@ -223,21 +262,26 @@ class FakeTransaction {
 }
 
 class FakeDatabase {
-    private readonly stores: StoreMap = new Map();
-    private upgradeTransaction: FakeTransaction | null = null;
-    readonly objectStoreNames = {
-        contains: (name: string): boolean => this.stores.has(name),
+    /** @type {StoreMap} */
+    stores = new Map();
+    /** @type {FakeTransaction | null} */
+    upgradeTransaction = null;
+    objectStoreNames = {
+        /** @param {string} name */
+        contains: (name) => this.stores.has(name),
     };
 
-    createObjectStore(
-        name: string,
-        options?: { keyPath: string }
-    ): FakeObjectStore {
+    /**
+     * @param {string} name
+     * @param {{ keyPath: string } | undefined} options
+     */
+    createObjectStore(name, options) {
         const keyPath = options?.keyPath ?? 'id';
-        const storeConfig: StoreConfig = {
+        /** @type {StoreConfig} */
+        const storeConfig = {
             keyPath,
             data: new Map(),
-            indexNames: new Set<string>(),
+            indexNames: new Set(),
         };
         this.stores.set(name, storeConfig);
         const transaction =
@@ -245,33 +289,40 @@ class FakeDatabase {
         return new FakeObjectStore(storeConfig, transaction);
     }
 
-    setUpgradeTransaction(transaction: FakeTransaction | null): void {
+    /** @param {FakeTransaction | null} transaction */
+    setUpgradeTransaction(transaction) {
         this.upgradeTransaction = transaction;
     }
 
-    transaction(_name: string): FakeTransaction {
+    /** @param {string} _name */
+    transaction(_name) {
         return new FakeTransaction(this.stores);
     }
 
-    getStores(): StoreMap {
+    /** @returns {StoreMap} */
+    getStores() {
         return this.stores;
     }
 
-    close(): void {
+    close() {
         return;
     }
 }
 
-function createFakeIndexedDB(): IDBFactory {
-    const dbs = new Map<string, FakeDatabase>();
-    return {
-        open(name: string): IDBOpenDBRequest {
-            const request = new FakeRequest<IDBDatabase>();
+/** @returns {IDBFactory} */
+function createFakeIndexedDB() {
+    /** @type {Map<string, FakeDatabase>} */
+    const dbs = new Map();
+    return /** @type {IDBFactory} */ ({
+        /** @param {string} name */
+        open(name) {
+            /** @type {FakeRequest<IDBDatabase>} */
+            const request = new FakeRequest();
             const existing = dbs.get(name);
             const isNew = existing === undefined;
             const db = existing ?? new FakeDatabase();
             dbs.set(name, db);
-            request.result = db as unknown as IDBDatabase;
+            request.result = /** @type {IDBDatabase} */ (db);
 
             if (isNew) {
                 const upgradeTransaction = new FakeTransaction(db.getStores());
@@ -282,7 +333,7 @@ function createFakeIndexedDB(): IDBFactory {
             queueMicrotask(() => {
                 if (isNew) {
                     request.onupgradeneeded?.call(
-                        request as unknown as IDBOpenDBRequest,
+                        /** @type {IDBOpenDBRequest} */ (request),
                         new Event('upgradeneeded')
                     );
                 }
@@ -292,9 +343,9 @@ function createFakeIndexedDB(): IDBFactory {
                 request.fireSuccess();
             });
 
-            return request as unknown as IDBOpenDBRequest;
+            return /** @type {IDBOpenDBRequest} */ (request);
         },
-    } as IDBFactory;
+    });
 }
 
 describe('indexeddb lib', () => {

@@ -2,7 +2,10 @@ import { CourseTable } from './CourseTable';
 import { DegreePicker } from './DegreePicker';
 import templateHtml from './PlannerOverview.html?raw';
 
-export function PlannerOverview(): HTMLElement {
+/**
+ * @returns {HTMLElement}
+ */
+export function PlannerOverview() {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -14,10 +17,8 @@ export function PlannerOverview(): HTMLElement {
         throw new Error('PlannerOverview template root not found');
     }
 
-    const courseTableHost = root.querySelector<HTMLElement>(
-        '[data-course-table]'
-    );
-    if (courseTableHost !== null) {
+    const courseTableHost = root.querySelector('[data-course-table]');
+    if (courseTableHost instanceof HTMLElement) {
         courseTableHost.replaceWith(CourseTable());
     }
 

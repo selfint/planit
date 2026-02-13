@@ -13,23 +13,30 @@ const COURSE_PAGE_LABEL = 'עמוד';
 const COURSE_PAGE_JOINER = 'מתוך';
 const COURSE_EMPTY_VALUE = '—';
 
-type CourseRowData = {
-    code: string;
-    name?: string;
-    points?: number;
-    median?: number;
-};
+/**
+ * @typedef {{
+ *   code: string,
+ *   name?: string,
+ *   points?: number,
+ *   median?: number
+ * }} CourseRowData
+ */
 
-type CourseSortKey = 'code' | 'name' | 'points' | 'median';
-type CourseSortDirection = 'asc' | 'desc';
+/** @typedef {'code' | 'name' | 'points' | 'median'} CourseSortKey */
+/** @typedef {'asc' | 'desc'} CourseSortDirection */
 
-type CourseTableState = {
-    pageIndex: number;
-    sortKey: CourseSortKey;
-    sortDirection: CourseSortDirection;
-};
+/**
+ * @typedef {{
+ *   pageIndex: number,
+ *   sortKey: CourseSortKey,
+ *   sortDirection: CourseSortDirection
+ * }} CourseTableState
+ */
 
-export function CourseTable(): HTMLElement {
+/**
+ * @returns {HTMLElement}
+ */
+export function CourseTable() {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -41,44 +48,36 @@ export function CourseTable(): HTMLElement {
         throw new Error('CourseTable template root not found');
     }
 
-    const rows =
-        root.querySelector<HTMLTableSectionElement>('[data-course-rows]');
-    const empty = root.querySelector<HTMLParagraphElement>(
-        '[data-course-empty]'
-    );
-    const count = root.querySelector<HTMLParagraphElement>(
-        '[data-course-count]'
-    );
-    const lastUpdated = root.querySelector<HTMLParagraphElement>(
-        '[data-course-last-updated]'
-    );
-    const pageLabel = root.querySelector<HTMLSpanElement>('[data-course-page]');
-    const prevButton =
-        root.querySelector<HTMLButtonElement>('[data-course-prev]');
-    const nextButton =
-        root.querySelector<HTMLButtonElement>('[data-course-next]');
-    const sortButtons = Array.from(
-        root.querySelectorAll<HTMLButtonElement>('[data-course-sort]')
-    );
+    const rows = root.querySelector('[data-course-rows]');
+    const empty = root.querySelector('[data-course-empty]');
+    const count = root.querySelector('[data-course-count]');
+    const lastUpdated = root.querySelector('[data-course-last-updated]');
+    const pageLabel = root.querySelector('[data-course-page]');
+    const prevButton = root.querySelector('[data-course-prev]');
+    const nextButton = root.querySelector('[data-course-next]');
+    /** @type {HTMLButtonElement[]} */
+    const sortButtons = Array.from(root.querySelectorAll('[data-course-sort]'));
+    /** @type {HTMLSpanElement[]} */
     const sortIndicators = Array.from(
-        root.querySelectorAll<HTMLSpanElement>('[data-sort-indicator]')
+        root.querySelectorAll('[data-sort-indicator]')
     );
 
     if (
-        rows === null ||
-        empty === null ||
-        count === null ||
-        lastUpdated === null ||
-        pageLabel === null ||
-        prevButton === null ||
-        nextButton === null ||
+        !(rows instanceof HTMLTableSectionElement) ||
+        !(empty instanceof HTMLParagraphElement) ||
+        !(count instanceof HTMLParagraphElement) ||
+        !(lastUpdated instanceof HTMLParagraphElement) ||
+        !(pageLabel instanceof HTMLSpanElement) ||
+        !(prevButton instanceof HTMLButtonElement) ||
+        !(nextButton instanceof HTMLButtonElement) ||
         sortButtons.length === 0 ||
         sortIndicators.length === 0
     ) {
         throw new Error('CourseTable required elements not found');
     }
 
-    const state: CourseTableState = {
+    /** @type {CourseTableState} */
+    const state = {
         pageIndex: 0,
         sortKey: 'code',
         sortDirection: 'asc',
@@ -182,18 +181,31 @@ export function CourseTable(): HTMLElement {
     return root;
 }
 
+/**
+ * @param {CourseTableState} state
+ * @param {HTMLTableSectionElement} rows
+ * @param {HTMLParagraphElement} empty
+ * @param {HTMLParagraphElement} count
+ * @param {HTMLParagraphElement} lastUpdated
+ * @param {HTMLSpanElement} pageLabel
+ * @param {HTMLButtonElement} prevButton
+ * @param {HTMLButtonElement} nextButton
+ * @param {HTMLButtonElement[]} sortButtons
+ * @param {HTMLSpanElement[]} sortIndicators
+ * @returns {Promise<void>}
+ */
 async function loadCourseTable(
-    state: CourseTableState,
-    rows: HTMLTableSectionElement,
-    empty: HTMLParagraphElement,
-    count: HTMLParagraphElement,
-    lastUpdated: HTMLParagraphElement,
-    pageLabel: HTMLSpanElement,
-    prevButton: HTMLButtonElement,
-    nextButton: HTMLButtonElement,
-    sortButtons: HTMLButtonElement[],
-    sortIndicators: HTMLSpanElement[]
-): Promise<void> {
+    state,
+    rows,
+    empty,
+    count,
+    lastUpdated,
+    pageLabel,
+    prevButton,
+    nextButton,
+    sortButtons,
+    sortIndicators
+) {
     const [pageCourses, countMeta, updatedMeta] = await Promise.all([
         getCoursesPageSorted(
             COURSE_TABLE_LIMIT,
@@ -230,18 +242,24 @@ async function loadCourseTable(
     );
 }
 
-function updateCourseCount(
-    count: HTMLParagraphElement,
-    visibleCount: number,
-    metaValue: unknown
-): void {
+/**
+ * @param {HTMLParagraphElement} count
+ * @param {number} visibleCount
+ * @param {unknown} metaValue
+ * @returns {void}
+ */
+function updateCourseCount(count, visibleCount, metaValue) {
     const totalCount = parseMetaCount(metaValue);
     const suffix = COURSE_COUNT_SUFFIX;
     const displayedCount = totalCount ?? visibleCount;
     count.textContent = `${String(displayedCount)} ${suffix}`;
 }
 
-function parseMetaCount(value: unknown): number | undefined {
+/**
+ * @param {unknown} value
+ * @returns {number | undefined}
+ */
+function parseMetaCount(value) {
     if (typeof value === 'number' && Number.isFinite(value)) {
         return value;
     }
@@ -256,10 +274,12 @@ function parseMetaCount(value: unknown): number | undefined {
     return undefined;
 }
 
-function updateLastUpdated(
-    element: HTMLParagraphElement,
-    metaValue: unknown
-): void {
+/**
+ * @param {HTMLParagraphElement} element
+ * @param {unknown} metaValue
+ * @returns {void}
+ */
+function updateLastUpdated(element, metaValue) {
     const formattedDate = formatRemoteUpdatedAt(metaValue);
     if (formattedDate === undefined) {
         element.textContent = COURSE_LAST_UPDATE_EMPTY;
@@ -269,7 +289,11 @@ function updateLastUpdated(
     element.textContent = `${label}: ${formattedDate}`;
 }
 
-function formatRemoteUpdatedAt(metaValue: unknown): string | undefined {
+/**
+ * @param {unknown} metaValue
+ * @returns {string | undefined}
+ */
+function formatRemoteUpdatedAt(metaValue) {
     if (typeof metaValue !== 'string' || metaValue.length === 0) {
         return undefined;
     }
@@ -282,14 +306,23 @@ function formatRemoteUpdatedAt(metaValue: unknown): string | undefined {
     return date.toLocaleDateString();
 }
 
+/**
+ * @param {HTMLSpanElement} label
+ * @param {HTMLButtonElement} prevButton
+ * @param {HTMLButtonElement} nextButton
+ * @param {number} pageIndex
+ * @param {unknown} metaValue
+ * @param {number} visibleCount
+ * @returns {void}
+ */
 function updateCoursePagination(
-    label: HTMLSpanElement,
-    prevButton: HTMLButtonElement,
-    nextButton: HTMLButtonElement,
-    pageIndex: number,
-    metaValue: unknown,
-    visibleCount: number
-): void {
+    label,
+    prevButton,
+    nextButton,
+    pageIndex,
+    metaValue,
+    visibleCount
+) {
     const totalCount = parseMetaCount(metaValue);
     const totalPages =
         totalCount !== undefined
@@ -309,7 +342,11 @@ function updateCoursePagination(
     togglePaginationButtonState(nextButton);
 }
 
-function togglePaginationButtonState(button: HTMLButtonElement): void {
+/**
+ * @param {HTMLButtonElement} button
+ * @returns {void}
+ */
+function togglePaginationButtonState(button) {
     if (button.disabled) {
         button.classList.add('opacity-60');
         button.classList.add('cursor-not-allowed');
@@ -319,7 +356,11 @@ function togglePaginationButtonState(button: HTMLButtonElement): void {
     }
 }
 
-function createCourseRow(course: CourseRowData): HTMLTableRowElement {
+/**
+ * @param {CourseRowData} course
+ * @returns {HTMLTableRowElement}
+ */
+function createCourseRow(course) {
     const row = document.createElement('tr');
     row.className = 'text-text';
     const emptyValue = getEmptyValueLabel();
@@ -346,10 +387,12 @@ function createCourseRow(course: CourseRowData): HTMLTableRowElement {
     return row;
 }
 
-function createCourseCell(
-    text: string,
-    className?: string
-): HTMLTableCellElement {
+/**
+ * @param {string} text
+ * @param {string | undefined} className
+ * @returns {HTMLTableCellElement}
+ */
+function createCourseCell(text, className) {
     const cell = document.createElement('td');
     cell.className =
         className !== undefined && className.length > 0
@@ -359,18 +402,29 @@ function createCourseCell(
     return cell;
 }
 
-function formatCourseNumber(value?: number): string {
+/**
+ * @param {number | undefined} value
+ * @returns {string}
+ */
+function formatCourseNumber(value) {
     if (value === undefined || !Number.isFinite(value)) {
         return getEmptyValueLabel();
     }
     return value.toString();
 }
 
-function getEmptyValueLabel(): string {
+/**
+ * @returns {string}
+ */
+function getEmptyValueLabel() {
     return COURSE_EMPTY_VALUE;
 }
 
-function parseSortKey(value: string | undefined): CourseSortKey | undefined {
+/**
+ * @param {string | undefined} value
+ * @returns {CourseSortKey | undefined}
+ */
+function parseSortKey(value) {
     if (
         value === 'code' ||
         value === 'name' ||
@@ -382,11 +436,13 @@ function parseSortKey(value: string | undefined): CourseSortKey | undefined {
     return undefined;
 }
 
-function updateSortControls(
-    buttons: HTMLButtonElement[],
-    indicators: HTMLSpanElement[],
-    state: CourseTableState
-): void {
+/**
+ * @param {HTMLButtonElement[]} buttons
+ * @param {HTMLSpanElement[]} indicators
+ * @param {CourseTableState} state
+ * @returns {void}
+ */
+function updateSortControls(buttons, indicators, state) {
     for (const button of buttons) {
         const key = parseSortKey(button.dataset.sortKey);
         if (key === undefined) {
@@ -411,7 +467,11 @@ function updateSortControls(
     }
 }
 
-function createSortIcon(direction: CourseSortDirection): SVGSVGElement {
+/**
+ * @param {CourseSortDirection} direction
+ * @returns {SVGSVGElement}
+ */
+function createSortIcon(direction) {
     const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     svg.setAttribute('viewBox', '0 0 24 24');
     svg.setAttribute('aria-hidden', 'true');

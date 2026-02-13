@@ -1,23 +1,24 @@
-import type { Meta, StoryObj } from '@storybook/html';
-
 import { AppFooter } from './AppFooter';
 
-const meta: Meta = {
+/** @type {import('@storybook/html').Meta} */
+const meta = {
     title: 'Components/AppFooter',
 };
 
 export default meta;
 
-export type Story = StoryObj;
+/** @typedef {import('@storybook/html').StoryObj} Story */
 
-export const Default: Story = {
+/** @type {Story} */
+export const Default = {
     render: () => AppFooter(),
     globals: {
         theme: 'light',
     },
 };
 
-export const Dark: Story = {
+/** @type {Story} */
+export const Dark = {
     render: () => AppFooter(),
     globals: {
         theme: 'dark',
