@@ -1,10 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
+    getCatalogs,
     getCourse,
     getCoursesPage,
     getMeta,
+    getRequirement,
+    putCatalogs,
     putCourses,
+    replaceRequirementsWithCow,
     setMeta,
 } from '$lib/indexeddb';
 
@@ -113,6 +117,16 @@ class FakeObjectStore {
         if (typeof keyValue === 'string' && keyValue.length > 0) {
             this.store.data.set(keyValue, value);
         }
+    }
+
+    delete(key: string): IDBRequest<unknown> {
+        const request = new FakeRequest<unknown>();
+        this.store.data.delete(key);
+        this.transaction.trackRequest(request);
+        queueMicrotask(() => {
+            request.fireSuccess();
+        });
+        return request as unknown as IDBRequest<unknown>;
     }
 
     createIndex(name: string): void {
@@ -314,5 +328,52 @@ describe('indexeddb lib', () => {
         expect(page).toHaveLength(2);
         expect(page[0]?.code).toBe('CS102');
         expect(page[1]?.code).toBe('CS103');
+    });
+
+    it('writes catalogs and reads back data', async () => {
+        await putCatalogs({
+            '2025_200': { en: '2025 Summer', he: '2025 קיץ' },
+            '2025_201': { en: '2025 Winter', he: '2025 חורף' },
+        });
+
+        const catalogs = await getCatalogs();
+
+        expect(catalogs['2025_200']).toEqual({
+            en: '2025 Summer',
+            he: '2025 קיץ',
+        });
+        expect(catalogs['2025_201']).toEqual({
+            en: '2025 Winter',
+            he: '2025 חורף',
+        });
+    });
+
+    it('replaces requirements with copy-on-write semantics', async () => {
+        await replaceRequirementsWithCow(
+            {
+                catalogId: '2025_200',
+                facultyId: '00002010',
+                programId: 'SC00001403_CG00001322',
+                data: { name: 'Program A' },
+            },
+            undefined
+        );
+
+        await replaceRequirementsWithCow(
+            {
+                catalogId: '2025_200',
+                facultyId: '00002010',
+                programId: 'SC00001404_CG00010389',
+                data: { name: 'Program B' },
+            },
+            'SC00001403_CG00001322'
+        );
+
+        const oldRequirement = await getRequirement('SC00001403_CG00001322');
+        const newRequirement = await getRequirement('SC00001404_CG00010389');
+
+        expect(oldRequirement).toBeUndefined();
+        expect(newRequirement?.data).toEqual({ name: 'Program B' });
+        expect(newRequirement?.catalogId).toBe('2025_200');
     });
 });

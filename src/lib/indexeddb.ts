@@ -1,8 +1,10 @@
 export const DB_NAME = 'db';
-export const DB_VERSION = 2;
+export const DB_VERSION = 3;
 
 export const STORE_COURSES = 'courses';
 export const STORE_META = 'meta';
+export const STORE_CATALOGS = 'catalogs';
+export const STORE_REQUIREMENTS = 'requirements';
 
 export type MetaEntry = {
     key: string;
@@ -30,6 +32,18 @@ export type CourseRecord = {
     } | null)[];
 };
 
+export type CatalogRecord = {
+    id: string;
+    data: unknown;
+};
+
+export type RequirementRecord = {
+    programId: string;
+    catalogId: string;
+    facultyId: string;
+    data: unknown;
+};
+
 function openDb(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -45,6 +59,14 @@ function openDb(): Promise<IDBDatabase> {
                 : db.createObjectStore(STORE_COURSES, { keyPath: 'code' });
             if (!db.objectStoreNames.contains(STORE_META)) {
                 db.createObjectStore(STORE_META, { keyPath: 'key' });
+            }
+            if (!db.objectStoreNames.contains(STORE_CATALOGS)) {
+                db.createObjectStore(STORE_CATALOGS, { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains(STORE_REQUIREMENTS)) {
+                db.createObjectStore(STORE_REQUIREMENTS, {
+                    keyPath: 'programId',
+                });
             }
 
             if (!courseStore.indexNames.contains('name')) {
@@ -104,6 +126,34 @@ async function withStore<T>(
     });
 }
 
+async function withStores(
+    storeNames: string[],
+    mode: IDBTransactionMode,
+    fn: (stores: Record<string, IDBObjectStore>) => void
+): Promise<void> {
+    const db = await openDb();
+
+    return new Promise((resolve, reject) => {
+        const tx = db.transaction(storeNames, mode);
+        const stores: Record<string, IDBObjectStore> = {};
+        for (const name of storeNames) {
+            stores[name] = tx.objectStore(name);
+        }
+        fn(stores);
+
+        tx.oncomplete = (): void => {
+            db.close();
+            resolve();
+        };
+        tx.onerror = (): void => {
+            reject(tx.error ?? new Error('IndexedDB transaction failed'));
+        };
+        tx.onabort = (): void => {
+            reject(tx.error ?? new Error('IndexedDB transaction aborted'));
+        };
+    });
+}
+
 export async function getMeta(key: string): Promise<MetaEntry | undefined> {
     const entry = await withStore<MetaEntry>(STORE_META, 'readonly', (store) =>
         store.get(key)
@@ -140,6 +190,112 @@ export async function putCourses(courses: CourseRecord[]): Promise<void> {
             reject(tx.error ?? new Error('Course transaction aborted'));
         };
     });
+}
+
+export async function putCatalogs(
+    catalogs: Record<string, unknown>
+): Promise<void> {
+    const db = await openDb();
+
+    await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction(STORE_CATALOGS, 'readwrite');
+        const store = tx.objectStore(STORE_CATALOGS);
+
+        for (const [id, data] of Object.entries(catalogs)) {
+            store.put({ id, data } satisfies CatalogRecord);
+        }
+
+        tx.oncomplete = (): void => {
+            db.close();
+            resolve();
+        };
+        tx.onerror = (): void => {
+            reject(tx.error ?? new Error('Failed to save catalogs'));
+        };
+        tx.onabort = (): void => {
+            reject(tx.error ?? new Error('Catalog transaction aborted'));
+        };
+    });
+}
+
+export async function getCatalogs(): Promise<Record<string, unknown>> {
+    const db = await openDb();
+
+    return new Promise((resolve, reject) => {
+        const results: Record<string, unknown> = {};
+        const tx = db.transaction(STORE_CATALOGS, 'readonly');
+        const store = tx.objectStore(STORE_CATALOGS);
+        const request = store.openCursor();
+
+        request.onsuccess = (): void => {
+            const cursor = request.result;
+            if (cursor === null) {
+                return;
+            }
+
+            const value = cursor.value as CatalogRecord;
+            results[value.id] = value.data;
+            cursor.continue();
+        };
+
+        request.onerror = (): void => {
+            reject(request.error ?? new Error('Failed to read catalogs'));
+        };
+
+        tx.oncomplete = (): void => {
+            db.close();
+            resolve(results);
+        };
+        tx.onerror = (): void => {
+            reject(tx.error ?? new Error('Catalog transaction failed'));
+        };
+        tx.onabort = (): void => {
+            reject(tx.error ?? new Error('Catalog transaction aborted'));
+        };
+    });
+}
+
+export async function getRequirement(
+    programId: string
+): Promise<RequirementRecord | undefined> {
+    const requirement = await withStore<RequirementRecord>(
+        STORE_REQUIREMENTS,
+        'readonly',
+        (store) => store.get(programId)
+    );
+    return requirement;
+}
+
+export async function replaceRequirementsWithCow(
+    record: RequirementRecord,
+    previousProgramId?: string
+): Promise<void> {
+    await withStores(
+        [STORE_REQUIREMENTS, STORE_META],
+        'readwrite',
+        (stores) => {
+            stores[STORE_REQUIREMENTS].put(record);
+            if (
+                previousProgramId !== undefined &&
+                previousProgramId.length > 0 &&
+                previousProgramId !== record.programId
+            ) {
+                stores[STORE_REQUIREMENTS].delete(previousProgramId);
+            }
+            stores[STORE_META].put({
+                key: 'requirementsActiveCatalogId',
+                value: record.catalogId,
+            });
+            stores[STORE_META].put({
+                key: 'requirementsActiveFacultyId',
+                value: record.facultyId,
+            });
+            stores[STORE_META].put({
+                key: 'requirementsActiveProgramId',
+                value: record.programId,
+            });
+        }
+    );
 }
 
 export async function getCourse(

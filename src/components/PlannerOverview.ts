@@ -1,4 +1,5 @@
 import { CourseTable } from './CourseTable';
+import { DegreePicker } from './DegreePicker';
 import templateHtml from './PlannerOverview.html?raw';
 
 export function PlannerOverview(): HTMLElement {
@@ -18,6 +19,13 @@ export function PlannerOverview(): HTMLElement {
     );
     if (courseTableHost !== null) {
         courseTableHost.replaceWith(CourseTable());
+    }
+
+    const degreePickerHost = root.querySelector<HTMLElement>(
+        '[data-degree-picker]'
+    );
+    if (degreePickerHost !== null) {
+        degreePickerHost.replaceWith(DegreePicker());
     }
 
     return root;
