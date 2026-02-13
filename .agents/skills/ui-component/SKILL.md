@@ -8,23 +8,30 @@ description: Create or update UI components in vanilla TypeScript + Vite + Tailw
 ## Overview
 
 Build UI components as paired files: HTML for structure/styling and TypeScript for behavior, using <template> for DOM cloning.
+Each component also ships with a short Markdown doc that explains how it works.
 The app is always RTL and in Hebrew; inline all copy in Hebrew.
 
 ## Workflow
 
-1. Confirm or create the component pair at src/components/<Component>.html and src/components/<Component>.ts.
+1. Confirm or create the component set at src/components/<Component>.html, src/components/<Component>.ts, src/components/<Component>.stories.ts, and src/components/<Component>.md.
 2. Put all markup and Tailwind classes in the HTML file inside a <template>.
 3. Keep logic, state, and event wiring in the TS file; do not embed scripts in HTML.
 4. Put all text in Hebrew; except for PlanIt and other english-only phrases.
 5. Use data attributes in the HTML to target elements from TS.
 6. Export a component factory (e.g., `AppHeader()`) that returns a root element.
-7. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
+7. Add a concise Markdown doc in `src/components/<Component>.md` following the structure below.
+8. Create `src/components/<Component>.stories.ts` alongside the component.
+9. Define `Default` and `Dark` stories, setting `globals: { theme: 'dark' }` for dark.
+10. Rely on `.storybook/preview.ts` for the wrapper; do not create custom preview shells.
+11. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
 
 ## Component Contract
 
 - Files:
     - src/components/<Component>.html
     - src/components/<Component>.ts
+    - src/components/<Component>.stories.ts
+    - src/components/<Component>.md
 - HTML:
     - Wrap the component in a single <template> element.
     - Keep UI-only concerns here: structure, Tailwind classes, semantic tags.
@@ -33,6 +40,19 @@ The app is always RTL and in Hebrew; inline all copy in Hebrew.
     - Import the HTML as text (`?raw` with Vite).
     - Clone the template into a root element.
     - Bind events and return a single root element.
+
+## Documentation File
+
+- Use `src/components/<Component>.md` to explain the component behavior.
+- Keep it short and technical; follow the CourseTable example.
+- Recommended sections: Overview, Template Structure, Data Flow, Dependencies, Notes.
+
+## Verification Script
+
+Run the repository check script to ensure every component has the required
+files:
+
+`python3 .agents/skills/ui-component/scripts/verify_components.py`
 
 ## Implementation Notes
 
@@ -59,6 +79,8 @@ The app is always RTL and in Hebrew; inline all copy in Hebrew.
 
 Use this shape unless the codebase already provides a different pattern:
 
+### Component.html
+
 ```html
 <template>
     <section class="..." data-component="Component">
@@ -67,6 +89,8 @@ Use this shape unless the codebase already provides a different pattern:
     </section>
 </template>
 ```
+
+### Component.ts
 
 ```ts
 import templateHtml from './Component.html?raw';
@@ -90,4 +114,63 @@ export function Component(): HTMLElement {
 
     return root;
 }
+```
+
+### Component.stories.ts
+
+```ts
+import type { Meta, StoryObj } from '@storybook/html';
+
+import { Component } from './Component';
+
+const meta: Meta = {
+    title: 'Components/Component',
+};
+
+export default meta;
+
+export type Story = StoryObj;
+
+export const Default: Story = {
+    render: () => Component(),
+    globals: {
+        theme: 'light',
+    },
+};
+
+export const Dark: Story = {
+    render: () => Component(),
+    globals: { theme: 'dark' },
+    parameters: {
+        backgrounds: {
+            default: 'dark',
+        },
+    },
+};
+```
+
+### Component.md
+
+```markdown
+# Component
+
+## Overview
+
+Describe what the component renders and where it is used.
+
+## Template Structure
+
+- Note key layout regions and slots.
+
+## Data Flow
+
+1. Outline how the TS wires the template and any events.
+
+## Dependencies
+
+- List related modules or assets.
+
+## Notes
+
+- Mention constraints or gotchas.
 ```
