@@ -49,4 +49,5 @@ Short summary of the module's responsibilities.
 ## Directory Contract
 
 - `src/lib/<Module>.ts`
+- `src/lib/<Module>.test.ts`
 - `src/lib/<Module>.md`
