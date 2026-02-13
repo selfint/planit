@@ -82,6 +82,13 @@ files:
 
 Use this shape unless the codebase already provides a different pattern:
 
+Files:
+
+- `src/components/Component.html`
+- `src/components/Component.ts`
+- `src/components/Component.stories.ts`
+- `src/components/Component.md`
+
 ```html
 <template>
     <section class="..." data-component="Component">
