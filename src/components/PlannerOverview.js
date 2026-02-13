@@ -22,9 +22,8 @@ export function PlannerOverview() {
         courseTableHost.replaceWith(CourseTable());
     }
 
-    const degreePickerHost = root.querySelector<HTMLElement>(
-        '[data-degree-picker]'
-    );
+    const degreePickerHost =
+        root.querySelector < HTMLElement > '[data-degree-picker]';
     if (degreePickerHost !== null) {
         degreePickerHost.replaceWith(DegreePicker());
     }
