@@ -12,7 +12,7 @@ const DEFAULT_EMPTY_VALUE = '—';
 const DEFAULT_TITLE = 'קורס ללא שם';
 
 export function CourseCard(
-    course: CourseRecord,
+    course?: CourseRecord,
     options?: CourseCardOptions
 ): HTMLElement {
     const template = document.createElement('template');
@@ -24,6 +24,11 @@ export function CourseCard(
     const root = templateElement.content.firstElementChild?.cloneNode(true);
     if (!(root instanceof HTMLElement)) {
         throw new Error('CourseCard template root not found');
+    }
+
+    if (course === undefined) {
+        applySkeleton(root);
+        return root;
     }
 
     const statusClass = options?.statusClass ?? DEFAULT_STATUS_CLASS;
@@ -70,6 +75,67 @@ export function CourseCard(
     }
 
     return root;
+}
+
+function applySkeleton(root: HTMLElement): void {
+    root.setAttribute('aria-busy', 'true');
+
+    const statusDot = root.querySelector<HTMLSpanElement>(
+        "[data-role='status-dot']"
+    );
+    const points = root.querySelector<HTMLSpanElement>(
+        "[data-role='course-points']"
+    );
+    const median = root.querySelector<HTMLSpanElement>(
+        "[data-role='course-median']"
+    );
+    const title = root.querySelector<HTMLParagraphElement>(
+        "[data-role='course-title']"
+    );
+    const code = root.querySelector<HTMLParagraphElement>(
+        "[data-role='course-code']"
+    );
+
+    if (statusDot !== null) {
+        statusDot.className =
+            'h-2.5 w-2.5 rounded-none bg-gradient-to-l from-surface-2/70 via-surface-1/70 to-surface-2/70 animate-shimmer';
+    }
+    if (points !== null) {
+        applySkeletonBlock(points, 'w-7', 'h-3');
+    }
+    if (median !== null) {
+        applySkeletonBlock(median, 'w-10', 'h-3');
+    }
+    if (title !== null) {
+        applySkeletonBlock(title, 'w-32', 'h-4');
+    }
+    if (code !== null) {
+        applySkeletonBlock(code, 'w-20', 'h-3');
+    }
+}
+
+function applySkeletonBlock(
+    element: HTMLElement,
+    widthClass: string,
+    heightClass: string
+): void {
+    element.textContent = '';
+    element.classList.add(
+        'animate-shimmer',
+        'bg-gradient-to-l',
+        'from-surface-2/70',
+        'via-surface-1/70',
+        'to-surface-2/70',
+        'text-transparent',
+        'rounded-md',
+        widthClass,
+        heightClass
+    );
+    if (element instanceof HTMLSpanElement) {
+        element.classList.add('inline-block');
+    } else {
+        element.classList.add('block');
+    }
 }
 
 function formatCourseNumber(

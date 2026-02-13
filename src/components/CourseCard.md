@@ -16,9 +16,11 @@ course title, and the course code.
 ## Data Flow
 
 1. `CourseCard(course, options)` clones the HTML template.
-2. Course data populates title, code, points, and median; empty values fall back
+2. When `course` is undefined, the card renders a shimmer skeleton for each
+   text row and a square status dot placeholder.
+3. Course data populates title, code, points, and median; empty values fall back
    to `—` and a default title.
-3. Optional `statusClass` overrides the status dot color.
+4. Optional `statusClass` overrides the status dot color.
 
 ## Dependencies
 
@@ -28,3 +30,5 @@ course title, and the course code.
 ## Notes
 
 - The template uses Hebrew copy to match the RTL UI.
+- Skeleton shimmer uses the `animate-shimmer` utility defined in
+  `src/style.css`.
