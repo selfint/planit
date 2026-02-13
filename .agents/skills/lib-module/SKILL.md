@@ -43,7 +43,7 @@ Short summary of the module's responsibilities.
 
 ## Tests
 
-- Point to the related test file(s).
+- Describe what the module tests cover and the behaviors they validate.
 ```
 
 ## Directory Contract
