@@ -8,13 +8,13 @@ Let users focus on one semester and browse all courses that could be taken then,
 
 ## Core UI
 
-- Semester header with term name and credit totals.
-- Course list for the semester, including ineligible courses.
+- Semester header with term name, credit totals, and total courses with tests.
+- Course cards for that semester, including ineligible courses.
 - Ineligible courses appear grayed out with a note explaining why in the card header.
 
 ## Key Behaviors
 
-- Eligibility is derived from prerequisites and semester availability.
+- Eligibility is derived from prerequisites and the course's `current` field.
 - Ineligible cards are visible but clearly disabled.
 - Adding a course updates the plan and returns to the list state.
 

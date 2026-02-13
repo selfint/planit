@@ -4,25 +4,29 @@ High-level design for the degree planning view. This is a client-side route in t
 
 ## Purpose
 
-Provide a Trello-like overview of the full degree plan, organized by semester, with a fast click-to-move interaction.
+Provide a Trello-like overview of the full degree plan, organized by semester, with a fast click-to-move interaction and no drag-and-drop.
 
 ## Core UI
 
-- Column per semester, laid out horizontally with a scrollable board.
+- Responsive columns: mobile shows one full-width column, tablet shows two columns, desktop shows three or more based on available width.
 - Course cards inside each semester column.
 - Click-to-move interaction: click a course to select it, then click the target semester column to move it.
-- Clear selected state for the active course and subtle hover for target columns.
+- When a course is selected, other semesters show a clear "move here" indicator.
+- Clear selected state for the active course; clicking the selected course again navigates to the course page.
 
 ## Key Behaviors
 
 - No drag-and-drop. Only click-select then click-target to move.
 - Moving a course updates the plan state immediately in IndexedDB.
-- Semester columns show capacity or credit totals and warnings if over limits.
+- Semester columns show credit totals.
 
 ## Data
 
 - Source: user plan from IndexedDB.
-- Derived: semester ordering, credit totals, requirement status indicators.
+- Derived: semester ordering and per-semester metrics.
+    - Total points
+    - Average median of courses
+    - Total courses with tests
 
 ## Edge Cases
 

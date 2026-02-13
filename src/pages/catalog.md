@@ -8,7 +8,7 @@ Let users explore all courses for the selected degree, grouped by requirement ar
 
 ## Core UI
 
-- Requirement groups as collapsible sections.
+- Requirement groups as sections.
 - Course list cards inside each requirement group.
 - Degree selector at top with last selection persisted.
 
@@ -21,7 +21,8 @@ Let users explore all courses for the selected degree, grouped by requirement ar
 ## Data
 
 - Source: degree requirements from catalogs data in IndexedDB.
-- Derived: requirement completion (completed/in-progress/remaining).
+- Derived: requirement completion (completed/planned/total).
+    - Completed means all courses in semesters before the user's current semester.
 
 ## Edge Cases
 

@@ -4,13 +4,13 @@ High-level design for a course detail page. This is a client-side route in the s
 
 ## Purpose
 
-Show full details for a single course and how it fits into the user's plan.
+Show full details for a single course, including its semester placement (if any), requirement mapping, and key stats like median, faculty, points, and connections.
 
 ## Core UI
 
 - Course header with code, title, credits, and availability.
 - Sections for description, prerequisites, co-requisites, and requirements mapping.
-- Actions: add to semester, view in plan, and view in catalog group.
+- Actions: add to semester, add to wishlist, add to exemptions, view in plan, and view in catalog group.
 
 ## Key Behaviors
 
@@ -21,7 +21,7 @@ Show full details for a single course and how it fits into the user's plan.
 ## Data
 
 - Source: course data and degree requirements from IndexedDB.
-- Derived: placement in plan and unmet prerequisites.
+- Derived: placement in semester, requirements mapping, and unmet prerequisites.
 
 ## Edge Cases
 

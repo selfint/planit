@@ -9,7 +9,7 @@ Enable fast text-based search across all courses in the selected degree.
 ## Core UI
 
 - Search input with instant results list.
-- Filters for semester availability and requirement group (optional).
+- Filters for all available course attributes (faculty, median, points, semester availability, requirement group, and more).
 - Result cards showing code, title, credits, and availability summary.
 
 ## Key Behaviors
