@@ -7,14 +7,16 @@ description: Document src/lib modules with adjacent .md files using a standard f
 
 ## Overview
 
-Document each `src/lib` module with a concise Markdown file next to it. Use a consistent format that explains purpose, exports, data flow, dependencies, notes, and tests.
+Document each `src/lib` module with concise Markdown files next to it. Use a consistent format that explains purpose, exports, data flow, dependencies, notes, and tests.
 
 ## Workflow
 
-1. Identify the `src/lib` file(s) that need documentation.
-2. Create `src/lib/<Module>.md` next to each module file.
+1. Identify the `src/lib` module file(s) that need documentation.
+2. Create exactly two docs per module:
+    - `src/lib/<Module>.md`
+    - `src/lib/<Module>.test.md`
 3. Use the standard format and keep it short and technical.
-4. For test files, describe what the tests cover and reference the module under test.
+4. Do not create any other documentation files for tests beyond `<Module>.test.md`.
 
 ## Standard Format
 
