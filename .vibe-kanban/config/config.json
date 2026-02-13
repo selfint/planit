@@ -38,7 +38,7 @@
   "pr_auto_description_enabled": true,
   "pr_auto_description_prompt": null,
   "beta_workspaces": false,
-  "beta_workspaces_invitation_sent": false,
+  "beta_workspaces_invitation_sent": true,
   "commit_reminder_enabled": true,
   "commit_reminder_prompt": null,
   "send_message_shortcut": "ModifierEnter"
