@@ -31,6 +31,9 @@ export function CourseCard(
         return root;
     }
 
+    root.removeAttribute('data-skeleton');
+    root.removeAttribute('aria-busy');
+
     const statusClass = options?.statusClass ?? DEFAULT_STATUS_CLASS;
     const emptyValue = options?.emptyValue ?? DEFAULT_EMPTY_VALUE;
     const titleText = course.name ?? DEFAULT_TITLE;
@@ -78,64 +81,15 @@ export function CourseCard(
 }
 
 function applySkeleton(root: HTMLElement): void {
+    root.setAttribute('data-skeleton', 'true');
     root.setAttribute('aria-busy', 'true');
 
-    const statusDot = root.querySelector<HTMLSpanElement>(
-        "[data-role='status-dot']"
-    );
-    const points = root.querySelector<HTMLSpanElement>(
-        "[data-role='course-points']"
-    );
-    const median = root.querySelector<HTMLSpanElement>(
-        "[data-role='course-median']"
-    );
-    const title = root.querySelector<HTMLParagraphElement>(
-        "[data-role='course-title']"
-    );
-    const code = root.querySelector<HTMLParagraphElement>(
-        "[data-role='course-code']"
+    const textNodes = root.querySelectorAll<HTMLElement>(
+        "[data-role='course-points'], [data-role='course-median'], [data-role='course-title'], [data-role='course-code']"
     );
 
-    if (statusDot !== null) {
-        statusDot.className =
-            'h-3 w-3 rounded-none bg-gradient-to-l from-surface-2/85 via-surface-1/60 to-surface-2/85 animate-shimmer contrast-105 dark:from-surface-2/96 dark:via-surface-1/10 dark:to-surface-2/96 dark:contrast-110';
-    }
-    if (points !== null) {
-        applySkeletonBlock(points, 'w-7', 'h-3');
-    }
-    if (median !== null) {
-        applySkeletonBlock(median, 'w-10', 'h-3');
-    }
-    if (title !== null) {
-        applySkeletonBlock(title, 'w-32', 'h-4');
-    }
-    if (code !== null) {
-        applySkeletonBlock(code, 'w-20', 'h-3');
-    }
-}
-
-function applySkeletonBlock(
-    element: HTMLElement,
-    widthClass: string,
-    heightClass: string
-): void {
-    element.textContent = '';
-    element.classList.add(
-        'animate-shimmer',
-        'bg-gradient-to-l',
-        'from-surface-2/30',
-        'via-surface-1/85',
-        'to-surface-2/30',
-        'contrast-70',
-        'text-transparent',
-        'rounded-md',
-        widthClass,
-        heightClass
-    );
-    if (element instanceof HTMLSpanElement) {
-        element.classList.add('inline-block');
-    } else {
-        element.classList.add('block');
+    for (const node of textNodes) {
+        node.textContent = '';
     }
 }
 

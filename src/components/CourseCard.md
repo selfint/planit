@@ -30,5 +30,5 @@ course title, and the course code.
 ## Notes
 
 - The template uses Hebrew copy to match the RTL UI.
-- Skeleton shimmer uses the `animate-shimmer` utility defined in
+- Skeleton shimmer uses the `skeleton-shimmer` utility defined in
   `src/style.css`.

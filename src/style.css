@@ -42,3 +42,7 @@
     background-size: 200% 100%;
     animation: shimmer 1.44s ease-in-out infinite;
 }
+
+@utility skeleton-shimmer {
+    @apply animate-shimmer from-surface-2/30 via-surface-1/85 to-surface-2/30 bg-gradient-to-l text-transparent contrast-70;
+}
