@@ -1,4 +1,6 @@
+import logoUrl from '../../../assets/logo.webp';
 import templateHtml from './LandingNav.html?raw';
+import titleSvg from '../../../assets/Title.svg?raw';
 
 export function LandingNav(): HTMLElement {
     const template = document.createElement('template');
@@ -10,6 +12,20 @@ export function LandingNav(): HTMLElement {
     const root = templateElement.content.firstElementChild?.cloneNode(true);
     if (!(root instanceof HTMLElement)) {
         throw new Error('LandingNav template root not found');
+    }
+
+    const logo = root.querySelector<HTMLImageElement>('[data-logo]');
+    if (logo !== null) {
+        logo.src = logoUrl;
+    }
+
+    const title = root.querySelector<HTMLDivElement>('[data-title]');
+    if (title !== null) {
+        title.innerHTML = titleSvg;
+        const svg = title.querySelector<SVGElement>('svg');
+        if (svg !== null) {
+            svg.setAttribute('class', 'h-full w-auto');
+        }
     }
 
     const toggleButtons = root.querySelectorAll<HTMLButtonElement>(
