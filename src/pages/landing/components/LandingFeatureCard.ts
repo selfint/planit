@@ -1,17 +1,17 @@
 import templateHtml from './LandingFeatureCard.html?raw';
 
 type LandingFeatureCardOptions = {
-    label: string;
-    title: string;
-    description: string;
-    href: string;
-    linkLabel: string;
+    label?: string;
+    title?: string;
+    description?: string;
+    href?: string;
+    linkLabel?: string;
     mediaSrc?: string;
     mediaAlt?: string;
 };
 
 export function LandingFeatureCard(
-    options: LandingFeatureCardOptions
+    options: LandingFeatureCardOptions = {}
 ): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
@@ -25,26 +25,28 @@ export function LandingFeatureCard(
     }
 
     const label = root.querySelector<HTMLElement>('[data-slot="label"]');
-    if (label !== null) {
+    if (label !== null && options.label !== undefined) {
         label.textContent = options.label;
     }
 
     const title = root.querySelector<HTMLElement>('[data-slot="title"]');
-    if (title !== null) {
+    if (title !== null && options.title !== undefined) {
         title.textContent = options.title;
     }
 
     const description = root.querySelector<HTMLElement>(
         '[data-slot="description"]'
     );
-    if (description !== null) {
+    if (description !== null && options.description !== undefined) {
         description.textContent = options.description;
     }
 
     const link = root.querySelector<HTMLAnchorElement>('[data-slot="link"]');
-    if (link !== null) {
-        link.href = options.href;
+    if (link !== null && options.linkLabel !== undefined) {
         link.textContent = options.linkLabel;
+    }
+    if (link !== null && options.href !== undefined) {
+        link.href = options.href;
     }
 
     if (options.mediaSrc !== undefined) {

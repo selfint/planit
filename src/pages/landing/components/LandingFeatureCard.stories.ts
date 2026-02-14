@@ -35,6 +35,7 @@ export const Default: Story = {
                 linkLabel: 'בדיקת קטלוגים →',
             })
         );
+        wrapper.appendChild(LandingFeatureCard());
         return wrapper;
     },
     globals: {
@@ -66,6 +67,7 @@ export const Dark: Story = {
                 linkLabel: 'מעבר לסמסטר →',
             })
         );
+        wrapper.appendChild(LandingFeatureCard());
         return wrapper;
     },
     globals: {
