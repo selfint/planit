@@ -53,7 +53,8 @@ export function LandingFeatureCard(
         );
         if (mediaSlot !== null) {
             const image = document.createElement('img');
-            image.className = 'h-20 w-20 object-contain opacity-70';
+            image.className =
+                'h-28 w-28 object-contain opacity-70 sm:h-32 sm:w-32 lg:h-40 lg:w-40';
             image.src = options.mediaSrc;
             image.loading = 'lazy';
             image.decoding = 'async';

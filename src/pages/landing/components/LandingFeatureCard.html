@@ -4,7 +4,7 @@
         data-component="LandingFeatureCard"
     >
         <div
-            class="bg-surface-2/70 relative flex aspect-[16/10] items-center justify-center overflow-hidden rounded-2xl lg:w-48"
+            class="bg-surface-2/70 relative flex aspect-[16/10] w-full items-center justify-center overflow-hidden rounded-2xl lg:w-1/2"
             data-slot="media"
             data-skeleton="true"
         >
@@ -14,15 +14,19 @@
                 data-skeleton-layer
             ></span>
         </div>
-        <div class="flex flex-1 flex-col gap-2" data-slot="content">
+        <div class="flex w-full flex-col gap-2 lg:w-1/2" data-slot="content">
             <p class="text-text-muted text-xs" data-slot="label">כותרת משנה</p>
             <h3 class="text-lg font-medium" data-slot="title">כותרת</h3>
             <p class="text-text-muted text-xs" data-slot="description">
                 תיאור קצר של היכולת.
             </p>
+            <a
+                class="text-accent text-xs font-medium"
+                href="/"
+                data-slot="link"
+            >
+                מעבר →
+            </a>
         </div>
-        <a class="text-accent text-xs font-medium" href="/" data-slot="link">
-            מעבר →
-        </a>
     </article>
 </template>
