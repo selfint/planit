@@ -53,8 +53,7 @@ export function LandingFeatureCard(
         );
         if (mediaSlot !== null) {
             const image = document.createElement('img');
-            image.className =
-                'h-28 w-28 object-contain sm:h-32 sm:w-32 lg:h-40 lg:w-40';
+            image.className = 'h-full w-full object-cover';
             image.src = options.mediaSrc;
             image.loading = 'lazy';
             image.decoding = 'async';
