@@ -1,6 +1,6 @@
 import './style.css';
 
-import { LandingPage } from './pages/landing/page';
+import { LandingPage } from './pages/landing/landing_page';
 import { initPWA } from '$lib/pwa';
 
 function initApp(): HTMLDivElement {

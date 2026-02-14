@@ -2,7 +2,7 @@ import { LandingFeatureCard } from './components/LandingFeatureCard';
 import { LandingHero } from './components/LandingHero';
 import { LandingNav } from './components/LandingNav';
 import logoUrl from '$assets/logo.webp';
-import templateHtml from './page.html?raw';
+import templateHtml from './landing_page.html?raw';
 
 export function LandingPage(): HTMLElement {
     const template = document.createElement('template');

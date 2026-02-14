@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html';
 
-import { LandingPage } from './page';
+import { LandingPage } from './landing_page';
 
 const meta: Meta = {
     title: 'Pages/Landing',
