@@ -15,6 +15,11 @@ export const Default: Story = {
     globals: {
         theme: 'light',
     },
+    parameters: {
+        viewport: {
+            defaultViewport: 'responsive',
+        },
+    },
 };
 
 export const Dark: Story = {
@@ -25,6 +30,9 @@ export const Dark: Story = {
     parameters: {
         backgrounds: {
             default: 'dark',
+        },
+        viewport: {
+            defaultViewport: 'responsive',
         },
     },
 };
