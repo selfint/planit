@@ -1,6 +1,6 @@
 <template>
     <header
-        class="border-border/60 bg-surface-1/80 flex flex-wrap items-center justify-between gap-4 rounded-3xl border p-4 shadow-sm backdrop-blur-sm"
+        class="border-border/60 bg-surface-1/80 flex flex-wrap items-center justify-between gap-4 rounded-2xl border px-5 py-4 shadow-sm backdrop-blur-sm"
         data-component="LandingNav"
     >
         <div class="flex items-center gap-3">
@@ -14,31 +14,45 @@
                 <p class="text-text-muted text-xs">מתכנן תואר לטכניון</p>
             </div>
         </div>
-        <nav class="flex flex-wrap gap-2 text-xs">
+        <nav class="text-text-muted flex flex-wrap items-center gap-6 text-sm">
             <a
-                class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
+                class="hover:text-text transition duration-200 ease-out"
                 href="/plan"
             >
                 מתכנן
             </a>
             <a
-                class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
+                class="hover:text-text transition duration-200 ease-out"
                 href="/catalog"
             >
                 קטלוגים
             </a>
             <a
-                class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
+                class="hover:text-text transition duration-200 ease-out"
                 href="/course"
             >
                 קורסים
             </a>
             <a
-                class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
+                class="hover:text-text transition duration-200 ease-out"
                 href="/search"
             >
                 חיפוש
             </a>
         </nav>
+        <div class="flex items-center gap-3">
+            <a
+                class="text-text-muted hover:text-text text-xs transition duration-200 ease-out"
+                href="/login"
+            >
+                כניסה
+            </a>
+            <a
+                class="bg-accent text-accent-contrast rounded-full px-4 py-2 text-xs font-medium shadow-sm"
+                href="/plan"
+            >
+                התחילו לתכנן
+            </a>
+        </div>
     </header>
 </template>
