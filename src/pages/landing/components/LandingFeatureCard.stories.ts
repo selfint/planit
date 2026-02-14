@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html';
 
-import logoUrl from '$assets/logo.webp';
+import planImageUrl from '$assets/plan-pic.webp';
 import { LandingFeatureCard } from './LandingFeatureCard';
 
 const meta: Meta = {
@@ -22,7 +22,7 @@ export const Default: Story = {
                 description: 'ראו את כל הסמסטרים, נק"ז ועומסים במקום אחד.',
                 href: '/plan',
                 linkLabel: 'מעבר למתכנן →',
-                mediaSrc: logoUrl,
+                mediaSrc: planImageUrl,
                 mediaAlt: 'תצוגת מתכנן',
             })
         );
@@ -53,7 +53,7 @@ export const Dark: Story = {
                 description: 'בחירת מסלול והשוואת דרישות בצורה נקייה.',
                 href: '/catalog',
                 linkLabel: 'בדיקת קטלוגים →',
-                mediaSrc: logoUrl,
+                mediaSrc: planImageUrl,
                 mediaAlt: 'תצוגת קטלוג',
             })
         );
