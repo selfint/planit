@@ -3,7 +3,7 @@
         class="border-border/50 flex items-center justify-between border-b bg-transparent px-4 py-4 backdrop-blur-sm sm:px-6 lg:px-8"
         data-component="LandingNav"
     >
-        <div class="flex items-center gap-3" data-slot="logo">
+        <div class="order-3 flex items-center gap-3" data-slot="logo">
             <img
                 class="border-border/60 bg-surface-2/80 size-10 rounded-2xl border p-2 shadow-sm"
                 alt="לוגו Planit"
@@ -16,7 +16,7 @@
         </div>
 
         <nav
-            class="text-text-muted hidden items-center gap-6 text-sm md:flex"
+            class="text-text-muted order-2 hidden items-center gap-6 text-sm md:flex"
             data-slot="links"
         >
             <a
@@ -45,7 +45,10 @@
             </a>
         </nav>
 
-        <div class="hidden items-center gap-3 md:flex" data-slot="actions">
+        <div
+            class="order-1 hidden items-center gap-3 md:flex"
+            data-slot="actions"
+        >
             <a
                 class="text-text-muted hover:text-text text-xs transition duration-200 ease-out"
                 href="/login"
@@ -61,7 +64,7 @@
         </div>
 
         <button
-            class="border-border/60 bg-surface-1/60 text-text flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium md:hidden"
+            class="border-border/60 bg-surface-1/60 text-text order-1 flex items-center gap-2 rounded-full border px-3 py-2 text-xs font-medium md:hidden"
             type="button"
             data-action="toggle-menu"
             aria-expanded="false"
