@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html';
 
-import logoUrl from '../../assets/logo.webp';
+import logoUrl from '$assets/logo.webp';
 import { LandingFeatureCard } from './LandingFeatureCard';
 
 const meta: Meta = {
