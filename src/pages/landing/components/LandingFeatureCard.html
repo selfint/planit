@@ -4,15 +4,15 @@
         data-component="LandingFeatureCard"
     >
         <div
-            class="bg-surface-2/70 skeleton-shimmer flex aspect-[16/10] items-center justify-center rounded-2xl lg:w-48"
+            class="bg-surface-2/70 relative flex aspect-[16/10] items-center justify-center overflow-hidden rounded-2xl lg:w-48"
             data-slot="media"
             data-skeleton="true"
         >
-            <img
-                class="h-20 w-20 object-contain opacity-70"
-                alt="תצוגת כרטיס"
-                data-placeholder="logo"
-            />
+            <span
+                class="skeleton-shimmer absolute inset-0"
+                aria-hidden="true"
+                data-skeleton-layer
+            ></span>
         </div>
         <div class="flex flex-1 flex-col gap-2" data-slot="content">
             <p class="text-text-muted text-xs" data-slot="label">כותרת משנה</p>

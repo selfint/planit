@@ -6,6 +6,7 @@ type LandingFeatureCardOptions = {
     description: string;
     href: string;
     linkLabel: string;
+    mediaSrc?: string;
     mediaAlt?: string;
 };
 
@@ -46,11 +47,26 @@ export function LandingFeatureCard(
         link.textContent = options.linkLabel;
     }
 
-    const mediaImage = root.querySelector<HTMLImageElement>(
-        '[data-placeholder="logo"]'
-    );
-    if (mediaImage !== null && options.mediaAlt !== undefined) {
-        mediaImage.alt = options.mediaAlt;
+    if (options.mediaSrc !== undefined) {
+        const mediaSlot = root.querySelector<HTMLElement>(
+            '[data-slot="media"]'
+        );
+        if (mediaSlot !== null) {
+            const image = document.createElement('img');
+            image.className = 'h-20 w-20 object-contain opacity-70';
+            image.src = options.mediaSrc;
+            image.loading = 'lazy';
+            image.decoding = 'async';
+            image.alt = options.mediaAlt ?? 'תצוגת כרטיס';
+            mediaSlot.appendChild(image);
+            mediaSlot.removeAttribute('data-skeleton');
+            const skeletonLayer = mediaSlot.querySelector<HTMLElement>(
+                '[data-skeleton-layer]'
+            );
+            if (skeletonLayer !== null) {
+                skeletonLayer.remove();
+            }
+        }
     }
 
     return root;

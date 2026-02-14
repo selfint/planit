@@ -16,7 +16,8 @@ previews.
 
 1. `LandingFeatureCard()` clones the template.
 2. Text fields and link attributes are populated from options.
-3. Optional media alt text is applied if provided.
+3. If `mediaSrc` is provided, an image is appended and the skeleton layer is
+   removed.
 
 ## Dependencies
 
@@ -24,5 +25,4 @@ previews.
 
 ## Notes
 
-- The placeholder image is injected by the landing page wrapper via
-  `data-placeholder="logo"`.
+- The media area renders a shimmer placeholder until `mediaSrc` is provided.
