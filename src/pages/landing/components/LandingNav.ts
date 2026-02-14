@@ -1,3 +1,4 @@
+import titleUrl from '$assets/Title.svg';
 import templateHtml from './LandingNav.html?raw';
 
 export function LandingNav(): HTMLElement {
@@ -11,6 +12,14 @@ export function LandingNav(): HTMLElement {
     if (!(root instanceof HTMLElement)) {
         throw new Error('LandingNav template root not found');
     }
+
+    const titleImages = root.querySelectorAll<HTMLImageElement>(
+        '[data-asset="title"]'
+    );
+    titleImages.forEach((image) => {
+        image.src = titleUrl;
+        image.decoding = 'async';
+    });
 
     const toggleButtons = root.querySelectorAll<HTMLButtonElement>(
         '[data-action="toggle-menu"]'
