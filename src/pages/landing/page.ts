@@ -1,7 +1,7 @@
-import logoUrl from '../../assets/logo.webp';
 import { LandingFeatureCard } from './components/LandingFeatureCard';
 import { LandingHero } from './components/LandingHero';
 import { LandingNav } from './components/LandingNav';
+import logoUrl from '../../assets/logo.webp';
 import templateHtml from './page.html?raw';
 
 export function LandingPage(): HTMLElement {
@@ -88,9 +88,6 @@ export function LandingPage(): HTMLElement {
             return;
         }
         const data = featureData[featureKey];
-        if (data === undefined) {
-            return;
-        }
         const card = LandingFeatureCard({
             label: data.label,
             title: data.title,
