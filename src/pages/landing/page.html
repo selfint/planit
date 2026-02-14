@@ -1,0 +1,382 @@
+<template>
+    <div
+        class="text-text min-h-screen w-full [background:radial-gradient(1200px_circle_at_12%_-10%,rgba(62,200,180,0.16),transparent_55%),radial-gradient(950px_circle_at_100%_0%,rgba(79,143,190,0.14),transparent_55%)]"
+        dir="rtl"
+        data-component="LandingPage"
+    >
+        <div
+            class="mx-auto flex min-h-screen max-w-6xl flex-col gap-12 px-4 pt-[calc(env(safe-area-inset-top)+2rem)] pb-[calc(env(safe-area-inset-bottom)+3rem)] sm:px-6 lg:px-8"
+        >
+            <header
+                class="border-border/60 bg-surface-1/80 flex flex-wrap items-center justify-between gap-4 rounded-3xl border p-4 shadow-sm backdrop-blur-sm"
+            >
+                <div class="flex items-center gap-3">
+                    <img
+                        class="border-border/60 bg-surface-2/80 size-12 rounded-2xl border p-2 shadow-sm"
+                        alt="לוגו Planit"
+                        data-placeholder="logo"
+                    />
+                    <div class="flex flex-col gap-1">
+                        <p class="text-text text-sm font-medium">Planit</p>
+                        <p class="text-text-muted text-xs">
+                            מתכנן תואר לטכניון
+                        </p>
+                    </div>
+                </div>
+                <nav class="flex flex-wrap gap-2 text-xs">
+                    <a
+                        class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
+                        href="/plan"
+                    >
+                        מתכנן
+                    </a>
+                    <a
+                        class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
+                        href="/catalog"
+                    >
+                        קטלוגים
+                    </a>
+                    <a
+                        class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
+                        href="/course"
+                    >
+                        קורסים
+                    </a>
+                    <a
+                        class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1 transition duration-200 ease-out"
+                        href="/search"
+                    >
+                        חיפוש
+                    </a>
+                </nav>
+            </header>
+
+            <section class="grid gap-8 lg:grid-cols-[1.1fr_0.9fr]">
+                <div class="flex flex-col gap-6">
+                    <div class="flex flex-col gap-3">
+                        <p
+                            class="border-border/70 bg-surface-1/80 text-text-muted w-fit rounded-full border px-3 py-1 text-xs"
+                        >
+                            תכנון תואר אופליין תחילה
+                        </p>
+                        <h1 class="text-3xl font-medium sm:text-[2.6rem]">
+                            בונים את התואר בטכניון, בלי להסתבך.
+                        </h1>
+                        <p class="text-text-muted text-sm">
+                            Planit מרכזת את הקטלוגים, הדרישות והתכנון הסמסטריאלי
+                            למבט אחד ברור — גם כשאין חיבור, וגם כשכן.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                        <a
+                            class="bg-accent text-accent-contrast rounded-full px-5 py-2 text-xs font-medium shadow-sm"
+                            href="/plan"
+                        >
+                            התחל לתכנן
+                        </a>
+                        <a
+                            class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text rounded-full border px-5 py-2 text-xs font-medium transition duration-200 ease-out"
+                            href="/semester"
+                        >
+                            צפה בהדגמה
+                        </a>
+                        <a
+                            class="text-text-muted hover:text-text rounded-full px-5 py-2 text-xs font-medium transition duration-200 ease-out"
+                            href="/catalog"
+                        >
+                            גלה יכולות
+                        </a>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-3">
+                        <div
+                            class="border-border/60 bg-surface-1/80 flex flex-col gap-1 rounded-2xl border p-4"
+                        >
+                            <p class="text-text-muted text-xs">מצב נתונים</p>
+                            <p class="text-lg font-medium">אופליין יציב</p>
+                            <p class="text-text-muted text-xs">
+                                המידע נשמר מקומית
+                            </p>
+                        </div>
+                        <div
+                            class="border-border/60 bg-surface-1/80 flex flex-col gap-1 rounded-2xl border p-4"
+                        >
+                            <p class="text-text-muted text-xs">סנכרון</p>
+                            <p class="text-lg font-medium">מתעדכן ברקע</p>
+                            <p class="text-text-muted text-xs">כשיש רשת</p>
+                        </div>
+                        <div
+                            class="border-border/60 bg-surface-1/80 flex flex-col gap-1 rounded-2xl border p-4"
+                        >
+                            <p class="text-text-muted text-xs">מיקוד</p>
+                            <p class="text-lg font-medium">טכניון</p>
+                            <p class="text-text-muted text-xs">
+                                קטלוגים רשמיים
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-4">
+                    <div
+                        class="border-border/60 bg-surface-1/80 relative overflow-hidden rounded-3xl border p-6 shadow-sm"
+                    >
+                        <div
+                            class="bg-surface-2/70 flex aspect-[4/3] items-center justify-center rounded-2xl"
+                            data-hero-media
+                        >
+                            <img
+                                class="h-28 w-28 object-contain opacity-80"
+                                alt="תצוגת מערכת"
+                                data-placeholder="logo"
+                            />
+                        </div>
+                        <div
+                            class="border-border/60 bg-surface-1/90 absolute end-4 bottom-4 flex items-center gap-3 rounded-2xl border px-4 py-3 shadow-sm"
+                        >
+                            <span class="bg-accent size-2 rounded-full"></span>
+                            <div class="flex flex-col">
+                                <p class="text-xs font-medium">מצב תכנון</p>
+                                <p class="text-text-muted text-xs">
+                                    סמסטר אביב 2026
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="grid gap-3 sm:grid-cols-2">
+                        <div
+                            class="border-border/60 bg-surface-1/80 flex flex-col gap-2 rounded-2xl border p-4"
+                        >
+                            <p class="text-text-muted text-xs">הקורס הבא</p>
+                            <p class="text-lg font-medium">מבוא ללמידת מכונה</p>
+                            <p class="text-text-muted text-xs">
+                                הצעת תזמון חכם
+                            </p>
+                        </div>
+                        <div
+                            class="border-border/60 bg-surface-1/80 flex flex-col gap-2 rounded-2xl border p-4"
+                        >
+                            <p class="text-text-muted text-xs">בדיקת דרישות</p>
+                            <p class="text-lg font-medium">68% במסלול</p>
+                            <p class="text-text-muted text-xs">
+                                עדכון בזמן אמת
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section class="flex flex-col gap-6">
+                <div class="flex flex-col gap-2">
+                    <p class="text-text-muted text-xs">היכולות המרכזיות</p>
+                    <h2 class="text-2xl font-medium">
+                        תכנון מרגע הבחירה ועד הסמסטר.
+                    </h2>
+                    <p class="text-text-muted text-sm">
+                        בחרו מסלול, בדקו דרישות, מצאו קורסים והמשיכו לתכנן בלי
+                        לחכות לחיבור.
+                    </p>
+                </div>
+                <div class="grid gap-4 lg:grid-cols-2">
+                    <article
+                        class="border-border/60 bg-surface-1/80 flex flex-col gap-4 rounded-3xl border p-5 shadow-sm"
+                    >
+                        <div
+                            class="bg-surface-2/70 flex aspect-[16/10] items-center justify-center rounded-2xl"
+                            data-feature-media
+                            data-feature="plan"
+                        >
+                            <img
+                                class="h-20 w-20 object-contain opacity-70"
+                                alt="תצוגת מתכנן"
+                                data-placeholder="logo"
+                            />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <p class="text-text-muted text-xs">מתכנן סמסטר</p>
+                            <h3 class="text-lg font-medium">תכננו את ההרכבה</h3>
+                            <p class="text-text-muted text-xs">
+                                גררו קורסים, בדקו עומס וראו תמונה מלאה של
+                                הסמסטרים.
+                            </p>
+                        </div>
+                        <a class="text-accent text-xs font-medium" href="/plan">
+                            מעבר למתכנן →
+                        </a>
+                    </article>
+                    <article
+                        class="border-border/60 bg-surface-1/80 flex flex-col gap-4 rounded-3xl border p-5 shadow-sm"
+                    >
+                        <div
+                            class="bg-surface-2/70 flex aspect-[16/10] items-center justify-center rounded-2xl"
+                            data-feature-media
+                            data-feature="catalog"
+                        >
+                            <img
+                                class="h-20 w-20 object-contain opacity-70"
+                                alt="תצוגת קטלוג"
+                                data-placeholder="logo"
+                            />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <p class="text-text-muted text-xs">קטלוגים</p>
+                            <h3 class="text-lg font-medium">
+                                כל הדרישות במקום אחד
+                            </h3>
+                            <p class="text-text-muted text-xs">
+                                בחרו מסלול, בדקו דרישות חובה ובחרו תמהיל מתאים.
+                            </p>
+                        </div>
+                        <a
+                            class="text-accent text-xs font-medium"
+                            href="/catalog"
+                        >
+                            בדיקת קטלוגים →
+                        </a>
+                    </article>
+                    <article
+                        class="border-border/60 bg-surface-1/80 flex flex-col gap-4 rounded-3xl border p-5 shadow-sm"
+                    >
+                        <div
+                            class="bg-surface-2/70 flex aspect-[16/10] items-center justify-center rounded-2xl"
+                            data-feature-media
+                            data-feature="search"
+                        >
+                            <img
+                                class="h-20 w-20 object-contain opacity-70"
+                                alt="תצוגת חיפוש"
+                                data-placeholder="logo"
+                            />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <p class="text-text-muted text-xs">חיפוש</p>
+                            <h3 class="text-lg font-medium">מצאו קורסים מהר</h3>
+                            <p class="text-text-muted text-xs">
+                                חיפוש מתקדם עם פילטרים, דרישות קדם והצעות.
+                            </p>
+                        </div>
+                        <a
+                            class="text-accent text-xs font-medium"
+                            href="/search"
+                        >
+                            לפתיחת חיפוש →
+                        </a>
+                    </article>
+                    <article
+                        class="border-border/60 bg-surface-1/80 flex flex-col gap-4 rounded-3xl border p-5 shadow-sm"
+                    >
+                        <div
+                            class="bg-surface-2/70 flex aspect-[16/10] items-center justify-center rounded-2xl"
+                            data-feature-media
+                            data-feature="semester"
+                        >
+                            <img
+                                class="h-20 w-20 object-contain opacity-70"
+                                alt="תצוגת סמסטר"
+                                data-placeholder="logo"
+                            />
+                        </div>
+                        <div class="flex flex-col gap-2">
+                            <p class="text-text-muted text-xs">סמסטרים</p>
+                            <h3 class="text-lg font-medium">מעקב לכל תקופה</h3>
+                            <p class="text-text-muted text-xs">
+                                תיעוד עומסים, נקודות זכות, ושינויים בין סמסטרים.
+                            </p>
+                        </div>
+                        <a
+                            class="text-accent text-xs font-medium"
+                            href="/semester"
+                        >
+                            מעבר לסמסטר →
+                        </a>
+                    </article>
+                </div>
+                <article
+                    class="border-border/60 bg-surface-1/80 flex flex-col gap-4 rounded-3xl border p-5 shadow-sm"
+                >
+                    <div
+                        class="flex flex-col gap-2 sm:flex-row sm:items-center"
+                    >
+                        <div
+                            class="bg-surface-2/70 flex aspect-[16/10] w-full items-center justify-center rounded-2xl sm:w-48"
+                            data-feature-media
+                            data-feature="course"
+                        >
+                            <img
+                                class="h-16 w-16 object-contain opacity-70"
+                                alt="תצוגת קורס"
+                                data-placeholder="logo"
+                            />
+                        </div>
+                        <div class="flex flex-1 flex-col gap-2">
+                            <p class="text-text-muted text-xs">פרטי קורס</p>
+                            <h3 class="text-lg font-medium">
+                                כל פרט במקום אחד
+                            </h3>
+                            <p class="text-text-muted text-xs">
+                                תיאור, נק"ז, תנאי קדם וביקוש — בלי לעבור בין
+                                אתרים.
+                            </p>
+                        </div>
+                        <a
+                            class="text-accent text-xs font-medium"
+                            href="/course"
+                        >
+                            לפרטי קורס →
+                        </a>
+                    </div>
+                </article>
+            </section>
+
+            <section class="grid gap-4 sm:grid-cols-3">
+                <div
+                    class="border-border/60 bg-surface-1/80 flex flex-col gap-2 rounded-2xl border p-4"
+                >
+                    <p class="text-text-muted text-xs">אופליין תחילה</p>
+                    <p class="text-lg font-medium">עובד בכל מצב</p>
+                    <p class="text-text-muted text-xs">גם ללא חיבור לרשת.</p>
+                </div>
+                <div
+                    class="border-border/60 bg-surface-1/80 flex flex-col gap-2 rounded-2xl border p-4"
+                >
+                    <p class="text-text-muted text-xs">סנכרון חכם</p>
+                    <p class="text-lg font-medium">עדכונים בזמן הנכון</p>
+                    <p class="text-text-muted text-xs">משלים נתונים ברקע.</p>
+                </div>
+                <div
+                    class="border-border/60 bg-surface-1/80 flex flex-col gap-2 rounded-2xl border p-4"
+                >
+                    <p class="text-text-muted text-xs">מותאם לטכניון</p>
+                    <p class="text-lg font-medium">מידע רשמי</p>
+                    <p class="text-text-muted text-xs">
+                        קטלוגים, דרישות ותצוגות.
+                    </p>
+                </div>
+            </section>
+
+            <section
+                class="border-border/60 bg-surface-1/80 flex flex-col items-start gap-4 rounded-3xl border p-6 shadow-sm"
+            >
+                <div class="flex flex-col gap-2">
+                    <p class="text-text-muted text-xs">מוכנים להתחיל?</p>
+                    <h2 class="text-2xl font-medium">הצעד הבא בתכנון התואר.</h2>
+                    <p class="text-text-muted text-sm">
+                        התחילו עם המסלול שלכם וראו איך כל סמסטר מתחבר לתמונה.
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <a
+                        class="bg-accent text-accent-contrast rounded-full px-5 py-2 text-xs font-medium shadow-sm"
+                        href="/plan"
+                    >
+                        התחילו עכשיו
+                    </a>
+                    <a
+                        class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text rounded-full border px-5 py-2 text-xs font-medium transition duration-200 ease-out"
+                        href="/catalog"
+                    >
+                        בחירת מסלול
+                    </a>
+                </div>
+            </section>
+        </div>
+    </div>
+</template>
