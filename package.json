@@ -19,7 +19,7 @@
         "pw:codegen": "playwright codegen http://localhost:5173",
         "optimize:videos": "node scripts/optimize-playwright-videos.mjs",
         "test": "pnpm run unittest && pnpm run integtest",
-        "vibe": "vibe-kanban"
+        "vibe": "PORT=9999 vibe-kanban"
     },
     "devDependencies": {
         "@eslint/css": "^0.14.1",
@@ -48,7 +48,7 @@
         "tailwindcss": "^4.1.18",
         "typescript": "~5.9.3",
         "typescript-eslint": "^8.55.0",
-        "vibe-kanban": "^0.1.8",
+        "vibe-kanban": "0.1.12",
         "vite": "^7.1.9",
         "vite-imagetools": "^9.0.3",
         "vite-plugin-pwa": "^1.1.0",

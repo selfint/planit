@@ -41,14 +41,5 @@
             ]
         }
     },
-    // Use 'forwardPorts' to make a list of ports inside the container available locally.
-    "forwardPorts": [
-        // vite dev
-        5173,
-        // vite preview
-        4173,
-        // storybook
-        6006
-    ],
     "postCreateCommand": "bash -c 'pnpm exec playwright install --with-deps'"
 }

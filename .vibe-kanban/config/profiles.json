@@ -1,0 +1,14 @@
+{
+  "executors": {
+    "OPENCODE": {
+      "DEFAULT": {
+        "OPENCODE": {
+          "append_prompt": null,
+          "model": "openai/gpt-5.3-codex",
+          "auto_approve": true,
+          "auto_compact": true
+        }
+      }
+    }
+  }
+}
