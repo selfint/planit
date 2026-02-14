@@ -1,6 +1,6 @@
 import logoUrl from '../../../assets/logo.webp';
+import titleUrl from '../../../assets/Title.svg?url';
 import templateHtml from './LandingNav.html?raw';
-import titleSvg from '../../../assets/Title.svg?raw';
 
 export function LandingNav(): HTMLElement {
     const template = document.createElement('template');
@@ -19,13 +19,9 @@ export function LandingNav(): HTMLElement {
         logo.src = logoUrl;
     }
 
-    const title = root.querySelector<HTMLDivElement>('[data-title]');
-    if (title !== null) {
-        title.innerHTML = titleSvg;
-        const svg = title.querySelector<SVGElement>('svg');
-        if (svg !== null) {
-            svg.setAttribute('class', 'h-full w-auto');
-        }
+    const titleUse = root.querySelector<SVGUseElement>('[data-title-use]');
+    if (titleUse !== null) {
+        titleUse.setAttribute('href', titleUrl);
     }
 
     const toggleButtons = root.querySelectorAll<HTMLButtonElement>(
