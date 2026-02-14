@@ -1,6 +1,6 @@
 import logoUrl from '$assets/logo.webp';
-import titleUrl from '$assets/Title.svg?url';
 import templateHtml from './LandingNav.html?raw';
+import titleUrl from '$assets/Title.svg?url';
 
 export function LandingNav(): HTMLElement {
     const template = document.createElement('template');
