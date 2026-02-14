@@ -18,17 +18,18 @@ export function LandingNav(): HTMLElement {
     const mobileMenu = root.querySelector<HTMLElement>(
         '[data-role="mobile-menu"]'
     );
-    if (mobileMenu !== null) {
-        toggleButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                const isHidden = mobileMenu.classList.contains('hidden');
-                mobileMenu.classList.toggle('hidden', !isHidden);
-                toggleButtons.forEach((control) => {
-                    control.setAttribute('aria-expanded', String(isHidden));
-                });
+    if (mobileMenu === null) {
+        throw new Error('LandingNav mobile menu not found');
+    }
+    toggleButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const isHidden = mobileMenu.classList.contains('hidden');
+            mobileMenu.classList.toggle('hidden', !isHidden);
+            toggleButtons.forEach((control) => {
+                control.setAttribute('aria-expanded', String(isHidden));
             });
         });
-    }
+    });
 
     return root;
 }
