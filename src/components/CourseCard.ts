@@ -43,7 +43,7 @@ export function CourseCard(
 
     const statusClass =
         options?.statusClass ??
-        getStatusClassFromCode(course.code) ??
+        generateDynamicColorFromCode(course.code) ??
         DEFAULT_STATUS_CLASS;
     const emptyValue = options?.emptyValue ?? DEFAULT_EMPTY_VALUE;
     const titleText = course.name ?? DEFAULT_TITLE;
@@ -113,15 +113,14 @@ function formatCourseNumber(
     return value.toString();
 }
 
-function getStatusClassFromCode(code: string): string | undefined {
-    const normalized = code.trim();
-    if (normalized.length === 0) {
-        return undefined;
-    }
-    let hash = 0;
-    for (let index = 0; index < normalized.length; index += 1) {
-        hash =
-            (hash * 31 + normalized.charCodeAt(index)) % STATUS_CLASSES.length;
-    }
-    return STATUS_CLASSES[hash];
+function generateDynamicColorFromCode(code: string): string {
+    const hash = Array.from(code).reduce((hash, char) => {
+        return hash * 31 + char.charCodeAt(0);
+    }, 7);
+
+    const r = (hash & 0xFF0000) >> 16;
+    const g = (hash & 0x00FF00) >> 8;
+    const b = hash & 0x0000FF;
+
+    return `rgb(${r}, ${g}, ${b})`; 
 }
