@@ -1,4 +1,5 @@
 import logoUrl from '../../assets/logo.webp';
+import { LandingFeatureCard } from './components/LandingFeatureCard';
 import templateHtml from './page.html?raw';
 
 export function LandingPage(): HTMLElement {
@@ -12,6 +13,82 @@ export function LandingPage(): HTMLElement {
     if (!(root instanceof HTMLElement)) {
         throw new Error('LandingPage template root not found');
     }
+
+    const featureData: Record<
+        string,
+        {
+            label: string;
+            title: string;
+            description: string;
+            href: string;
+            linkLabel: string;
+            mediaAlt: string;
+        }
+    > = {
+        plan: {
+            label: 'מתכנן סמסטר',
+            title: 'תכננו את ההרכבה',
+            description: 'גררו קורסים, בדקו עומס וראו תמונה מלאה של הסמסטרים.',
+            href: '/plan',
+            linkLabel: 'מעבר למתכנן →',
+            mediaAlt: 'תצוגת מתכנן',
+        },
+        catalog: {
+            label: 'קטלוגים',
+            title: 'כל הדרישות במקום אחד',
+            description: 'בחרו מסלול, בדקו דרישות חובה ובחרו תמהיל מתאים.',
+            href: '/catalog',
+            linkLabel: 'בדיקת קטלוגים →',
+            mediaAlt: 'תצוגת קטלוג',
+        },
+        search: {
+            label: 'חיפוש',
+            title: 'מצאו קורסים מהר',
+            description: 'חיפוש מתקדם עם פילטרים, דרישות קדם והצעות.',
+            href: '/search',
+            linkLabel: 'לפתיחת חיפוש →',
+            mediaAlt: 'תצוגת חיפוש',
+        },
+        semester: {
+            label: 'סמסטרים',
+            title: 'מעקב לכל תקופה',
+            description: 'תיעוד עומסים, נקודות זכות, ושינויים בין סמסטרים.',
+            href: '/semester',
+            linkLabel: 'מעבר לסמסטר →',
+            mediaAlt: 'תצוגת סמסטר',
+        },
+        course: {
+            label: 'פרטי קורס',
+            title: 'כל פרט במקום אחד',
+            description: 'תיאור, נק"ז, תנאי קדם וביקוש — בלי לעבור בין אתרים.',
+            href: '/course',
+            linkLabel: 'לפרטי קורס →',
+            mediaAlt: 'תצוגת קורס',
+        },
+    };
+
+    const featureHosts = root.querySelectorAll<HTMLElement>(
+        '[data-landing-feature-card]'
+    );
+    featureHosts.forEach((host) => {
+        const featureKey = host.dataset.landingFeatureCard;
+        if (featureKey === undefined) {
+            return;
+        }
+        const data = featureData[featureKey];
+        if (data === undefined) {
+            return;
+        }
+        const card = LandingFeatureCard({
+            label: data.label,
+            title: data.title,
+            description: data.description,
+            href: data.href,
+            linkLabel: data.linkLabel,
+            mediaAlt: data.mediaAlt,
+        });
+        host.replaceWith(card);
+    });
 
     const placeholderImages = root.querySelectorAll<HTMLImageElement>(
         '[data-placeholder="logo"]'
