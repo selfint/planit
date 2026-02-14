@@ -1,0 +1,70 @@
+<template>
+    <div data-component="LandingPage">
+        <div class="pt-[env(safe-area-inset-top)]">
+            <div data-landing-nav></div>
+        </div>
+        <div
+            class="mx-auto flex min-h-screen max-w-6xl flex-col gap-12 px-4 pt-10 pb-[calc(env(safe-area-inset-bottom)+3rem)] sm:px-6 lg:px-8"
+        >
+            <div data-landing-hero></div>
+
+            <section class="flex flex-col">
+                <div
+                    class="border-border/60 bg-surface-2/70 relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border"
+                    data-video-placeholder
+                    data-skeleton="true"
+                >
+                    <span
+                        class="skeleton-shimmer absolute inset-0"
+                        aria-hidden="true"
+                        data-skeleton-layer
+                    ></span>
+                </div>
+            </section>
+
+            <section class="flex flex-col gap-6">
+                <div class="flex flex-col gap-2">
+                    <h2 class="text-2xl font-medium">
+                        תכנון מרגע הבחירה ועד הסמסטר.
+                    </h2>
+                    <p class="text-text-muted text-sm">
+                        בחרו מסלול, בדקו דרישות, מצאו קורסים והמשיכו לתכנן בלי
+                        לחכות לחיבור.
+                    </p>
+                </div>
+                <div class="grid gap-4 lg:grid-cols-2">
+                    <div data-landing-feature-card="plan"></div>
+                    <div data-landing-feature-card="catalog"></div>
+                    <div data-landing-feature-card="search"></div>
+                    <div data-landing-feature-card="semester"></div>
+                </div>
+                <div data-landing-feature-card="course"></div>
+            </section>
+
+            <section
+                class="border-border/60 bg-surface-1/80 flex flex-col items-start gap-4 rounded-3xl border p-6 shadow-sm"
+            >
+                <div class="flex flex-col gap-2">
+                    <h2 class="text-2xl font-medium">הצעד הבא בתכנון התואר.</h2>
+                    <p class="text-text-muted text-sm">
+                        התחילו עם המסלול שלכם וראו איך כל סמסטר מתחבר לתמונה.
+                    </p>
+                </div>
+                <div class="flex flex-wrap gap-3">
+                    <a
+                        class="bg-accent text-accent-contrast rounded-full px-5 py-2 text-xs font-medium shadow-sm"
+                        href="/plan"
+                    >
+                        התחילו עכשיו
+                    </a>
+                    <a
+                        class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text rounded-full border px-5 py-2 text-xs font-medium transition duration-200 ease-out"
+                        href="/catalog"
+                    >
+                        בחירת מסלול
+                    </a>
+                </div>
+            </section>
+        </div>
+    </div>
+</template>

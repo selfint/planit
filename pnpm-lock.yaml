@@ -96,6 +96,9 @@ importers:
       vite:
         specifier: ^7.1.9
         version: 7.3.1(@types/node@25.2.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0)
+      vite-imagetools:
+        specifier: ^9.0.3
+        version: 9.0.3(rollup@2.79.2)
       vite-plugin-pwa:
         specifier: ^1.1.0
         version: 1.2.0(@vite-pwa/assets-generator@1.0.2)(vite@7.3.1(@types/node@25.2.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0))(workbox-build@7.4.0)(workbox-window@7.4.0)
@@ -2534,6 +2537,10 @@ packages:
     resolution: {integrity: sha512-Hs59xBNfUIunMFgWAbGX5cq6893IbWg4KnrjbYwX3tx0ztorVgTDA6B2sxf8ejHJ4wz8BqGUMYlnzNBer5NvGg==}
     engines: {node: '>= 4'}
 
+  imagetools-core@9.1.0:
+    resolution: {integrity: sha512-xQjs+2vrxLnAjCq+omuNkd5UQTld9/bP8+YT0LyYTlKfuSQtgUBvqhUwGugzSAh6sCdN+LnROMuLswn5hZ9Fhg==}
+    engines: {node: '>=20.0.0'}
+
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
     engines: {node: '>=6'}
@@ -3726,6 +3733,10 @@ packages:
   vibe-kanban@0.1.8:
     resolution: {integrity: sha512-lAM0KOhXAAZpfHfpIkpRy1FirF05cB+Oqa61aejCZP+CILNn8HJ7T/oLKpu4fIW0Azf2QdSmhonPzCXgo9qVPg==}
     hasBin: true
+
+  vite-imagetools@9.0.3:
+    resolution: {integrity: sha512-FwjApRNZyN+RucPW9Z9kf0dyzyi3r3zlDfrTnzHXNaYpmT3pZ5w//d6QkApy1iypbDm+3fq+Gwfv+PYA4j4uYw==}
+    engines: {node: '>=20.0.0'}
 
   vite-node@3.2.4:
     resolution: {integrity: sha512-EbKSKh+bh1E1IFxeO0pg1n4dvoOTt0UDiXMd/qn++r98+jPO1xtJilvXldeuQ8giIB5IkpjCgMleHMNEsGH6pg==}
@@ -6520,6 +6531,8 @@ snapshots:
 
   ignore@7.0.5: {}
 
+  imagetools-core@9.1.0: {}
+
   import-fresh@3.3.1:
     dependencies:
       parent-module: 1.0.1
@@ -7884,6 +7897,14 @@ snapshots:
   vibe-kanban@0.1.8:
     dependencies:
       adm-zip: 0.5.16
+
+  vite-imagetools@9.0.3(rollup@2.79.2):
+    dependencies:
+      '@rollup/pluginutils': 5.3.0(rollup@2.79.2)
+      imagetools-core: 9.1.0
+      sharp: 0.33.5
+    transitivePeerDependencies:
+      - rollup
 
   vite-node@3.2.4(@types/node@25.2.2)(jiti@2.6.1)(lightningcss@1.30.2)(terser@5.46.0):
     dependencies:

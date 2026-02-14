@@ -25,8 +25,10 @@ export default defineConfig({
     },
     resolve: {
         alias: {
+            // Keep aliases in sync with .storybook/main.ts (manual).
             $lib: resolve('src/lib'),
             $components: resolve('src/components'),
+            $assets: resolve('src/assets'),
         },
     },
     plugins: [
