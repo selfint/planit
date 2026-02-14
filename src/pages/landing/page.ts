@@ -1,6 +1,7 @@
 import logoUrl from '../../assets/logo.webp';
 import { LandingFeatureCard } from './components/LandingFeatureCard';
 import { LandingHero } from './components/LandingHero';
+import { LandingNav } from './components/LandingNav';
 import templateHtml from './page.html?raw';
 
 export function LandingPage(): HTMLElement {
@@ -13,6 +14,11 @@ export function LandingPage(): HTMLElement {
     const root = templateElement.content.firstElementChild?.cloneNode(true);
     if (!(root instanceof HTMLElement)) {
         throw new Error('LandingPage template root not found');
+    }
+
+    const navHost = root.querySelector<HTMLElement>('[data-landing-nav]');
+    if (navHost !== null) {
+        navHost.replaceWith(LandingNav());
     }
 
     const heroHost = root.querySelector<HTMLElement>('[data-landing-hero]');
