@@ -15,6 +15,9 @@ export function LandingNav(): HTMLElement {
     const toggleButtons = root.querySelectorAll<HTMLButtonElement>(
         '[data-action="toggle-menu"]'
     );
+    if (toggleButtons.length === 0) {
+        throw new Error('LandingNav toggleButtons not found');
+    }
     const mobileMenu = root.querySelector<HTMLElement>(
         '[data-role="mobile-menu"]'
     );
