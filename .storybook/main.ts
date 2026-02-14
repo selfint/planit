@@ -20,8 +20,10 @@ const config: StorybookConfig = {
             plugins: [...(config.plugins ?? []), tailwindcss()],
             resolve: {
                 alias: {
+                    // Keep aliases in sync with vite.config.ts (manual).
                     $lib: resolve('src/lib'),
                     $components: resolve('src/components'),
+                    $assets: resolve('src/assets'),
                 },
             },
         };
