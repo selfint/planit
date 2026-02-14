@@ -1,5 +1,5 @@
-import logoUrl from '../../../assets/logo.webp';
-import titleUrl from '../../../assets/Title.svg?url';
+import logoUrl from '$assets/logo.webp';
+import titleUrl from '$assets/Title.svg?url';
 import templateHtml from './LandingNav.html?raw';
 
 export function LandingNav(): HTMLElement {

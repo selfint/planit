@@ -1,6 +1,6 @@
-import logoUrl from '../assets/logo.webp';
+import logoUrl from '$assets/logo.webp';
 import templateHtml from './AppHeader.html?raw';
-import titleSvg from '../assets/Title.svg?raw';
+import titleSvg from '$assets/Title.svg?raw';
 
 export function AppHeader(): HTMLElement {
     const template = document.createElement('template');
