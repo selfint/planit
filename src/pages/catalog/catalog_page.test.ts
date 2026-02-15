@@ -92,10 +92,37 @@ describe('CatalogPage', () => {
             },
         });
 
-        getCourseMock.mockImplementation(async (code: string) => ({
-            code,
-            name: `Course ${code}`,
-        }));
+        getCourseMock.mockImplementation(async (code: string) => {
+            if (code === '236363') {
+                return {
+                    code,
+                    name: `Course ${code}`,
+                    median: 92,
+                    current: true,
+                };
+            }
+            if (code === '236501') {
+                return {
+                    code,
+                    name: `Course ${code}`,
+                    median: 85,
+                    current: false,
+                };
+            }
+            if (code === '234123') {
+                return {
+                    code,
+                    name: `Course ${code}`,
+                    median: 75,
+                    current: true,
+                };
+            }
+            return {
+                code,
+                name: `Course ${code}`,
+                current: true,
+            };
+        });
 
         const page = CatalogPage();
         await waitForUiWork();
@@ -104,6 +131,17 @@ describe('CatalogPage', () => {
             '[data-component="CourseCard"]'
         );
         expect(cards.length).toBe(3);
+
+        const firstPageLinks = page.querySelectorAll<HTMLAnchorElement>(
+            'a[href^="/course?code="]'
+        );
+        expect(firstPageLinks.item(0).getAttribute('href')).toContain('236363');
+        expect(firstPageLinks.item(1).getAttribute('href')).toContain('236501');
+        expect(firstPageLinks.item(2).getAttribute('href')).toContain('234123');
+
+        const nonCurrentLink =
+            page.querySelector<HTMLAnchorElement>('a[href*="236501"]');
+        expect(nonCurrentLink?.classList.contains('opacity-70')).toBe(true);
 
         const pageLabel = page.querySelector('[data-catalog-group-page]');
         expect(pageLabel?.textContent).toContain('עמוד 1 מתוך 2');
@@ -118,7 +156,7 @@ describe('CatalogPage', () => {
             'a[href^="/course?code="]'
         );
         expect(links.length).toBe(1);
-        expect(links.item(0).getAttribute('href')).toContain('234123');
+        expect(links.item(0).getAttribute('href')).toContain('236343');
     });
 });
 

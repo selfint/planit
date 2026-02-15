@@ -29,7 +29,9 @@ network blocking.
 5. Courses render as linked `CourseCard` entries (`/course?code=<code>`).
 6. Each requirement renders only one page of cards (up to 3 cards per page) to
    keep rendering fast, and paging controls move between pages.
-7. Degree picker changes and requirement table mutations trigger a debounced
+7. Cards inside each requirement are sorted by course median (highest first),
+   and non-current courses (`current !== true`) are dimmed visually.
+8. Degree picker changes and requirement table mutations trigger a debounced
    re-render of the requirement-group panel.
 
 ## Unit Tests

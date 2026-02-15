@@ -232,27 +232,52 @@ function renderRequirementGroups(
 
         let pageIndex = 0;
         let renderToken = 0;
+        let sortedCodes: string[] | undefined;
+        let recordsByCode: Map<string, CourseRecord | null> | undefined;
+
+        async function ensureSortedGroupData(): Promise<{
+            codes: string[];
+            records: Map<string, CourseRecord | null>;
+        }> {
+            if (sortedCodes !== undefined && recordsByCode !== undefined) {
+                return {
+                    codes: sortedCodes,
+                    records: recordsByCode,
+                };
+            }
+
+            const loadedRecords = await loadCourseRecords(
+                group.courseCodes,
+                courseCache
+            );
+            const sorted = sortCourseCodesByMedian(
+                group.courseCodes,
+                loadedRecords
+            );
+            sortedCodes = sorted;
+            recordsByCode = loadedRecords;
+
+            return {
+                codes: sorted,
+                records: loadedRecords,
+            };
+        }
 
         async function renderCurrentPage(): Promise<void> {
             renderToken += 1;
             const localToken = renderToken;
 
-            const pageCodes = getCourseCodesForPage(
-                group.courseCodes,
-                pageIndex
-            );
-            const recordsByCode = await loadCourseRecords(
-                pageCodes,
-                courseCache
-            );
+            const groupData = await ensureSortedGroupData();
             if (localToken !== renderToken) {
                 return;
             }
 
+            const pageCodes = getCourseCodesForPage(groupData.codes, pageIndex);
+
             row.replaceChildren();
 
             for (const code of pageCodes) {
-                const record = recordsByCode.get(code);
+                const record = groupData.records.get(code);
                 const card =
                     record === undefined || record === null
                         ? CourseCard({
@@ -265,6 +290,9 @@ function renderRequirementGroups(
                 anchor.href = `/course?code=${encodeURIComponent(code)}`;
                 anchor.className =
                     'focus-visible:ring-accent/60 rounded-2xl focus-visible:ring-2';
+                if (record?.current !== true) {
+                    anchor.classList.add('opacity-70');
+                }
                 anchor.append(card);
                 row.append(anchor);
             }
@@ -294,6 +322,27 @@ function renderRequirementGroups(
 
         root.append(section);
     });
+}
+
+function sortCourseCodesByMedian(
+    codes: string[],
+    recordsByCode: Map<string, CourseRecord | null>
+): string[] {
+    return [...codes].sort((leftCode, rightCode) => {
+        const leftMedian = getCourseMedian(recordsByCode.get(leftCode));
+        const rightMedian = getCourseMedian(recordsByCode.get(rightCode));
+        if (rightMedian !== leftMedian) {
+            return rightMedian - leftMedian;
+        }
+        return leftCode.localeCompare(rightCode);
+    });
+}
+
+function getCourseMedian(record: CourseRecord | null | undefined): number {
+    if (record?.median === undefined || !Number.isFinite(record.median)) {
+        return Number.NEGATIVE_INFINITY;
+    }
+    return record.median;
 }
 
 function getTotalPages(courseCount: number): number {
