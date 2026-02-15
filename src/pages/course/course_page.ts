@@ -474,7 +474,7 @@ function renderDependencyGroups(
 
         const groupTitle = document.createElement('p');
         groupTitle.className = 'text-text-muted text-xs';
-        groupTitle.textContent = `חלופה ${String(groupIndex + 1)} (AND)`;
+        groupTitle.textContent = `חלופה ${String(groupIndex + 1)} - כל הקורסים יחד`;
         groupSection.append(groupTitle);
 
         const groupGrid = document.createElement('div');
@@ -495,11 +495,22 @@ function renderDependencyGroups(
         container.append(groupSection);
 
         if (groupIndex < groups.length - 1) {
+            const separator = document.createElement('div');
+            separator.className = 'flex items-center gap-2 py-1';
+
+            const lineStart = document.createElement('span');
+            lineStart.className = 'bg-border/80 h-px flex-1';
+
+            const lineEnd = document.createElement('span');
+            lineEnd.className = 'bg-border/80 h-px flex-1';
+
             const orBadge = document.createElement('p');
             orBadge.className =
                 'bg-surface-2 text-text-muted inline-flex w-fit items-center rounded-full px-3 py-1 text-xs';
-            orBadge.textContent = 'או חלופה אחרת (OR)';
-            container.append(orBadge);
+            orBadge.textContent = 'או';
+
+            separator.append(lineStart, orBadge, lineEnd);
+            container.append(separator);
         }
     }
 }

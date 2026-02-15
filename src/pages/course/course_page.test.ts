@@ -115,7 +115,7 @@ describe('course page', () => {
         expect(dependencyCards).toHaveLength(3);
         expect(
             Array.from(orLabels).some((label) =>
-                label.textContent?.includes('OR')
+                label.textContent?.includes('או')
             )
         ).toBe(true);
         expect(adjacentCards).toHaveLength(1);
