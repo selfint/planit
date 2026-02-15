@@ -113,9 +113,7 @@ test.describe('/plan page route', () => {
 
         await page.click(`[data-plan-row][data-row-id="${targetRowId}"]`);
 
-        await expect(page.locator('[data-selected-status]')).toHaveText(
-            'לא נבחר קורס'
-        );
+        await expect(page.locator('[data-selected-status]')).toHaveCount(0);
         await expect(page.locator('[data-clear-selection]')).toBeDisabled();
         await expect.poll(async () => getVisibleMoveTargetCount(page)).toBe(0);
 

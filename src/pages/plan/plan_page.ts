@@ -199,9 +199,6 @@ export function PlanPage(): HTMLElement {
     }
 
     const rail = root.querySelector<HTMLElement>('[data-semester-rail]');
-    const selectedStatus = root.querySelector<HTMLElement>(
-        '[data-selected-status]'
-    );
     const clearButton = root.querySelector<HTMLButtonElement>(
         '[data-clear-selection]'
     );
@@ -218,7 +215,6 @@ export function PlanPage(): HTMLElement {
 
     if (
         rail === null ||
-        selectedStatus === null ||
         clearButton === null ||
         warning === null ||
         problemsList === null ||
@@ -246,7 +242,7 @@ export function PlanPage(): HTMLElement {
         }
 
         state.selected = undefined;
-        updateSelectionControls(state, selectedStatus, clearButton);
+        updateSelectionControls(state, clearButton);
         toggleMoveTargets(rail, undefined);
     });
 
@@ -258,7 +254,6 @@ export function PlanPage(): HTMLElement {
         renderPlan(
             state,
             rail,
-            selectedStatus,
             clearButton,
             warning,
             problemsList,
@@ -283,14 +278,7 @@ export function PlanPage(): HTMLElement {
                 return;
             }
 
-            handleCourseClick(
-                state,
-                rowId,
-                courseCode,
-                rail,
-                selectedStatus,
-                clearButton
-            );
+            handleCourseClick(state, rowId, courseCode, rail, clearButton);
             return;
         }
 
@@ -300,19 +288,12 @@ export function PlanPage(): HTMLElement {
             return;
         }
 
-        void handleRowClick(
-            state,
-            targetRowId,
-            rail,
-            selectedStatus,
-            clearButton
-        );
+        void handleRowClick(state, targetRowId, rail, clearButton);
     });
 
     renderPlan(
         state,
         rail,
-        selectedStatus,
         clearButton,
         warning,
         problemsList,
@@ -322,7 +303,6 @@ export function PlanPage(): HTMLElement {
     void hydratePlan(
         state,
         rail,
-        selectedStatus,
         clearButton,
         warning,
         problemsList,
@@ -336,7 +316,6 @@ export function PlanPage(): HTMLElement {
 async function hydratePlan(
     state: PlanState,
     rail: HTMLElement,
-    selectedStatus: HTMLElement,
     clearButton: HTMLButtonElement,
     warning: HTMLElement,
     problemsList: HTMLElement,
@@ -374,7 +353,6 @@ async function hydratePlan(
     renderPlan(
         state,
         rail,
-        selectedStatus,
         clearButton,
         warning,
         problemsList,
@@ -386,14 +364,13 @@ async function hydratePlan(
 function renderPlan(
     state: PlanState,
     rail: HTMLElement,
-    selectedStatus: HTMLElement,
     clearButton: HTMLButtonElement,
     warning: HTMLElement,
     problemsList: HTMLElement,
     problemsCount: HTMLElement,
     semesterCountInput: HTMLInputElement
 ): void {
-    updateSelectionControls(state, selectedStatus, clearButton);
+    updateSelectionControls(state, clearButton);
     semesterCountInput.value = state.semesterCount.toString();
 
     if (state.warning !== undefined && state.warning.length > 0) {
@@ -773,31 +750,10 @@ function getExclusionProblem(
     return `חפיפה לקורסים הדדיים: ${conflicts.join(', ')}`;
 }
 
-function getSelectedStatusText(state: PlanState): string {
-    if (state.selected === undefined) {
-        return 'לא נבחר קורס';
-    }
-
-    const row = getPlanRows(state).find(
-        (item) => item.id === state.selected?.rowId
-    );
-    const course = row?.courses.find(
-        (item) => item.code === state.selected?.courseCode
-    );
-    if (row === undefined || course === undefined) {
-        return 'לא נבחר קורס';
-    }
-
-    const label = course.name ?? course.code;
-    return `נבחר: ${label} (${row.title})`;
-}
-
 function updateSelectionControls(
     state: PlanState,
-    selectedStatus: HTMLElement,
     clearButton: HTMLButtonElement
 ): void {
-    selectedStatus.textContent = getSelectedStatusText(state);
     clearButton.disabled = state.selected === undefined;
 }
 
@@ -887,7 +843,6 @@ function handleCourseClick(
     rowId: string,
     courseCode: string,
     rail: HTMLElement,
-    selectedStatus: HTMLElement,
     clearButton: HTMLButtonElement
 ): void {
     const isSameSelection =
@@ -916,7 +871,7 @@ function handleCourseClick(
         setCourseSelectionState(selectedButton, true);
     }
 
-    updateSelectionControls(state, selectedStatus, clearButton);
+    updateSelectionControls(state, clearButton);
     toggleMoveTargets(rail, rowId);
 }
 
@@ -928,7 +883,6 @@ async function handleRowClick(
     state: PlanState,
     targetRowId: string,
     rail: HTMLElement,
-    selectedStatus: HTMLElement,
     clearButton: HTMLButtonElement
 ): Promise<void> {
     if (state.selected === undefined) {
@@ -982,7 +936,7 @@ async function handleRowClick(
 
     state.selected = undefined;
 
-    updateSelectionControls(state, selectedStatus, clearButton);
+    updateSelectionControls(state, clearButton);
     toggleMoveTargets(rail, undefined);
 
     await persistPlanState(state);
