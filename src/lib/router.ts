@@ -64,19 +64,19 @@ function renderRoute(pathname: string, replaceState = false): void {
 }
 
 function navigate(url: URL): void {
-    const normalizedPath = normalizePath(url.pathname);
-    const nextUrl = `${normalizedPath}${url.search}${url.hash}`;
+    const nextUrl = new URL(url.href);
+    nextUrl.pathname = normalizePath(nextUrl.pathname);
     const currentUrl = new URL(window.location.href);
     const isSameUrl =
-        normalizedPath === normalizePath(currentUrl.pathname) &&
-        url.search === currentUrl.search &&
-        url.hash === currentUrl.hash;
+        nextUrl.pathname === normalizePath(currentUrl.pathname) &&
+        nextUrl.search === currentUrl.search &&
+        nextUrl.hash === currentUrl.hash;
     if (isSameUrl) {
         return;
     }
 
     window.history.pushState(null, '', nextUrl);
-    renderRoute(normalizedPath);
+    renderRoute(nextUrl.pathname);
 }
 
 export function shouldHandleClickNavigation(event: MouseEvent): boolean {
