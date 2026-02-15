@@ -72,7 +72,7 @@ describe('SearchPage', () => {
         expect(grid).toBeInstanceOf(HTMLElement);
         expect(grid?.className).toContain('grid-cols-3');
         expect(grid?.className).toContain('sm:grid-cols-4');
-        expect(availableFilter).toBeInstanceOf(HTMLInputElement);
+        expect(availableFilter).toBeInstanceOf(HTMLSelectElement);
         expect(facultyFilter).toBeInstanceOf(HTMLSelectElement);
         expect(requirementFilter).toBeInstanceOf(HTMLSelectElement);
         expect(page.querySelector('[data-search-page-size]')).toBeNull();

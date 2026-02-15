@@ -24,7 +24,7 @@ describe('search page route-level behavior', () => {
         expect(page.querySelector('h1')).toBeNull();
         expect(input).toBeInstanceOf(HTMLInputElement);
         expect(faculty).toBeInstanceOf(HTMLSelectElement);
-        expect(available).toBeInstanceOf(HTMLInputElement);
+        expect(available).toBeInstanceOf(HTMLSelectElement);
         expect(page.querySelector('[data-search-page-size]')).toBeNull();
         expect(results).toBeInstanceOf(HTMLDivElement);
     });

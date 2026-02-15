@@ -16,7 +16,7 @@ type SearchPageElements = {
     form: HTMLFormElement;
     input: HTMLInputElement;
     clearButton: HTMLButtonElement;
-    available: HTMLInputElement;
+    available: HTMLSelectElement;
     faculty: HTMLSelectElement;
     requirement: HTMLSelectElement;
     pointsMin: HTMLInputElement;
@@ -88,7 +88,7 @@ function collectElements(root: HTMLElement): SearchPageElements {
     const clearButton = root.querySelector<HTMLButtonElement>(
         '[data-search-clear]'
     );
-    const available = root.querySelector<HTMLInputElement>(
+    const available = root.querySelector<HTMLSelectElement>(
         '[data-filter-available]'
     );
     const faculty = root.querySelector<HTMLSelectElement>(
@@ -177,7 +177,7 @@ function hydrateFormFromState(
     state: SearchPageState
 ): void {
     elements.input.value = state.query;
-    elements.available.checked = state.availableOnly;
+    elements.available.value = state.availableOnly ? '1' : '';
     elements.faculty.value = state.faculty;
     elements.requirement.value = state.requirement;
     elements.pointsMin.value = state.pointsMin;
@@ -225,7 +225,7 @@ function bindEvents(
     });
 
     elements.available.addEventListener('change', () => {
-        state.availableOnly = elements.available.checked;
+        state.availableOnly = elements.available.value === '1';
         void runSearch(elements, state, true);
     });
 
