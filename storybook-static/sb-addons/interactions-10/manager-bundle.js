@@ -16321,16 +16321,14 @@ In order to be iterable, non-array objects must have a [Symbol.iterator]() metho
                         { style: { color: n.base } },
                         '[\u2026]'
                     );
-                let o = t
-                        .slice(0, 3)
-                        .map((u, i) =>
-                            m.createElement(nt, {
-                                key: `${i}--${JSON.stringify(u)}`,
-                                value: u,
-                                nested: !0,
-                                callsById: r,
-                            })
-                        ),
+                let o = t.slice(0, 3).map((u, i) =>
+                        m.createElement(nt, {
+                            key: `${i}--${JSON.stringify(u)}`,
+                            value: u,
+                            nested: !0,
+                            callsById: r,
+                        })
+                    ),
                     a = ki(o, m.createElement('span', null, ', '));
                 return t.length <= 3
                     ? m.createElement(

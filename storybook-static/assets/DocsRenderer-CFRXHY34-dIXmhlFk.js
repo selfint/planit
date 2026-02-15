@@ -5821,14 +5821,12 @@ function OA(e, t, n, a, o, u, c, d, h) {
                             ),
                         };
                     if (V === 0) {
-                        var ie = b
-                                .slice(v + 1, D)
-                                .concat(
-                                    Ys({
-                                        children: [re],
-                                        className: T.properties.className,
-                                    })
-                                ),
+                        var ie = b.slice(v + 1, D).concat(
+                                Ys({
+                                    children: [re],
+                                    className: T.properties.className,
+                                })
+                            ),
                             ce = A(ie, Y);
                         w.push(ce);
                     } else if (V === O.length - 1) {
