@@ -294,7 +294,7 @@ function createSemesterColumn(
 ): HTMLElement {
     const column = document.createElement('section');
     column.className =
-        'border-border/60 bg-surface-2/70 flex min-h-[25rem] w-[85vw] shrink-0 snap-start flex-col gap-3 rounded-2xl border p-3 sm:w-[22rem] lg:w-[20rem]';
+        'flex h-[100svh] w-[85vw] shrink-0 snap-start flex-col gap-3 px-1 sm:w-[22rem] lg:w-[20rem]';
     column.dataset.semesterColumn = 'true';
     column.dataset.semesterId = semester.id;
 
@@ -326,7 +326,7 @@ function createSemesterColumn(
     }
 
     const list = document.createElement('div');
-    list.className = 'flex min-h-0 flex-1 flex-col gap-2';
+    list.className = 'flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pe-1';
 
     if (semester.courses.length === 0) {
         const empty = document.createElement('p');
