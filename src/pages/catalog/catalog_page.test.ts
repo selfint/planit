@@ -221,7 +221,7 @@ describe('CatalogPage', () => {
         expect(state?.textContent).toContain('מעדכן בחירה');
     });
 
-    it('renders two cards per page on narrow mobile width', async () => {
+    it('renders three cards per page on narrow mobile width', async () => {
         setViewportWidth(430);
         getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
@@ -269,7 +269,67 @@ describe('CatalogPage', () => {
         const links = page.querySelectorAll<HTMLAnchorElement>(
             'a[href^="/course?code="]'
         );
-        expect(links.length).toBe(2);
+        expect(links.length).toBe(3);
+
+        const pageLabel = page.querySelector('[data-catalog-group-page]');
+        expect(pageLabel?.textContent).toContain('עמוד 1 מתוך 2');
+    });
+
+    it('renders nine cards per page on tablet and wider view', async () => {
+        setViewportWidth(900);
+        getActiveRequirementsSelectionMock.mockResolvedValue({
+            catalogId: '2025_200',
+            facultyId: 'computer-science',
+            programId: '0324',
+            path: 'software-path',
+        });
+
+        getRequirementMock.mockResolvedValue({
+            programId: '0324',
+            catalogId: '2025_200',
+            facultyId: 'computer-science',
+            data: {
+                name: 'root',
+                nested: [
+                    {
+                        name: 'software-path',
+                        en: 'Software Path',
+                        nested: [
+                            {
+                                name: 'core',
+                                courses: [
+                                    '236501',
+                                    '236363',
+                                    '236343',
+                                    '234123',
+                                    '236502',
+                                    '236350',
+                                    '236360',
+                                    '236503',
+                                    '236700',
+                                    '236800',
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        });
+
+        getCourseMock.mockImplementation(async (code: string) => ({
+            code,
+            name: `Course ${code}`,
+            median: 70,
+            current: true,
+        }));
+
+        const page = CatalogPage();
+        await waitForUiWork();
+
+        const links = page.querySelectorAll<HTMLAnchorElement>(
+            'a[href^="/course?code="]'
+        );
+        expect(links.length).toBe(9);
 
         const pageLabel = page.querySelector('[data-catalog-group-page]');
         expect(pageLabel?.textContent).toContain('עמוד 1 מתוך 2');

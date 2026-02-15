@@ -19,11 +19,10 @@ const GROUP_PENDING_MESSAGE = 'מעדכן בחירה בתכנית...';
 const GROUP_MISSING_MESSAGE =
     'אין דרישות שמורות לתכנית זו. התחברו לאינטרנט ונסו לטעון שוב.';
 const COURSE_NAME_FALLBACK_PREFIX = 'קורס';
-const CARD_MIN_WIDTH_REM = '11rem';
-const CARD_MIN_WIDTH_PX = 176;
-const CARD_GAP_PX = 12;
-const VIEWPORT_PADDING_PX = 32;
-const COURSE_ROW_GRID_CLASS = `grid min-w-0 gap-3 [grid-template-columns:repeat(auto-fit,minmax(${CARD_MIN_WIDTH_REM},1fr))]`;
+const TABLET_MIN_WIDTH = 768;
+const MOBILE_CARDS_PER_PAGE = 3;
+const TABLET_CARDS_PER_PAGE = 9;
+const COURSE_ROW_GRID_CLASS = 'grid min-w-0 grid-cols-1 gap-3 md:grid-cols-3';
 
 type RequirementGroup = {
     id: string;
@@ -124,7 +123,7 @@ export function CatalogPage(): HTMLElement {
         scheduleCatalogGroupsRefresh(context);
     });
 
-    renderGroupSkeleton(context.root, 4, getCardsPerPageForRoot(context.root));
+    renderGroupSkeleton(context.root, 4, getCardsPerPageForViewport());
     void refreshCatalogGroups(context);
 
     return root;
@@ -198,7 +197,7 @@ async function refreshCatalogGroups(
         return;
     }
 
-    const cardsPerPage = getCardsPerPageForRoot(context.root);
+    const cardsPerPage = getCardsPerPageForViewport();
     renderRequirementGroups(
         context.root,
         groups,
@@ -580,9 +579,7 @@ function renderGroupSkeleton(
 
         const row = document.createElement('div');
         row.className = COURSE_ROW_GRID_CLASS;
-        row.append(CourseCard());
-        row.append(CourseCard());
-        if (cardsPerPage >= 3) {
+        for (let cardIndex = 0; cardIndex < cardsPerPage; cardIndex += 1) {
             row.append(CourseCard());
         }
         wrapper.append(row);
@@ -595,17 +592,9 @@ function renderGroupSkeleton(
     }
 }
 
-function getCardsPerPageForRoot(root: HTMLElement): number {
-    const measuredWidth = root.clientWidth;
-    const availableWidth =
-        measuredWidth > 0
-            ? measuredWidth
-            : Math.max(
-                  window.innerWidth - VIEWPORT_PADDING_PX,
-                  CARD_MIN_WIDTH_PX
-              );
-    const columns = Math.floor(
-        (availableWidth + CARD_GAP_PX) / (CARD_MIN_WIDTH_PX + CARD_GAP_PX)
-    );
-    return Math.max(1, columns);
+function getCardsPerPageForViewport(): number {
+    if (window.innerWidth >= TABLET_MIN_WIDTH) {
+        return TABLET_CARDS_PER_PAGE;
+    }
+    return MOBILE_CARDS_PER_PAGE;
 }
