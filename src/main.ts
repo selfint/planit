@@ -1,26 +1,14 @@
 import './style.css';
 
-import { LandingPage } from './pages/landing/landing_page';
 import { initPWA } from '$lib/pwa';
-
-function initApp(): HTMLDivElement {
-    const app = document.querySelector<HTMLDivElement>('#app');
-    if (app === null) {
-        throw new Error('Missing #app element');
-    }
-
-    app.replaceChildren(LandingPage());
-
-    return app;
-}
+import { initRouter } from '$lib/router';
 
 function main(): void {
     try {
-        initApp();
+        initRouter();
         initPWA();
     } catch (err: unknown) {
         console.error('Failed to start app:', err);
-        process.exit(1);
     }
 }
 
