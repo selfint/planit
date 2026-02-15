@@ -39,6 +39,7 @@ type SearchPageState = {
     medianMin: string;
     debounceId: number | undefined;
     requestId: number;
+    searchAbortController: AbortController | undefined;
     requirementCodes: Map<string, string[]>;
     totalCourses: number | undefined;
 };
@@ -166,6 +167,7 @@ function parseStateFromUrl(): SearchPageState {
         medianMin: normalizeText(url.searchParams.get('medianMin') ?? ''),
         debounceId: undefined,
         requestId: 0,
+        searchAbortController: undefined,
         requirementCodes: new Map(),
         totalCourses: undefined,
     };
@@ -312,6 +314,7 @@ async function runSearch(
 ): Promise<void> {
     const requestId = state.requestId + 1;
     state.requestId = requestId;
+    const searchAbortController = startSearchAbortController(state);
 
     if (syncUrl) {
         writeStateToUrl(state);
@@ -321,7 +324,7 @@ async function runSearch(
     elements.empty.classList.add('hidden');
     elements.status.textContent = 'מחפש...';
 
-    const queryParams = buildQueryParams(state);
+    const queryParams = buildQueryParams(state, searchAbortController.signal);
     await yieldToBrowser();
 
     if (requestId !== state.requestId) {
@@ -353,8 +356,12 @@ async function runSearch(
 
         const totalCourses = state.totalCourses ?? result.total;
         elements.status.textContent = `מציג ${String(result.total)} מתוך ${String(totalCourses)}`;
-    } catch {
+    } catch (error: unknown) {
         if (requestId !== state.requestId) {
+            return;
+        }
+
+        if (isAbortError(error)) {
             return;
         }
 
@@ -362,7 +369,22 @@ async function runSearch(
         elements.status.textContent = 'טעינת התוצאות נכשלה.';
         elements.empty.textContent = 'אירעה שגיאה בקריאת הנתונים המקומיים.';
         elements.empty.classList.remove('hidden');
+    } finally {
+        if (state.searchAbortController === searchAbortController) {
+            state.searchAbortController = undefined;
+        }
     }
+}
+
+function startSearchAbortController(state: SearchPageState): AbortController {
+    state.searchAbortController?.abort();
+    const controller = new AbortController();
+    state.searchAbortController = controller;
+    return controller;
+}
+
+function isAbortError(error: unknown): boolean {
+    return error instanceof Error && error.name === 'AbortError';
 }
 
 function yieldToBrowser(): Promise<void> {
@@ -371,7 +393,10 @@ function yieldToBrowser(): Promise<void> {
     });
 }
 
-function buildQueryParams(state: SearchPageState): CourseQueryParams {
+function buildQueryParams(
+    state: SearchPageState,
+    signal: AbortSignal
+): CourseQueryParams {
     const requirementCourseCodes =
         state.requirement.length > 0
             ? (state.requirementCodes.get(state.requirement) ?? [])
@@ -385,6 +410,7 @@ function buildQueryParams(state: SearchPageState): CourseQueryParams {
         pointsMax: parseOptionalNumber(state.pointsMax),
         medianMin: parseOptionalNumber(state.medianMin),
         requirementCourseCodes,
+        signal,
         page: 1,
         pageSize: 'all',
     };
