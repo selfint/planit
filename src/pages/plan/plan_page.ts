@@ -814,10 +814,8 @@ function toggleMoveTargets(
         cancelButton.classList.toggle('pointer-events-none', !shouldShowCancel);
     }
 
-    const semesterRows = rail.querySelectorAll<HTMLElement>(
-        '[data-plan-row][data-row-kind="semester"]'
-    );
-    for (const semesterRow of semesterRows) {
+    const planRows = rail.querySelectorAll<HTMLElement>('[data-plan-row]');
+    for (const semesterRow of planRows) {
         const isClickableTarget =
             sourceRowId !== undefined &&
             semesterRow.dataset.rowId !== undefined &&
