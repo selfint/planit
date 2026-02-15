@@ -1,6 +1,6 @@
-import { expect, test, type Page } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 
-async function getVisibleSemesterId(page: Page) {
+async function getVisibleSemesterId(page: Page): Promise<string | null> {
     return page.evaluate(() => {
         const rail = document.querySelector<HTMLElement>(
             '[data-semester-rail]'
@@ -37,12 +37,12 @@ async function getVisibleSemesterId(page: Page) {
     });
 }
 
-async function getVisibleMoveTargetCount(page: Page) {
+async function getVisibleMoveTargetCount(page: Page): Promise<number> {
     return page.evaluate(() => {
         const moveTargets = Array.from(
             document.querySelectorAll<HTMLElement>('p')
         ).filter(
-            (item) => item.textContent?.trim() === 'לחצו כאן להעברת הקורס הנבחר'
+            (item) => item.textContent.trim() === 'לחצו כאן להעברת הקורס הנבחר'
         );
         let visibleCount = 0;
         for (const moveTarget of moveTargets) {

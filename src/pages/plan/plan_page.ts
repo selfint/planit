@@ -426,15 +426,20 @@ function renderPlan(
         const nextColumns = Array.from(
             rail.querySelectorAll<HTMLElement>('[data-semester-column]')
         );
-        const anchorColumn =
-            nextColumns.find(
-                (column) => column.dataset.semesterId === anchorSemesterId
-            ) ??
-            nextColumns[
-                Math.min(currentVisibleColumnIndex, nextColumns.length - 1)
-            ];
-
-        if (anchorColumn !== undefined) {
+        if (nextColumns.length > 0) {
+            const anchorColumn =
+                nextColumns.find(
+                    (column) => column.dataset.semesterId === anchorSemesterId
+                ) ??
+                nextColumns[
+                    Math.max(
+                        0,
+                        Math.min(
+                            currentVisibleColumnIndex,
+                            nextColumns.length - 1
+                        )
+                    )
+                ];
             alignColumnWithRailStart(rail, anchorColumn);
         }
     }
