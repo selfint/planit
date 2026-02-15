@@ -75,10 +75,15 @@ describe('SearchPage', () => {
         expect(availableFilter).toBeInstanceOf(HTMLInputElement);
         expect(facultyFilter).toBeInstanceOf(HTMLSelectElement);
         expect(requirementFilter).toBeInstanceOf(HTMLSelectElement);
+        expect(page.querySelector('[data-search-page-size]')).toBeNull();
+        const filterGrid = page.querySelector<HTMLElement>(
+            '[data-search-form] > .grid:last-child'
+        );
+        expect(filterGrid?.className).toContain('grid-cols-2');
         expect(page.querySelector('[data-search-suggestion]')).toBeNull();
     });
 
-    it('defaults to page size all and renders cards from queried results', async () => {
+    it('renders all queried cards from results', async () => {
         queryCoursesMock.mockResolvedValue({
             courses: [
                 { code: '234114', name: 'מבוא למדעי המחשב', current: true },
@@ -95,14 +100,10 @@ describe('SearchPage', () => {
         const links = page.querySelectorAll<HTMLAnchorElement>(
             '[data-search-results] > a'
         );
-        const pageSizeSelect = page.querySelector<HTMLSelectElement>(
-            '[data-search-page-size]'
-        );
 
         expect(queryCoursesMock).toHaveBeenCalledWith(
             expect.objectContaining({ pageSize: 'all', page: 1 })
         );
-        expect(pageSizeSelect?.value).toBe('all');
         expect(links).toHaveLength(2);
         expect(links[0]?.getAttribute('href')).toBe('/course?code=234114');
         expect(links[1]?.className).toContain('opacity-45');
