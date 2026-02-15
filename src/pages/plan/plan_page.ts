@@ -224,7 +224,11 @@ export function PlanPage(): HTMLElement {
     semesterCountInput.value = state.semesterCount.toString();
 
     semesterCountInput.addEventListener('change', () => {
-        const nextCount = parseSemesterCount(semesterCountInput.value);
+        const minimumCount = getMinimumSemesterCount(state);
+        const nextCount = parseSemesterCount(
+            semesterCountInput.value,
+            minimumCount
+        );
         semesterCountInput.value = nextCount.toString();
         resizeSemesters(state, nextCount);
         void persistPlanState(state);
@@ -349,6 +353,7 @@ function renderPlan(
     problemsCount: HTMLElement,
     semesterCountInput: HTMLInputElement
 ): void {
+    semesterCountInput.min = getMinimumSemesterCount(state).toString();
     semesterCountInput.value = state.semesterCount.toString();
 
     if (state.warning !== undefined && state.warning.length > 0) {
@@ -594,16 +599,31 @@ function getAvailabilityWarning(
     return 'הקורס לרוב לא נפתח בעונה זו';
 }
 
-function parseSemesterCount(value: string): number {
+function parseSemesterCount(
+    value: string,
+    minimum: number = MIN_SEMESTERS
+): number {
     const parsed = Number.parseInt(value, 10);
+    const safeMinimum = Math.max(MIN_SEMESTERS, Math.floor(minimum));
     if (Number.isNaN(parsed)) {
-        return MIN_SEMESTERS;
+        return safeMinimum;
     }
-    return Math.max(MIN_SEMESTERS, parsed);
+    return Math.max(safeMinimum, parsed);
+}
+
+function getMinimumSemesterCount(state: PlanState): number {
+    for (let index = state.semesters.length - 1; index >= 0; index -= 1) {
+        if (state.semesters[index].courses.length > 0) {
+            return Math.max(MIN_SEMESTERS, index + 1);
+        }
+    }
+
+    return MIN_SEMESTERS;
 }
 
 function resizeSemesters(state: PlanState, semesterCount: number): void {
-    const safeCount = Math.max(MIN_SEMESTERS, Math.floor(semesterCount));
+    const minimumCount = getMinimumSemesterCount(state);
+    const safeCount = Math.max(minimumCount, Math.floor(semesterCount));
     if (safeCount === state.semesterCount) {
         return;
     }
