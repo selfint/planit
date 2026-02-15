@@ -64,14 +64,20 @@ describe('SearchPage', () => {
         document.body.innerHTML = '';
     });
 
-    it('renders result grid and filter controls', () => {
+    it('renders result grid and filter controls', async () => {
         const page = SearchPage();
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 0);
+        });
 
         const grid = page.querySelector<HTMLElement>('[data-search-results]');
         const availableFilter = page.querySelector('[data-filter-available]');
         const facultyFilter = page.querySelector('[data-filter-faculty]');
         const requirementFilter = page.querySelector(
             '[data-filter-requirement]'
+        );
+        const syncCatalogLink = page.querySelector<HTMLAnchorElement>(
+            '[data-search-sync] a[href="/catalog"]'
         );
 
         expect(grid).toBeInstanceOf(HTMLElement);
@@ -87,6 +93,7 @@ describe('SearchPage', () => {
         );
         expect(filterGrid?.className).toContain('grid-cols-2');
         expect(page.querySelector('[data-search-suggestion]')).toBeNull();
+        expect(syncCatalogLink?.textContent).toContain('עברו לקטלוג');
     });
 
     it('renders all queried cards from results', async () => {
@@ -117,25 +124,5 @@ describe('SearchPage', () => {
 
         expect(firstLink.getAttribute('href')).toBe('/course?code=234114');
         expect(secondLink.className).toContain('opacity-45');
-    });
-
-    it('shows catalog guidance when no courses exist in db', async () => {
-        queryCoursesMock.mockResolvedValue({ courses: [], total: 0 });
-        getCoursesCountMock.mockResolvedValue(0);
-
-        const page = SearchPage();
-        await new Promise((resolve) => {
-            window.setTimeout(resolve, 0);
-        });
-
-        const emptyMessage = page.querySelector<HTMLElement>(
-            '[data-search-empty]'
-        );
-        const catalogLink = page.querySelector<HTMLAnchorElement>(
-            '[data-search-empty] a[href="/catalog"]'
-        );
-
-        expect(emptyMessage?.textContent).toContain('לא נבחר מסלול לימודים');
-        expect(catalogLink?.textContent).toContain('עמוד הקטלוג');
     });
 });
