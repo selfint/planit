@@ -322,6 +322,11 @@ async function runSearch(
     elements.status.textContent = 'מחפש...';
 
     const queryParams = buildQueryParams(state);
+    await yieldToBrowser();
+
+    if (requestId !== state.requestId) {
+        return;
+    }
 
     try {
         const result = await queryCourses(queryParams);
@@ -358,6 +363,12 @@ async function runSearch(
         elements.empty.textContent = 'אירעה שגיאה בקריאת הנתונים המקומיים.';
         elements.empty.classList.remove('hidden');
     }
+}
+
+function yieldToBrowser(): Promise<void> {
+    return new Promise((resolve) => {
+        window.setTimeout(resolve, 0);
+    });
 }
 
 function buildQueryParams(state: SearchPageState): CourseQueryParams {
