@@ -327,8 +327,14 @@ async function runSearch(
         if (result.total === 0) {
             const totalCourses = state.totalCourses ?? 0;
             elements.status.textContent = `מציג 0 מתוך ${String(totalCourses)}`;
-            elements.empty.textContent =
-                'נסו להרחיב את הטווחים או לנקות חלק מהפילטרים.';
+
+            if (totalCourses === 0) {
+                elements.empty.textContent = 'ממתין לסנכרון נתוני קורסים.';
+            } else {
+                elements.empty.textContent =
+                    'נסו להרחיב את הטווחים או לנקות חלק מהפילטרים.';
+            }
+
             elements.empty.classList.remove('hidden');
             return;
         }

@@ -125,4 +125,22 @@ describe('SearchPage', () => {
         expect(firstLink.getAttribute('href')).toBe('/course?code=234114');
         expect(secondLink.className).toContain('opacity-45');
     });
+
+    it('shows sync-waiting empty message before courses are available', async () => {
+        queryCoursesMock.mockResolvedValue({ courses: [], total: 0 });
+        getCoursesCountMock.mockResolvedValue(0);
+
+        const page = SearchPage();
+        await new Promise((resolve) => {
+            window.setTimeout(resolve, 0);
+        });
+
+        const emptyMessage = page.querySelector<HTMLElement>(
+            '[data-search-empty]'
+        );
+        expect(emptyMessage?.textContent).toContain('ממתין לסנכרון');
+        expect(emptyMessage?.textContent).not.toContain(
+            'נסו להרחיב את הטווחים'
+        );
+    });
 });
