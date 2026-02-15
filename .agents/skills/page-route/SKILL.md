@@ -84,7 +84,7 @@ What this page is for and where it sits in navigation.
 
 Use this baseline unless the repo already has a stronger route pattern.
 
-### <route>\_page.html
+### `<route>_page.html`
 
 ```html
 <template>
@@ -95,7 +95,7 @@ Use this baseline unless the repo already has a stronger route pattern.
 </template>
 ```
 
-### <route>\_page.ts
+### `<route>_page.ts`
 
 ```ts
 import templateHtml from './<route>_page.html?raw';
@@ -118,7 +118,7 @@ export function RoutePage(): HTMLElement {
 }
 ```
 
-### <route>\_page.stories.ts
+### `<route>_page.stories.ts`
 
 ```ts
 import type { Meta, StoryObj } from '@storybook/html';
@@ -127,6 +127,9 @@ import { RoutePage } from './<route>_page';
 
 const meta: Meta = {
     title: 'Pages/RoutePage',
+    parameters: {
+        layout: 'fullscreen',
+    },
 };
 
 export default meta;
@@ -145,10 +148,15 @@ export const Dark: Story = {
     globals: {
         theme: 'dark',
     },
+    parameters: {
+        backgrounds: {
+            default: 'dark',
+        },
+    },
 };
 ```
 
-### <route>\_page.test.ts
+### `<route>_page.test.ts`
 
 ```ts
 import { describe, expect, it } from 'vitest';
@@ -163,7 +171,7 @@ describe('route page', () => {
 });
 ```
 
-### <route>\_page.spec.ts
+### `<route>_page.spec.ts`
 
 ```ts
 import { expect, test } from '@playwright/test';
