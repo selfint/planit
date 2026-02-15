@@ -1,6 +1,18 @@
 /* @vitest-environment jsdom */
 import { describe, expect, it, vi } from 'vitest';
 
+vi.mock('$components/CourseCard', () => ({
+    CourseCard: (course?: { code?: string; name?: string }): HTMLElement => {
+        const card = document.createElement('article');
+        card.dataset.component = 'CourseCard';
+        if (course?.code !== undefined) {
+            card.dataset.courseCode = course.code;
+        }
+        card.textContent = course?.name ?? course?.code ?? 'skeleton';
+        return card;
+    },
+}));
+
 vi.mock('$components/DegreePicker', () => ({
     DegreePicker: (): HTMLElement => {
         const root = document.createElement('section');
@@ -44,7 +56,7 @@ describe('CatalogPage', () => {
         expect(state?.textContent).toContain('בחרו תכנית ומסלול');
     });
 
-    it('renders compact course list items for requirement groups', async () => {
+    it('renders one page of three course cards and supports paging', async () => {
         getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
             facultyId: 'computer-science',
@@ -67,7 +79,12 @@ describe('CatalogPage', () => {
                             {
                                 name: 'core',
                                 he: 'חובה',
-                                courses: ['236501', '236363'],
+                                courses: [
+                                    '236501',
+                                    '236363',
+                                    '236343',
+                                    '234123',
+                                ],
                             },
                         ],
                     },
@@ -83,18 +100,25 @@ describe('CatalogPage', () => {
         const page = CatalogPage();
         await waitForUiWork();
 
-        const listItems = page.querySelectorAll<HTMLElement>(
-            '[data-catalog-groups] li'
+        const cards = page.querySelectorAll<HTMLElement>(
+            '[data-component="CourseCard"]'
         );
-        expect(listItems.length).toBeGreaterThanOrEqual(2);
+        expect(cards.length).toBe(3);
+
+        const pageLabel = page.querySelector('[data-catalog-group-page]');
+        expect(pageLabel?.textContent).toContain('עמוד 1 מתוך 2');
+
+        const nextButton = Array.from(page.querySelectorAll('button')).find(
+            (button) => button.textContent === 'הבא'
+        );
+        nextButton?.click();
+        await waitForUiWork();
 
         const links = page.querySelectorAll<HTMLAnchorElement>(
             'a[href^="/course?code="]'
         );
-        expect(links.length).toBeGreaterThanOrEqual(2);
-
-        const firstLinkText = links.item(0).textContent;
-        expect(firstLinkText).toContain('Course 236501');
+        expect(links.length).toBe(1);
+        expect(links.item(0).getAttribute('href')).toContain('234123');
     });
 });
 

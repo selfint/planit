@@ -1,4 +1,5 @@
 import templateHtml from './catalog_page.html?raw';
+import { CourseCard } from '$components/CourseCard';
 import { DegreePicker } from '$components/DegreePicker';
 import { getCourse, getRequirement } from '$lib/indexeddb';
 import type { CourseRecord } from '$lib/indexeddb';
@@ -17,6 +18,7 @@ const GROUP_LOADING_MESSAGE = 'טוען קורסים מהאחסון המקומי
 const GROUP_MISSING_MESSAGE =
     'אין דרישות שמורות לתכנית זו. התחברו לאינטרנט ונסו לטעון שוב.';
 const COURSE_NAME_FALLBACK_PREFIX = 'קורס';
+const CARDS_PER_PAGE = 3;
 
 type RequirementGroup = {
     id: string;
@@ -102,7 +104,7 @@ export function CatalogPage(): HTMLElement {
         });
     }
 
-    renderGroupSkeleton(context.root, 6);
+    renderGroupSkeleton(context.root, 4);
     void refreshCatalogGroups(context);
 
     return root;
@@ -158,15 +160,9 @@ async function refreshCatalogGroups(
         return;
     }
 
-    const codes = collectUniqueCodes(groups);
-    const recordsByCode = await loadCourseRecords(codes, context.courseCache);
-    if (context.refreshVersion !== nextVersion) {
-        return;
-    }
+    renderRequirementGroups(context.root, groups, context.courseCache);
 
-    renderRequirementGroups(context.root, groups, recordsByCode);
-
-    const totalCourses = codes.length;
+    const totalCourses = collectUniqueCodes(groups).length;
     context.summary.textContent = `נטענו ${String(totalCourses)} קורסים מתוך ${String(groups.length)} קבוצות דרישה.`;
     context.state.textContent = `עודכן מנתונים שמורים אופליין עבור ${selection.programId}.`;
 }
@@ -174,11 +170,11 @@ async function refreshCatalogGroups(
 function renderRequirementGroups(
     root: HTMLElement,
     groups: RequirementGroup[],
-    recordsByCode: Map<string, CourseRecord | null>
+    courseCache: Map<string, CourseRecord | null>
 ): void {
     root.replaceChildren();
 
-    for (const group of groups) {
+    groups.forEach((group) => {
         const section = document.createElement('section');
         section.className = 'flex flex-col gap-3 py-4';
 
@@ -197,46 +193,119 @@ function renderRequirementGroups(
         heading.append(subtitle);
         section.append(heading);
 
-        const list = document.createElement('ul');
-        list.className = 'divide-border/40 flex flex-col divide-y';
+        const pager = document.createElement('div');
+        pager.className = 'flex items-center justify-between gap-3';
 
-        for (const code of group.courseCodes) {
-            const record = recordsByCode.get(code);
-            const item = document.createElement('li');
-            item.className = 'py-2';
+        const pageLabel = document.createElement('p');
+        pageLabel.className = 'text-text-muted text-xs';
+        pageLabel.setAttribute('data-catalog-group-page', group.id);
 
-            const anchor = document.createElement('a');
-            anchor.href = `/course?code=${encodeURIComponent(code)}`;
-            anchor.className =
-                'hover:text-text focus-visible:ring-accent/60 flex min-h-11 items-center justify-between gap-3 rounded-lg px-2 text-xs transition duration-200 ease-out focus-visible:ring-2';
+        const controls = document.createElement('div');
+        controls.className = 'flex items-center gap-2';
 
-            const textBlock = document.createElement('span');
-            textBlock.className = 'flex min-w-0 flex-col gap-1';
+        const prevButton = document.createElement('button');
+        prevButton.type = 'button';
+        prevButton.className =
+            'border-border/60 bg-surface-2/70 text-text-muted hover:text-text rounded-full border px-3 py-1 text-xs transition duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-50';
+        prevButton.textContent = 'הקודם';
 
-            const name = document.createElement('span');
-            name.className = 'text-text truncate text-sm';
-            name.textContent = getCourseTitle(record, code);
+        const nextButton = document.createElement('button');
+        nextButton.type = 'button';
+        nextButton.className =
+            'border-border/60 bg-surface-2/70 text-text-muted hover:text-text rounded-full border px-3 py-1 text-xs transition duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-50';
+        nextButton.textContent = 'הבא';
 
-            const meta = document.createElement('span');
-            meta.className = 'text-text-muted text-xs';
-            meta.textContent = `קוד ${code}`;
+        controls.append(prevButton);
+        controls.append(nextButton);
+        pager.append(pageLabel);
+        pager.append(controls);
+        section.append(pager);
 
-            textBlock.append(name);
-            textBlock.append(meta);
+        const row = document.createElement('div');
+        row.className = 'grid grid-cols-3 gap-3';
+        section.append(row);
 
-            const points = document.createElement('span');
-            points.className = 'text-text-muted shrink-0 text-xs';
-            points.textContent = formatCoursePoints(record?.points);
-
-            anchor.append(textBlock);
-            anchor.append(points);
-            item.append(anchor);
-            list.append(item);
+        const totalPages = getTotalPages(group.courseCodes.length);
+        if (totalPages <= 1) {
+            controls.classList.add('hidden');
         }
 
-        section.append(list);
+        let pageIndex = 0;
+        let renderToken = 0;
+
+        async function renderCurrentPage(): Promise<void> {
+            renderToken += 1;
+            const localToken = renderToken;
+
+            const pageCodes = getCourseCodesForPage(
+                group.courseCodes,
+                pageIndex
+            );
+            const recordsByCode = await loadCourseRecords(
+                pageCodes,
+                courseCache
+            );
+            if (localToken !== renderToken) {
+                return;
+            }
+
+            row.replaceChildren();
+
+            for (const code of pageCodes) {
+                const record = recordsByCode.get(code);
+                const card =
+                    record === undefined || record === null
+                        ? CourseCard({
+                              code,
+                              name: `${COURSE_NAME_FALLBACK_PREFIX} ${code}`,
+                          })
+                        : CourseCard(record);
+
+                const anchor = document.createElement('a');
+                anchor.href = `/course?code=${encodeURIComponent(code)}`;
+                anchor.className =
+                    'focus-visible:ring-accent/60 rounded-2xl focus-visible:ring-2';
+                anchor.append(card);
+                row.append(anchor);
+            }
+
+            pageLabel.textContent = `עמוד ${String(pageIndex + 1)} מתוך ${String(totalPages)} • ${String(group.courseCodes.length)} קורסים`;
+            prevButton.disabled = pageIndex <= 0;
+            nextButton.disabled = pageIndex + 1 >= totalPages;
+        }
+
+        prevButton.addEventListener('click', () => {
+            if (pageIndex <= 0) {
+                return;
+            }
+            pageIndex -= 1;
+            void renderCurrentPage();
+        });
+
+        nextButton.addEventListener('click', () => {
+            if (pageIndex + 1 >= totalPages) {
+                return;
+            }
+            pageIndex += 1;
+            void renderCurrentPage();
+        });
+
+        void renderCurrentPage();
+
         root.append(section);
-    }
+    });
+}
+
+function getTotalPages(courseCount: number): number {
+    return Math.max(1, Math.ceil(courseCount / CARDS_PER_PAGE));
+}
+
+function getCourseCodesForPage(
+    courseCodes: string[],
+    pageIndex: number
+): string[] {
+    const from = pageIndex * CARDS_PER_PAGE;
+    return courseCodes.slice(from, from + CARDS_PER_PAGE);
 }
 
 async function loadCourseRecords(
@@ -342,30 +411,17 @@ function renderGroupSkeleton(root: HTMLElement, count: number): void {
         title.className = 'skeleton-shimmer h-4 w-44 rounded-md';
         wrapper.append(title);
 
-        for (let line = 0; line < 2; line += 1) {
-            const row = document.createElement('span');
-            row.className =
-                'skeleton-shimmer h-10 w-full rounded-md sm:max-w-[28rem]';
-            wrapper.append(row);
-        }
+        const row = document.createElement('div');
+        row.className = 'grid grid-cols-3 gap-3';
+        row.append(CourseCard());
+        row.append(CourseCard());
+        row.append(CourseCard());
+        wrapper.append(row);
+
+        const pager = document.createElement('span');
+        pager.className = 'skeleton-shimmer h-3 w-36 rounded-md';
+        wrapper.append(pager);
 
         root.append(wrapper);
     }
-}
-
-function getCourseTitle(
-    record: CourseRecord | null | undefined,
-    code: string
-): string {
-    if (record?.name !== undefined && record.name.length > 0) {
-        return record.name;
-    }
-    return `${COURSE_NAME_FALLBACK_PREFIX} ${code}`;
-}
-
-function formatCoursePoints(points: number | undefined): string {
-    if (points === undefined || !Number.isFinite(points)) {
-        return "נק'ז —";
-    }
-    return `נק"ז ${String(points)}`;
 }

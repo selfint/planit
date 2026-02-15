@@ -1,6 +1,10 @@
 /* @vitest-environment jsdom */
 import { describe, expect, it, vi } from 'vitest';
 
+vi.mock('$components/CourseCard', () => ({
+    CourseCard: (): HTMLElement => document.createElement('article'),
+}));
+
 vi.mock('$components/DegreePicker', () => ({
     DegreePicker: (): HTMLElement => {
         const root = document.createElement('section');

@@ -11,30 +11,33 @@ network blocking.
 - Intro header with route context and summary line.
 - Degree picker panel (catalog, faculty, program, path) mounted from
   `DegreePicker`.
-- Requirement groups panel that renders a compact course list per requirement
-  node.
+- Requirement groups panel that renders `CourseCard` in a single row per
+  requirement.
+- Per-requirement paging controls (`next`/`previous`) to render one card page
+  at a time for faster UI updates.
 - Empty, loading, and missing-data states for offline-first behavior.
 
 ## Data Flow
 
 1. `CatalogPage()` mounts `DegreePicker()` and immediately renders lightweight
-   list skeleton placeholders.
+   skeleton rows using `CourseCard` placeholders.
 2. The page reads active selection via `getActiveRequirementsSelection()` and
    program requirements via `getRequirement(programId)` from IndexedDB.
 3. The requirement tree is filtered with `filterRequirementsByPath()` and then
    flattened into course-bearing requirement groups.
 4. Each course code resolves to optional course details using `getCourse(code)`.
-5. Courses render as compact linked rows (`/course?code=<code>`) with name,
-   code, and points when available.
-6. Degree picker changes and requirement table mutations trigger a debounced
+5. Courses render as linked `CourseCard` entries (`/course?code=<code>`).
+6. Each requirement renders only one page of cards (up to 3 cards per page) to
+   keep rendering fast, and paging controls move between pages.
+7. Degree picker changes and requirement table mutations trigger a debounced
    re-render of the requirement-group panel.
 
 ## Unit Tests
 
 - `catalog_page.test.ts`: verifies waiting state when no active selection is
   stored.
-- `catalog_page.test.ts`: verifies requirement groups render compact list items
-  and course links.
+- `catalog_page.test.ts`: verifies requirement groups render one 3-card page
+  and support paging to later courses.
 
 ## Integration Tests
 
