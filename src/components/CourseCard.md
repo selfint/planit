@@ -11,10 +11,9 @@ course code using a small hash and a fixed palette.
 ## Template Structure
 
 - Root `article` with rounded border, `text-xs`, `min-w-fit` sizing behavior,
-  and strict fixed height.
+  and `h-full` height so it can stretch with its parent container.
 - Top row contains the status dot and meta numbers.
-- Bottom block reserves exactly three lines for the title and one line for the
-  course code.
+- Bottom block shows the title (clamped up to three lines) and the course code.
 
 ## Data Flow
 
