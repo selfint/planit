@@ -19,6 +19,14 @@ vi.mock('$components/CourseCard', () => ({
     },
 }));
 
+vi.mock('$components/ConsoleNav', () => ({
+    ConsoleNav: (): HTMLElement => {
+        const nav = document.createElement('nav');
+        nav.dataset.component = 'ConsoleNav';
+        return nav;
+    },
+}));
+
 vi.mock('$lib/indexeddb', () => ({
     getMeta: (key: string): Promise<unknown> =>
         mocks.getMetaMock(key) as Promise<unknown>,

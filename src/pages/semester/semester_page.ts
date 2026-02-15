@@ -1,4 +1,5 @@
 import { CourseCard } from '$components/CourseCard';
+import { ConsoleNav } from '$components/ConsoleNav';
 import {
     type CourseRecord,
     getCourse,
@@ -56,6 +57,12 @@ export function SemesterPage(): HTMLElement {
     const root = templateElement.content.firstElementChild?.cloneNode(true);
     if (!(root instanceof HTMLElement)) {
         throw new Error('SemesterPage template root not found');
+    }
+
+    const consoleNavHost =
+        root.querySelector<HTMLElement>('[data-console-nav]');
+    if (consoleNavHost !== null) {
+        consoleNavHost.replaceWith(ConsoleNav({ activePath: '/semester' }));
     }
 
     const elements = queryElements(root);
