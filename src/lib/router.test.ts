@@ -31,9 +31,12 @@ vi.mock('../pages/404/not_found_page', () => ({
 }));
 
 import {
+    addBasePath,
     REDIRECT_SESSION_KEY,
     initRouter,
+    normalizeBasePath,
     normalizePath,
+    stripBasePath,
     shouldHandleClickNavigation,
 } from '$lib/router';
 
@@ -42,6 +45,24 @@ describe('router lib', () => {
         expect(normalizePath('/')).toBe('/');
         expect(normalizePath('/plan/')).toBe('/plan');
         expect(normalizePath('/catalog///')).toBe('/catalog');
+        expect(normalizePath('')).toBe('/');
+    });
+
+    it('normalizes basename values for router mounting', () => {
+        expect(normalizeBasePath('/')).toBe('/');
+        expect(normalizeBasePath('/planit/')).toBe('/planit');
+        expect(normalizeBasePath('planit/')).toBe('/planit');
+        expect(normalizeBasePath('./')).toBe('/');
+    });
+
+    it('strips and reapplies basename for browser/app paths', () => {
+        expect(stripBasePath('/planit', '/planit/')).toBe('/');
+        expect(stripBasePath('/planit/search/', '/planit/')).toBe('/search');
+        expect(stripBasePath('/search', '/planit/')).toBe('/search');
+
+        expect(addBasePath('/', '/planit/')).toBe('/planit');
+        expect(addBasePath('/search', '/planit/')).toBe('/planit/search');
+        expect(addBasePath('/search', '/')).toBe('/search');
     });
 
     it('handles same-origin plain left-click anchor navigation', () => {

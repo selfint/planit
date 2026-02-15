@@ -7,6 +7,9 @@ Provides client-side SPA route rendering and internal link interception.
 ## Exports
 
 - `normalizePath(pathname)`: Normalizes route paths by trimming trailing slashes.
+- `normalizeBasePath(basePath)`: Normalizes deployment basename values like `/planit/`.
+- `stripBasePath(pathname, basePath)`: Converts browser pathname to app route pathname.
+- `addBasePath(pathname, basePath)`: Converts app route pathname back to browser pathname.
 - `shouldHandleClickNavigation(event)`: Decides if a click should be handled by the SPA router.
 - `REDIRECT_SESSION_KEY`: Session storage key used for GitHub Pages deep-link recovery.
 - `initRouter()`: Initializes initial render, history handling, and delegated link navigation.
@@ -14,6 +17,7 @@ Provides client-side SPA route rendering and internal link interception.
 ## Data Flow
 
 - Reads `window.location.pathname` on startup.
+- Uses `import.meta.env.BASE_URL` as router basename when app is deployed under subpaths.
 - Restores deep-link route from session storage when arriving through `404.html` fallback.
 - Resolves route path to a page factory and renders into `#app`.
 - Uses `history.pushState` and `popstate` to keep URL and rendered page in sync.
