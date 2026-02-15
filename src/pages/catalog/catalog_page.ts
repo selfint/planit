@@ -280,7 +280,7 @@ function renderRequirementGroups(
 
     groups.forEach((group) => {
         const section = document.createElement('section');
-        section.className = 'flex flex-col gap-3 py-4';
+        section.className = 'flex min-w-0 flex-col gap-3 py-4';
 
         const heading = document.createElement('div');
         heading.className = 'flex flex-col gap-1';
@@ -298,14 +298,14 @@ function renderRequirementGroups(
         section.append(heading);
 
         const pager = document.createElement('div');
-        pager.className = 'flex items-center justify-between gap-3';
+        pager.className = 'flex flex-wrap items-center justify-between gap-2';
 
         const pageLabel = document.createElement('p');
-        pageLabel.className = 'text-text-muted text-xs';
+        pageLabel.className = 'text-text-muted min-w-0 text-xs';
         pageLabel.setAttribute('data-catalog-group-page', group.id);
 
         const controls = document.createElement('div');
-        controls.className = 'flex items-center gap-2';
+        controls.className = 'flex shrink-0 items-center gap-2';
 
         const prevButton = document.createElement('button');
         prevButton.type = 'button';
@@ -326,7 +326,7 @@ function renderRequirementGroups(
         section.append(pager);
 
         const row = document.createElement('div');
-        row.className = 'grid grid-cols-2 gap-3 sm:grid-cols-3';
+        row.className = 'grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3';
         section.append(row);
 
         const totalPages = getTotalPages(
@@ -400,7 +400,7 @@ function renderRequirementGroups(
                 const anchor = document.createElement('a');
                 anchor.href = `/course?code=${encodeURIComponent(code)}`;
                 anchor.className =
-                    'focus-visible:ring-accent/60 min-w-0 rounded-2xl focus-visible:ring-2';
+                    'focus-visible:ring-accent/60 block min-w-0 w-full rounded-2xl focus-visible:ring-2';
                 if (record?.current !== true) {
                     anchor.classList.add('opacity-70');
                 }
