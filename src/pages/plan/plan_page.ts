@@ -378,6 +378,18 @@ function renderPlan(
     problemsCount: HTMLElement,
     semesterCountInput: HTMLInputElement
 ): void {
+    const previousColumns = Array.from(
+        rail.querySelectorAll<HTMLElement>('[data-semester-column]')
+    );
+    const currentVisibleColumnIndex =
+        previousColumns.length > 0
+            ? getCurrentVisibleColumnIndex(rail, previousColumns)
+            : -1;
+    const anchorSemesterId =
+        currentVisibleColumnIndex >= 0
+            ? previousColumns[currentVisibleColumnIndex].dataset.semesterId
+            : undefined;
+
     selectedStatus.textContent = getSelectedStatusText(state);
     clearButton.disabled = state.selected === undefined;
     semesterCountInput.value = state.semesterCount.toString();
@@ -412,7 +424,43 @@ function renderPlan(
     trailingSpacer.setAttribute('aria-hidden', 'true');
     rail.append(trailingSpacer);
 
+    if (anchorSemesterId !== undefined) {
+        const nextColumns = Array.from(
+            rail.querySelectorAll<HTMLElement>('[data-semester-column]')
+        );
+        const anchorColumn =
+            nextColumns.find(
+                (column) => column.dataset.semesterId === anchorSemesterId
+            ) ??
+            nextColumns[
+                Math.min(currentVisibleColumnIndex, nextColumns.length - 1)
+            ];
+
+        if (anchorColumn !== undefined) {
+            alignColumnWithRailStart(rail, anchorColumn);
+        }
+    }
+
     updateRailButtonState(rail);
+}
+
+function alignColumnWithRailStart(
+    rail: HTMLElement,
+    column: HTMLElement
+): void {
+    const railRect = rail.getBoundingClientRect();
+    const columnRect = column.getBoundingClientRect();
+    const isRtl = getComputedStyle(rail).direction === 'rtl';
+
+    const horizontalDelta = isRtl
+        ? columnRect.right - railRect.right
+        : columnRect.left - railRect.left;
+
+    if (Math.abs(horizontalDelta) <= 1) {
+        return;
+    }
+
+    rail.scrollBy({ left: horizontalDelta });
 }
 
 function createSemesterColumn(
