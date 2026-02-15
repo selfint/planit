@@ -92,7 +92,7 @@ function renderManyHorizontalCards(): HTMLElement {
 
 function renderDenseGrid(): HTMLElement {
     const grid = createStoryHost(
-        'grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-5'
+        'grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5'
     );
     for (const course of sampleCourses) {
         grid.append(createCardRow(course));
