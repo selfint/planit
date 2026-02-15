@@ -404,6 +404,7 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
         'border-border/50 bg-surface-1/40 flex flex-col gap-3 rounded-2xl border p-3 sm:p-4';
     rowElement.dataset.planRow = 'true';
     rowElement.dataset.rowId = row.id;
+    rowElement.dataset.rowKind = row.kind;
 
     const header = document.createElement('header');
     header.className = 'flex flex-col gap-2';
@@ -811,6 +812,18 @@ function toggleMoveTargets(
         cancelButton.classList.toggle('invisible', !shouldShowCancel);
         cancelButton.classList.toggle('opacity-0', !shouldShowCancel);
         cancelButton.classList.toggle('pointer-events-none', !shouldShowCancel);
+    }
+
+    const semesterRows = rail.querySelectorAll<HTMLElement>(
+        '[data-plan-row][data-row-kind="semester"]'
+    );
+    for (const semesterRow of semesterRows) {
+        const isClickableTarget =
+            sourceRowId !== undefined &&
+            semesterRow.dataset.rowId !== undefined &&
+            semesterRow.dataset.rowId !== sourceRowId;
+        semesterRow.classList.toggle('!bg-surface-2/80', isClickableTarget);
+        semesterRow.classList.toggle('!border-accent/40', isClickableTarget);
     }
 }
 
