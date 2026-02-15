@@ -21,6 +21,8 @@ const FALLBACK_COURSE_NAME_PREFIX = 'קורס';
 const FALLBACK_FACULTY = 'ללא פקולטה';
 const DEFAULT_SEMESTER_NUMBER = 1;
 const DESKTOP_MIN_WIDTH = 1024;
+const DESKTOP_STICKY_GAP_PX = 8;
+const DESKTOP_STICKY_BOTTOM_GAP_PX = 12;
 const SEASONS = ['אביב', 'קיץ', 'חורף'] as const;
 
 type PersistedPlan = {
@@ -514,14 +516,29 @@ function setupStickyExpansion(aside: HTMLElement, section: HTMLElement): void {
     let expanded = false;
 
     function update(): void {
-        if (window.innerWidth >= DESKTOP_MIN_WIDTH) {
+        const isDesktop = window.innerWidth >= DESKTOP_MIN_WIDTH;
+        const navBottom = getConsoleNavBottom();
+        const topOffset = isDesktop
+            ? navBottom + DESKTOP_STICKY_GAP_PX
+            : navBottom;
+        aside.style.top = `${String(topOffset)}px`;
+
+        if (isDesktop) {
+            const desktopMaxHeight = Math.max(
+                160,
+                window.innerHeight - topOffset - DESKTOP_STICKY_BOTTOM_GAP_PX
+            );
+            section.style.maxHeight = `${String(desktopMaxHeight)}px`;
+            section.style.overflowY = 'auto';
             if (expanded) {
                 setExpanded(false);
             }
             return;
         }
 
-        const topOffset = getStickyTopOffset(aside);
+        section.style.maxHeight = '';
+        section.style.overflowY = '';
+
         const shouldExpand = aside.getBoundingClientRect().top <= topOffset + 1;
         if (shouldExpand === expanded) {
             return;
@@ -546,15 +563,13 @@ function setupStickyExpansion(aside: HTMLElement, section: HTMLElement): void {
     update();
 }
 
-function getStickyTopOffset(element: HTMLElement): number {
-    const topValue = window.getComputedStyle(element).top;
-    if (topValue === '' || topValue === 'auto') {
+function getConsoleNavBottom(): number {
+    const nav = document.querySelector<HTMLElement>(
+        '[data-component="ConsoleNav"]'
+    );
+    if (nav === null) {
         return 0;
     }
 
-    const parsed = Number.parseFloat(topValue);
-    if (!Number.isFinite(parsed)) {
-        return 0;
-    }
-    return parsed;
+    return Math.max(0, nav.getBoundingClientRect().bottom);
 }
