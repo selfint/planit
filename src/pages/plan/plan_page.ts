@@ -396,7 +396,8 @@ function renderPlan(
     rail.replaceChildren();
 
     const leadingSpacer = document.createElement('div');
-    leadingSpacer.className = 'w-4 shrink-0 sm:w-6 lg:w-8';
+    leadingSpacer.className =
+        'w-4 min-w-4 shrink-0 sm:w-6 sm:min-w-6 lg:w-8 lg:min-w-8';
     leadingSpacer.setAttribute('aria-hidden', 'true');
     rail.append(leadingSpacer);
 
@@ -406,7 +407,8 @@ function renderPlan(
     }
 
     const trailingSpacer = document.createElement('div');
-    trailingSpacer.className = 'w-4 shrink-0 sm:w-6 lg:w-8';
+    trailingSpacer.className =
+        'w-4 min-w-4 shrink-0 sm:w-6 sm:min-w-6 lg:w-8 lg:min-w-8';
     trailingSpacer.setAttribute('aria-hidden', 'true');
     rail.append(trailingSpacer);
 
