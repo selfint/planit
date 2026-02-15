@@ -27,9 +27,6 @@ importers:
       '@html-eslint/parser':
         specifier: ^0.54.0
         version: 0.54.0(jiti@2.6.1)
-      '@openai/codex':
-        specifier: ^0.101.0
-        version: 0.101.0
       '@playwright/test':
         specifier: ^1.58.2
         version: 1.58.2
@@ -63,9 +60,6 @@ importers:
       '@vite-pwa/assets-generator':
         specifier: ^1.0.2
         version: 1.0.2
-      backlog.md:
-        specifier: ^1.35.7
-        version: 1.35.7
       eslint:
         specifier: ^9.39.2
         version: 9.39.2(jiti@2.6.1)
@@ -1230,47 +1224,6 @@ packages:
       '@types/react': '>=16'
       react: '>=16'
 
-  '@openai/codex@0.101.0':
-    resolution: {integrity: sha512-H874q5K5I3chrT588BaddMr7GNvRYypc8C1MKWytNUF2PgxWMko2g/2DgKbt5OdajZKMsWdbsPywu34KQGf5Qw==}
-    engines: {node: '>=16'}
-    hasBin: true
-
-  '@openai/codex@0.101.0-darwin-arm64':
-    resolution: {integrity: sha512-unk4rTRQQ9o0w2Upu35IsJHpoZHJ+tU/myn6LNhUjcP9FrjLnEcAQJ6WIMtdTYVPja1PGhFSO0DNxV79GMvehw==}
-    engines: {node: '>=16'}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@openai/codex@0.101.0-darwin-x64':
-    resolution: {integrity: sha512-+KFi1IapCQGd3vLQp2lI4xI3hu2QffDZYt7Fhfw6NxEFOKhHnTamRtQ5yI8jYQcYF+pQfYF2fyiuXLM1lITLQw==}
-    engines: {node: '>=16'}
-    cpu: [x64]
-    os: [darwin]
-
-  '@openai/codex@0.101.0-linux-arm64':
-    resolution: {integrity: sha512-RkDnQeq7M6ZBtD+8i+I5ewjjOf02BcJq6r1kN4RBewfAQBsz6B73Ns3OrI2bHVRsuPtAf8Cf1S4xg/eFZT2Omg==}
-    engines: {node: '>=16'}
-    cpu: [arm64]
-    os: [linux]
-
-  '@openai/codex@0.101.0-linux-x64':
-    resolution: {integrity: sha512-SJeEdQ4ReEU3nvtceZ1uY3me6oWoB3djr3GnZmAUCEUuYEWD1kRGprAyJB1N0B+8zhSv0SU2e9sX5t3aCV4AwQ==}
-    engines: {node: '>=16'}
-    cpu: [x64]
-    os: [linux]
-
-  '@openai/codex@0.101.0-win32-arm64':
-    resolution: {integrity: sha512-WQ8QsychjHyvlr+vCSTMbd2/yrBIZre5tRuM79eZi973BJz0CSEiFsNSGg5fvpnJuiHHawZ/8HWeir7nlatamQ==}
-    engines: {node: '>=16'}
-    cpu: [arm64]
-    os: [win32]
-
-  '@openai/codex@0.101.0-win32-x64':
-    resolution: {integrity: sha512-H+7h9x0fYrJRUZZHCA62Dzb/CS5Scl1sUw1aamfmHJzzorX+uTFOgGsibzqFpHTd6nRM4q8//fCdSxe5wUpOQQ==}
-    engines: {node: '>=16'}
-    cpu: [x64]
-    os: [win32]
-
   '@pkgr/core@0.2.9':
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
@@ -2022,35 +1975,6 @@ packages:
     resolution: {integrity: sha512-hYm+XLYRMvupxiQzrvXUj7YyvFFVfv5gI0R71AJzudg1g2AI2vyCPPIFEBjk162/wFzti3inBHo7isWFuEVS/A==}
     peerDependencies:
       '@babel/core': ^7.4.0 || ^8.0.0-0 <8.0.0
-
-  backlog.md-darwin-arm64@1.35.7:
-    resolution: {integrity: sha512-Wweg+6WnAgVEtUZLHz0no2EJSJ/54U01uEZbw8APWwmz4ociHCp8qcNrZODufSswNtXqwUqsogtzb6HfighlfQ==}
-    cpu: [arm64]
-    os: [darwin]
-
-  backlog.md-darwin-x64@1.35.7:
-    resolution: {integrity: sha512-Cw6k5Y5gu2RMCRETMjR+Ru70fT3R3p8VPG/eYKpof1Q2/lJMtJjioM285zFEgCMvGresyJhbAaRgVNslkOkY6Q==}
-    cpu: [x64]
-    os: [darwin]
-
-  backlog.md-linux-arm64@1.35.7:
-    resolution: {integrity: sha512-waIVB4CW2mrKBOKBKU+MxsCVuqMyHiUVkjRGggWlIwANJgWpyWMYXPNyrLlBRBfo4fqhN6GEaylKwbgNVWiKFg==}
-    cpu: [arm64]
-    os: [linux]
-
-  backlog.md-linux-x64@1.35.7:
-    resolution: {integrity: sha512-zGdua5/xKOkYpf2VJTnCwbmXj5Lslm1ajObUzZhOkL8NyMfa1ITVKG3xUgcPWgmBMqPPKafmVx2fFn9iYMH6kw==}
-    cpu: [x64]
-    os: [linux]
-
-  backlog.md-windows-x64@1.35.7:
-    resolution: {integrity: sha512-zzsJIE98wWi2aSL8sv6Vhq/V47qVOxto7/o2+5DzzGfInjA42JsFxy+fBu6Bx6rCPgIU7fQRwmE6s7mewTL1lw==}
-    cpu: [x64]
-    os: [win32]
-
-  backlog.md@1.35.7:
-    resolution: {integrity: sha512-YbTUtm0jSs7XzM6RC4lWgYbQB9xb9TfnGbgj0TH6Owk973AWbPMGvFNOg+l1+hBkZgGPfiFCy24tezyQbIdzcg==}
-    hasBin: true
 
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
@@ -5145,33 +5069,6 @@ snapshots:
       '@types/react': 19.2.14
       react: 19.2.4
 
-  '@openai/codex@0.101.0':
-    optionalDependencies:
-      '@openai/codex-darwin-arm64': '@openai/codex@0.101.0-darwin-arm64'
-      '@openai/codex-darwin-x64': '@openai/codex@0.101.0-darwin-x64'
-      '@openai/codex-linux-arm64': '@openai/codex@0.101.0-linux-arm64'
-      '@openai/codex-linux-x64': '@openai/codex@0.101.0-linux-x64'
-      '@openai/codex-win32-arm64': '@openai/codex@0.101.0-win32-arm64'
-      '@openai/codex-win32-x64': '@openai/codex@0.101.0-win32-x64'
-
-  '@openai/codex@0.101.0-darwin-arm64':
-    optional: true
-
-  '@openai/codex@0.101.0-darwin-x64':
-    optional: true
-
-  '@openai/codex@0.101.0-linux-arm64':
-    optional: true
-
-  '@openai/codex@0.101.0-linux-x64':
-    optional: true
-
-  '@openai/codex@0.101.0-win32-arm64':
-    optional: true
-
-  '@openai/codex@0.101.0-win32-x64':
-    optional: true
-
   '@pkgr/core@0.2.9': {}
 
   '@playwright/test@1.58.2':
@@ -5962,29 +5859,6 @@ snapshots:
       '@babel/helper-define-polyfill-provider': 0.6.6(@babel/core@7.29.0)
     transitivePeerDependencies:
       - supports-color
-
-  backlog.md-darwin-arm64@1.35.7:
-    optional: true
-
-  backlog.md-darwin-x64@1.35.7:
-    optional: true
-
-  backlog.md-linux-arm64@1.35.7:
-    optional: true
-
-  backlog.md-linux-x64@1.35.7:
-    optional: true
-
-  backlog.md-windows-x64@1.35.7:
-    optional: true
-
-  backlog.md@1.35.7:
-    optionalDependencies:
-      backlog.md-darwin-arm64: 1.35.7
-      backlog.md-darwin-x64: 1.35.7
-      backlog.md-linux-arm64: 1.35.7
-      backlog.md-linux-x64: 1.35.7
-      backlog.md-windows-x64: 1.35.7
 
   balanced-match@1.0.2: {}
 
