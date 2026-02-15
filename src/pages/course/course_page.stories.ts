@@ -18,7 +18,7 @@ const meta: Meta<CoursePageStoryArgs> = {
         },
     },
     args: {
-        courseCode: '104031',
+        courseCode: '01040012',
     },
 };
 
