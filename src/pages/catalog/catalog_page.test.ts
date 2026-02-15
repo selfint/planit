@@ -48,6 +48,7 @@ import { CatalogPage } from './catalog_page';
 
 describe('CatalogPage', () => {
     it('renders waiting state when no active selection exists', async () => {
+        setViewportWidth(620);
         getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
 
         const page = CatalogPage();
@@ -58,6 +59,7 @@ describe('CatalogPage', () => {
     });
 
     it('renders one page of three course cards and supports paging', async () => {
+        setViewportWidth(620);
         getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
             facultyId: 'computer-science',
@@ -161,6 +163,7 @@ describe('CatalogPage', () => {
     });
 
     it('hides rendered requirements while picker selection is changing', async () => {
+        setViewportWidth(620);
         getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
             facultyId: 'computer-science',
@@ -217,7 +220,69 @@ describe('CatalogPage', () => {
         const state = page.querySelector<HTMLElement>('[data-catalog-state]');
         expect(state?.textContent).toContain('מעדכן בחירה');
     });
+
+    it('renders two cards per page on narrow mobile width', async () => {
+        setViewportWidth(430);
+        getActiveRequirementsSelectionMock.mockResolvedValue({
+            catalogId: '2025_200',
+            facultyId: 'computer-science',
+            programId: '0324',
+            path: 'software-path',
+        });
+
+        getRequirementMock.mockResolvedValue({
+            programId: '0324',
+            catalogId: '2025_200',
+            facultyId: 'computer-science',
+            data: {
+                name: 'root',
+                nested: [
+                    {
+                        name: 'software-path',
+                        en: 'Software Path',
+                        nested: [
+                            {
+                                name: 'core',
+                                courses: [
+                                    '236501',
+                                    '236363',
+                                    '236343',
+                                    '234123',
+                                ],
+                            },
+                        ],
+                    },
+                ],
+            },
+        });
+
+        getCourseMock.mockImplementation(async (code: string) => ({
+            code,
+            name: `Course ${code}`,
+            median: 70,
+            current: true,
+        }));
+
+        const page = CatalogPage();
+        await waitForUiWork();
+
+        const links = page.querySelectorAll<HTMLAnchorElement>(
+            'a[href^="/course?code="]'
+        );
+        expect(links.length).toBe(2);
+
+        const pageLabel = page.querySelector('[data-catalog-group-page]');
+        expect(pageLabel?.textContent).toContain('עמוד 1 מתוך 2');
+    });
 });
+
+function setViewportWidth(width: number): void {
+    Object.defineProperty(window, 'innerWidth', {
+        configurable: true,
+        writable: true,
+        value: width,
+    });
+}
 
 async function waitForUiWork(): Promise<void> {
     await Promise.resolve();

@@ -19,9 +19,11 @@ const GROUP_PENDING_MESSAGE = 'מעדכן בחירה בתכנית...';
 const GROUP_MISSING_MESSAGE =
     'אין דרישות שמורות לתכנית זו. התחברו לאינטרנט ונסו לטעון שוב.';
 const COURSE_NAME_FALLBACK_PREFIX = 'קורס';
-const MOBILE_MAX_WIDTH = 900;
-const MOBILE_CARDS_PER_PAGE = 2;
-const DESKTOP_CARDS_PER_PAGE = 3;
+const CARD_MIN_WIDTH_REM = '11rem';
+const CARD_MIN_WIDTH_PX = 176;
+const CARD_GAP_PX = 12;
+const VIEWPORT_PADDING_PX = 32;
+const COURSE_ROW_GRID_CLASS = `grid min-w-0 gap-3 [grid-template-columns:repeat(auto-fit,minmax(${CARD_MIN_WIDTH_REM},1fr))]`;
 
 type RequirementGroup = {
     id: string;
@@ -122,7 +124,7 @@ export function CatalogPage(): HTMLElement {
         scheduleCatalogGroupsRefresh(context);
     });
 
-    renderGroupSkeleton(context.root, 4, getCardsPerPage());
+    renderGroupSkeleton(context.root, 4, getCardsPerPageForRoot(context.root));
     void refreshCatalogGroups(context);
 
     return root;
@@ -196,7 +198,7 @@ async function refreshCatalogGroups(
         return;
     }
 
-    const cardsPerPage = getCardsPerPage();
+    const cardsPerPage = getCardsPerPageForRoot(context.root);
     renderRequirementGroups(
         context.root,
         groups,
@@ -326,7 +328,7 @@ function renderRequirementGroups(
         section.append(pager);
 
         const row = document.createElement('div');
-        row.className = 'grid min-w-0 grid-cols-2 gap-3 sm:grid-cols-3';
+        row.className = COURSE_ROW_GRID_CLASS;
         section.append(row);
 
         const totalPages = getTotalPages(
@@ -577,7 +579,7 @@ function renderGroupSkeleton(
         wrapper.append(title);
 
         const row = document.createElement('div');
-        row.className = 'grid grid-cols-2 gap-3 sm:grid-cols-3';
+        row.className = COURSE_ROW_GRID_CLASS;
         row.append(CourseCard());
         row.append(CourseCard());
         if (cardsPerPage >= 3) {
@@ -593,9 +595,17 @@ function renderGroupSkeleton(
     }
 }
 
-function getCardsPerPage(): number {
-    if (window.innerWidth <= MOBILE_MAX_WIDTH) {
-        return MOBILE_CARDS_PER_PAGE;
-    }
-    return DESKTOP_CARDS_PER_PAGE;
+function getCardsPerPageForRoot(root: HTMLElement): number {
+    const measuredWidth = root.clientWidth;
+    const availableWidth =
+        measuredWidth > 0
+            ? measuredWidth
+            : Math.max(
+                  window.innerWidth - VIEWPORT_PADDING_PX,
+                  CARD_MIN_WIDTH_PX
+              );
+    const columns = Math.floor(
+        (availableWidth + CARD_GAP_PX) / (CARD_MIN_WIDTH_PX + CARD_GAP_PX)
+    );
+    return Math.max(1, columns);
 }
