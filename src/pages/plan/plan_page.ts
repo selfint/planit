@@ -432,7 +432,7 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
     const cancelSelectionButton = document.createElement('button');
     cancelSelectionButton.type = 'button';
     cancelSelectionButton.className =
-        'border-border/60 bg-surface-1/70 text-text-muted hover:border-accent/50 hover:text-text min-h-7 rounded-xl border px-2 py-1 text-xs opacity-0 transition-opacity duration-200 ease-out invisible pointer-events-none touch-manipulation';
+        'border-border/60 bg-surface-1/70 text-text-muted hover:border-accent/50 hover:text-text ms-auto min-h-7 rounded-xl border px-2 py-1 text-xs opacity-0 transition-opacity duration-200 ease-out invisible pointer-events-none touch-manipulation';
     cancelSelectionButton.textContent = 'ביטול';
     cancelSelectionButton.dataset.cancelSelection = 'true';
     cancelSelectionButton.dataset.rowId = row.id;
