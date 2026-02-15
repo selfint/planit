@@ -9,6 +9,8 @@ import { SemesterPage } from '../pages/semester/semester_page';
 
 type PageFactory = () => HTMLElement;
 
+export const REDIRECT_SESSION_KEY = 'planit:redirect-path';
+
 const routes: Partial<Record<string, PageFactory>> = {
     '/': LandingPage,
     '/plan': PlanPage,
@@ -53,17 +55,23 @@ function renderRoute(pathname: string, replaceState = false): void {
     }
 
     if (replaceState && normalizedPath !== window.location.pathname) {
-        window.history.replaceState(null, '', normalizedPath);
+        window.history.replaceState(
+            null,
+            '',
+            `${normalizedPath}${window.location.search}${window.location.hash}`
+        );
     }
 }
 
-function navigate(pathname: string): void {
-    const normalizedPath = normalizePath(pathname);
-    if (normalizedPath === window.location.pathname) {
+function navigate(url: URL): void {
+    const normalizedPath = normalizePath(url.pathname);
+    const nextUrl = `${normalizedPath}${url.search}${url.hash}`;
+    const currentUrl = `${normalizePath(window.location.pathname)}${window.location.search}${window.location.hash}`;
+    if (nextUrl === currentUrl) {
         return;
     }
 
-    window.history.pushState(null, '', normalizedPath);
+    window.history.pushState(null, '', nextUrl);
     renderRoute(normalizedPath);
 }
 
@@ -103,14 +111,42 @@ export function shouldHandleClickNavigation(event: MouseEvent): boolean {
         return false;
     }
 
-    if (url.search !== '' || url.hash !== '') {
-        return false;
-    }
-
     return true;
 }
 
+function isSamePageHashNavigation(url: URL): boolean {
+    if (url.hash === '') {
+        return false;
+    }
+
+    return (
+        normalizePath(url.pathname) ===
+            normalizePath(window.location.pathname) &&
+        url.search === window.location.search
+    );
+}
+
+function restoreRedirectFromSession(): void {
+    const redirectPath = window.sessionStorage.getItem(REDIRECT_SESSION_KEY);
+    if (redirectPath === null || redirectPath === '') {
+        return;
+    }
+
+    window.sessionStorage.removeItem(REDIRECT_SESSION_KEY);
+    const redirectUrl = new URL(redirectPath, window.location.origin);
+    if (redirectUrl.origin !== window.location.origin) {
+        return;
+    }
+
+    window.history.replaceState(
+        null,
+        '',
+        `${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`
+    );
+}
+
 export function initRouter(): void {
+    restoreRedirectFromSession();
     renderRoute(window.location.pathname, true);
 
     window.addEventListener('popstate', () => {
@@ -132,7 +168,12 @@ export function initRouter(): void {
             return;
         }
 
+        const url = new URL(anchor.href, window.location.href);
+        if (isSamePageHashNavigation(url)) {
+            return;
+        }
+
         event.preventDefault();
-        navigate(anchor.pathname);
+        navigate(url);
     });
 }
