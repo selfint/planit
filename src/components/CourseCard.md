@@ -10,11 +10,11 @@ course code using a small hash and a fixed palette.
 
 ## Template Structure
 
-- Root `article` with rounded border, `text-xs`, and a minimum width of
-  `6.4rem` so slightly more than three cards can fit per page width while
-  keeping dense layouts readable.
+- Root `article` with rounded border, `text-xs`, a viewport-derived minimum
+  width of `calc(100vw/3.1)`, and strict fixed height.
 - Top row contains the status dot and meta numbers.
-- Bottom block shows the title and the code.
+- Bottom block reserves exactly three lines for the title and one line for the
+  course code.
 
 ## Data Flow
 
