@@ -23,7 +23,7 @@ const COURSE_NAME_FALLBACK_PREFIX = 'קורס';
 const TABLET_MIN_WIDTH = 768;
 const MOBILE_CARDS_PER_PAGE = 3;
 const TABLET_CARDS_PER_PAGE = 9;
-const COURSE_ROW_GRID_CLASS = 'grid min-w-0 grid-cols-1 gap-3 md:grid-cols-3';
+const COURSE_ROW_GRID_CLASS = 'grid min-w-0 grid-cols-3 gap-3';
 
 type RequirementGroup = {
     id: string;
