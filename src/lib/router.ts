@@ -54,12 +54,11 @@ function renderRoute(pathname: string, replaceState = false): void {
         app.replaceChildren(page());
     }
 
-    if (replaceState && normalizedPath !== window.location.pathname) {
-        window.history.replaceState(
-            null,
-            '',
-            `${normalizedPath}${window.location.search}${window.location.hash}`
-        );
+    const currentUrl = new URL(window.location.href);
+    const normalizedCurrentPath = normalizePath(currentUrl.pathname);
+    if (replaceState && normalizedPath !== normalizedCurrentPath) {
+        currentUrl.pathname = normalizedPath;
+        window.history.replaceState(null, '', currentUrl);
     }
 }
 
@@ -142,11 +141,8 @@ function restoreRedirectFromSession(): void {
         return;
     }
 
-    window.history.replaceState(
-        null,
-        '',
-        `${redirectUrl.pathname}${redirectUrl.search}${redirectUrl.hash}`
-    );
+    redirectUrl.pathname = normalizePath(redirectUrl.pathname);
+    window.history.replaceState(null, '', redirectUrl);
 }
 
 export function initRouter(): void {
