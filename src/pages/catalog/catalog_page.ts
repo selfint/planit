@@ -19,7 +19,9 @@ const GROUP_PENDING_MESSAGE = 'מעדכן בחירה בתכנית...';
 const GROUP_MISSING_MESSAGE =
     'אין דרישות שמורות לתכנית זו. התחברו לאינטרנט ונסו לטעון שוב.';
 const COURSE_NAME_FALLBACK_PREFIX = 'קורס';
-const CARDS_PER_PAGE = 3;
+const MOBILE_MAX_WIDTH = 900;
+const MOBILE_CARDS_PER_PAGE = 2;
+const DESKTOP_CARDS_PER_PAGE = 3;
 
 type RequirementGroup = {
     id: string;
@@ -116,7 +118,11 @@ export function CatalogPage(): HTMLElement {
         attributeFilter: ['disabled'],
     });
 
-    renderGroupSkeleton(context.root, 4);
+    window.addEventListener('resize', () => {
+        scheduleCatalogGroupsRefresh(context);
+    });
+
+    renderGroupSkeleton(context.root, 4, getCardsPerPage());
     void refreshCatalogGroups(context);
 
     return root;
@@ -190,7 +196,13 @@ async function refreshCatalogGroups(
         return;
     }
 
-    renderRequirementGroups(context.root, groups, context.courseCache);
+    const cardsPerPage = getCardsPerPage();
+    renderRequirementGroups(
+        context.root,
+        groups,
+        context.courseCache,
+        cardsPerPage
+    );
 
     const totalCourses = collectUniqueCodes(groups).length;
     context.summary.textContent = `נטענו ${String(totalCourses)} קורסים מתוך ${String(groups.length)} קבוצות דרישה.`;
@@ -261,7 +273,8 @@ function isPickerSelectionComplete(pickerRoot: HTMLElement): boolean {
 function renderRequirementGroups(
     root: HTMLElement,
     groups: RequirementGroup[],
-    courseCache: Map<string, CourseRecord | null>
+    courseCache: Map<string, CourseRecord | null>,
+    cardsPerPage: number
 ): void {
     root.replaceChildren();
 
@@ -313,10 +326,13 @@ function renderRequirementGroups(
         section.append(pager);
 
         const row = document.createElement('div');
-        row.className = 'grid grid-cols-3 gap-3';
+        row.className = 'grid grid-cols-2 gap-3 sm:grid-cols-3';
         section.append(row);
 
-        const totalPages = getTotalPages(group.courseCodes.length);
+        const totalPages = getTotalPages(
+            group.courseCodes.length,
+            cardsPerPage
+        );
         if (totalPages <= 1) {
             controls.classList.add('hidden');
         }
@@ -363,7 +379,11 @@ function renderRequirementGroups(
                 return;
             }
 
-            const pageCodes = getCourseCodesForPage(groupData.codes, pageIndex);
+            const pageCodes = getCourseCodesForPage(
+                groupData.codes,
+                pageIndex,
+                cardsPerPage
+            );
 
             row.replaceChildren();
 
@@ -380,7 +400,7 @@ function renderRequirementGroups(
                 const anchor = document.createElement('a');
                 anchor.href = `/course?code=${encodeURIComponent(code)}`;
                 anchor.className =
-                    'focus-visible:ring-accent/60 rounded-2xl focus-visible:ring-2';
+                    'focus-visible:ring-accent/60 min-w-0 rounded-2xl focus-visible:ring-2';
                 if (record?.current !== true) {
                     anchor.classList.add('opacity-70');
                 }
@@ -436,16 +456,17 @@ function getCourseMedian(record: CourseRecord | null | undefined): number {
     return record.median;
 }
 
-function getTotalPages(courseCount: number): number {
-    return Math.max(1, Math.ceil(courseCount / CARDS_PER_PAGE));
+function getTotalPages(courseCount: number, cardsPerPage: number): number {
+    return Math.max(1, Math.ceil(courseCount / cardsPerPage));
 }
 
 function getCourseCodesForPage(
     courseCodes: string[],
-    pageIndex: number
+    pageIndex: number,
+    cardsPerPage: number
 ): string[] {
-    const from = pageIndex * CARDS_PER_PAGE;
-    return courseCodes.slice(from, from + CARDS_PER_PAGE);
+    const from = pageIndex * cardsPerPage;
+    return courseCodes.slice(from, from + cardsPerPage);
 }
 
 async function loadCourseRecords(
@@ -541,7 +562,11 @@ function renderInfoState(root: HTMLElement, message: string): void {
     root.append(text);
 }
 
-function renderGroupSkeleton(root: HTMLElement, count: number): void {
+function renderGroupSkeleton(
+    root: HTMLElement,
+    count: number,
+    cardsPerPage: number
+): void {
     root.replaceChildren();
     for (let index = 0; index < count; index += 1) {
         const wrapper = document.createElement('div');
@@ -552,10 +577,12 @@ function renderGroupSkeleton(root: HTMLElement, count: number): void {
         wrapper.append(title);
 
         const row = document.createElement('div');
-        row.className = 'grid grid-cols-3 gap-3';
+        row.className = 'grid grid-cols-2 gap-3 sm:grid-cols-3';
         row.append(CourseCard());
         row.append(CourseCard());
-        row.append(CourseCard());
+        if (cardsPerPage >= 3) {
+            row.append(CourseCard());
+        }
         wrapper.append(row);
 
         const pager = document.createElement('span');
@@ -564,4 +591,11 @@ function renderGroupSkeleton(root: HTMLElement, count: number): void {
 
         root.append(wrapper);
     }
+}
+
+function getCardsPerPage(): number {
+    if (window.innerWidth <= MOBILE_MAX_WIDTH) {
+        return MOBILE_CARDS_PER_PAGE;
+    }
+    return DESKTOP_CARDS_PER_PAGE;
 }
