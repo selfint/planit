@@ -151,14 +151,13 @@ describe('SemesterPage', () => {
         );
         expect(requirementSections.length).toBeGreaterThan(0);
         const requirementCodes = Array.from(
-            requirementSections[0]?.querySelectorAll('a[data-course-code]') ??
-                []
+            requirementSections[0].querySelectorAll('a[data-course-code]')
         ).map((node) => node.getAttribute('data-course-code'));
         expect(requirementCodes).toContain('B200');
 
         const freeTitles = Array.from(
             page.querySelectorAll<HTMLElement>('[data-group-kind="free"] h2')
-        ).map((node) => node.textContent?.trim());
+        ).map((node) => node.textContent.trim());
         expect(freeTitles).toContain('בחירה חופשית: מתמטיקה');
         expect(freeTitles).toContain('בחירה חופשית: פיזיקה');
     });

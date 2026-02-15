@@ -1,5 +1,3 @@
-import { CourseCard } from '$components/CourseCard';
-import { ConsoleNav } from '$components/ConsoleNav';
 import {
     type CourseRecord,
     getCourse,
@@ -7,13 +5,15 @@ import {
     getRequirement,
     queryCourses,
 } from '$lib/indexeddb';
-import { getActiveRequirementsSelection } from '$lib/requirementsSync';
 import {
     type RequirementNode,
     filterRequirementsByPath,
     getRequirementId,
     getRequirementLabel,
 } from '$lib/requirementsUtils';
+import { ConsoleNav } from '$components/ConsoleNav';
+import { CourseCard } from '$components/CourseCard';
+import { getActiveRequirementsSelection } from '$lib/requirementsSync';
 import templateHtml from './semester_page.html?raw';
 
 const PLAN_META_KEY = 'planPageState';
@@ -26,7 +26,7 @@ const DESKTOP_STICKY_BOTTOM_GAP_PX = 12;
 const SEASONS = ['אביב', 'קיץ', 'חורף'] as const;
 
 type PersistedPlan = {
-    semesters?: Array<{ id?: string; courseCodes?: string[] }>;
+    semesters?: { id?: string; courseCodes?: string[] }[];
 };
 
 type SemesterPageElements = {
@@ -244,7 +244,7 @@ function normalizeCourseCodes(codes: unknown): string[] {
 
 function getSemesterInfo(number: number, semesterId?: string): SemesterInfo {
     if (typeof semesterId === 'string') {
-        const match = semesterId.match(/^(אביב|קיץ|חורף)-(\d{4})-/);
+        const match = /^(אביב|קיץ|חורף)-(\d{4})-/.exec(semesterId);
         if (match !== null) {
             return {
                 number,
