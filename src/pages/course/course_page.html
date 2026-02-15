@@ -107,7 +107,7 @@
             </header>
 
             <section
-                class="border-border/80 flex w-full items-center gap-3 border-y py-4"
+                class="flex w-full items-center gap-3 py-4"
                 data-state="loading"
             >
                 <span
@@ -118,10 +118,7 @@
                 </p>
             </section>
 
-            <section
-                class="border-border/80 hidden w-full border-y py-4"
-                data-state="not-found"
-            >
+            <section class="hidden w-full py-4" data-state="not-found">
                 <h2 class="text-lg font-medium">לא נמצא קורס תואם</h2>
                 <p
                     class="text-text-muted mt-2 text-sm"
@@ -132,9 +129,7 @@
             </section>
 
             <section class="hidden w-full flex-col gap-4" data-state="found">
-                <article
-                    class="border-border/70 flex w-full flex-col gap-3 border-t pt-4"
-                >
+                <article class="flex w-full flex-col gap-3">
                     <div class="flex items-center justify-between gap-2">
                         <h2 class="text-lg font-medium">קורסי קדם</h2>
                         <p
@@ -144,8 +139,15 @@
                             0 קורסים
                         </p>
                     </div>
+                    <p
+                        class="text-text-muted text-xs"
+                        data-role="dependencies-hint"
+                    >
+                        בתוך כל חלופה כל הקורסים נדרשים (AND). בין חלופות מספיק
+                        לבחור חלופה אחת (OR).
+                    </p>
                     <div
-                        class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                        class="flex flex-col gap-4"
                         data-role="dependencies-grid"
                     ></div>
                     <p
@@ -156,9 +158,7 @@
                     </p>
                 </article>
 
-                <article
-                    class="border-border/70 flex w-full flex-col gap-3 border-t pt-4"
-                >
+                <article class="flex w-full flex-col gap-3">
                     <div class="flex items-center justify-between gap-2">
                         <h2 class="text-lg font-medium">קורסים צמודים</h2>
                         <p
@@ -180,9 +180,7 @@
                     </p>
                 </article>
 
-                <article
-                    class="border-border/70 flex w-full flex-col gap-3 border-t pt-4"
-                >
+                <article class="flex w-full flex-col gap-3">
                     <div class="flex items-center justify-between gap-2">
                         <h2 class="text-lg font-medium">קורסים חוסמים</h2>
                         <p

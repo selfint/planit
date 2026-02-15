@@ -37,6 +37,9 @@ type CoursePageElements = {
     exclusiveEmpty: HTMLElement;
 };
 
+type DependencyGroup = string[];
+type RelatedCourseGroups = CourseRecord[][];
+
 export function CoursePage(): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
@@ -274,21 +277,21 @@ async function loadAndRenderCourse(
     }
 
     fillPrimaryCourseData(elements, course);
-    const dependencyCodes = getDependencyCodes(course);
+    const dependencyGroups = getDependencyGroups(course);
     const adjacentCodes = getConnectionCodes(course.connections?.adjacent);
     const exclusiveCodes = getConnectionCodes(course.connections?.exclusive);
 
-    const [dependencies, adjacent, exclusive] = await Promise.all([
-        loadRelatedCourses(code, dependencyCodes),
+    const [dependenciesByGroup, adjacent, exclusive] = await Promise.all([
+        loadRelatedCourseGroups(code, dependencyGroups),
         loadRelatedCourses(code, adjacentCodes),
         loadRelatedCourses(code, exclusiveCodes),
     ]);
 
-    renderRelatedCourseCards(
+    renderDependencyGroups(
         elements.dependenciesGrid,
         elements.dependenciesCount,
         elements.dependenciesEmpty,
-        dependencies
+        dependenciesByGroup
     );
     renderRelatedCourseCards(
         elements.adjacentGrid,
@@ -355,17 +358,18 @@ function getNonEmptyString(value: string | undefined): string | undefined {
     return normalized;
 }
 
-function getDependencyCodes(course: CourseRecord): string[] {
+function getDependencyGroups(course: CourseRecord): DependencyGroup[] {
     const dependencies = course.connections?.dependencies;
     if (!Array.isArray(dependencies)) {
         return [];
     }
 
-    const codes: string[] = [];
+    const groups: DependencyGroup[] = [];
     for (const dependencyGroup of dependencies) {
         if (!Array.isArray(dependencyGroup)) {
             continue;
         }
+        const groupCodes: string[] = [];
         for (const dependencyCode of dependencyGroup) {
             if (typeof dependencyCode !== 'string') {
                 continue;
@@ -374,11 +378,16 @@ function getDependencyCodes(course: CourseRecord): string[] {
             if (normalized.length === 0) {
                 continue;
             }
-            codes.push(normalized);
+            if (!groupCodes.includes(normalized)) {
+                groupCodes.push(normalized);
+            }
+        }
+        if (groupCodes.length > 0) {
+            groups.push(groupCodes);
         }
     }
 
-    return codes;
+    return groups;
 }
 
 function getConnectionCodes(codes: string[] | undefined): string[] {
@@ -418,6 +427,83 @@ async function loadRelatedCourses(
     return relatedCourses;
 }
 
+async function loadRelatedCourseGroups(
+    currentCourseCode: string,
+    groups: DependencyGroup[]
+): Promise<RelatedCourseGroups> {
+    if (groups.length === 0) {
+        return [];
+    }
+
+    return Promise.all(
+        groups.map(async (groupCodes) => {
+            return loadRelatedCourses(currentCourseCode, groupCodes);
+        })
+    );
+}
+
+function renderDependencyGroups(
+    container: HTMLElement,
+    count: HTMLElement,
+    emptyLabel: HTMLElement,
+    groups: RelatedCourseGroups
+): void {
+    container.replaceChildren();
+    const groupCount = groups.length;
+    const courseCount = groups.reduce(
+        (total, group) => total + group.length,
+        0
+    );
+    count.textContent = `${String(groupCount)} חלופות · ${String(courseCount)} קורסים`;
+
+    if (groupCount === 0 || courseCount === 0) {
+        emptyLabel.classList.remove('hidden');
+        return;
+    }
+
+    emptyLabel.classList.add('hidden');
+
+    for (let groupIndex = 0; groupIndex < groups.length; groupIndex += 1) {
+        const groupCourses = groups[groupIndex] ?? [];
+        if (groupCourses.length === 0) {
+            continue;
+        }
+
+        const groupSection = document.createElement('section');
+        groupSection.className = 'flex flex-col gap-3';
+
+        const groupTitle = document.createElement('p');
+        groupTitle.className = 'text-text-muted text-xs';
+        groupTitle.textContent = `חלופה ${String(groupIndex + 1)} (AND)`;
+        groupSection.append(groupTitle);
+
+        const groupGrid = document.createElement('div');
+        groupGrid.className =
+            'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3';
+
+        for (
+            let courseIndex = 0;
+            courseIndex < groupCourses.length;
+            courseIndex += 1
+        ) {
+            const course = groupCourses[courseIndex];
+            const link = createCourseCardLink(course);
+            groupGrid.append(link);
+        }
+
+        groupSection.append(groupGrid);
+        container.append(groupSection);
+
+        if (groupIndex < groups.length - 1) {
+            const orBadge = document.createElement('p');
+            orBadge.className =
+                'bg-surface-2 text-text-muted inline-flex w-fit items-center rounded-full px-3 py-1 text-xs';
+            orBadge.textContent = 'או חלופה אחרת (OR)';
+            container.append(orBadge);
+        }
+    }
+}
+
 function renderRelatedCourseCards(
     grid: HTMLElement,
     count: HTMLElement,
@@ -433,15 +519,19 @@ function renderRelatedCourseCards(
 
     emptyLabel.classList.add('hidden');
     for (const course of courses) {
-        const card = CourseCard(course, {
-            statusClass:
-                course.name === UNKNOWN_COURSE_LABEL ? 'bg-border' : undefined,
-        });
-        const link = document.createElement('a');
-        link.href = `/course?code=${encodeURIComponent(course.code)}`;
-        link.className = 'block';
-        link.setAttribute('aria-label', `פתיחת הקורס ${course.code}`);
-        link.append(card);
-        grid.append(link);
+        grid.append(createCourseCardLink(course));
     }
+}
+
+function createCourseCardLink(course: CourseRecord): HTMLAnchorElement {
+    const card = CourseCard(course, {
+        statusClass:
+            course.name === UNKNOWN_COURSE_LABEL ? 'bg-border' : undefined,
+    });
+    const link = document.createElement('a');
+    link.href = `/course?code=${encodeURIComponent(course.code)}`;
+    link.className = 'block';
+    link.setAttribute('aria-label', `פתיחת הקורס ${course.code}`);
+    link.append(card);
+    return link;
 }

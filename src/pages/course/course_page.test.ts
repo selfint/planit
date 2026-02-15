@@ -64,7 +64,7 @@ describe('course page', () => {
                     median: 88,
                     about: 'Foundations course',
                     connections: {
-                        dependencies: [['MATH100']],
+                        dependencies: [['MATH100', 'PHYS100'], ['CS105']],
                         adjacent: ['CS102'],
                         exclusive: ['CS999'],
                     },
@@ -77,6 +77,9 @@ describe('course page', () => {
             }
             if (code === 'CS102') {
                 return { code: 'CS102', name: 'Data Structures' };
+            }
+            if (code === 'CS105') {
+                return { code: 'CS105', name: 'Discrete Math' };
             }
             return undefined;
         });
@@ -93,6 +96,12 @@ describe('course page', () => {
         const dependencyCards = page.querySelectorAll(
             "[data-role='dependencies-grid'] [data-component='CourseCard']"
         );
+        const dependencyGroups = page.querySelectorAll(
+            "[data-role='dependencies-grid'] section"
+        );
+        const orLabels = page.querySelectorAll(
+            "[data-role='dependencies-grid'] p"
+        );
         const adjacentCards = page.querySelectorAll(
             "[data-role='adjacent-grid'] [data-component='CourseCard']"
         );
@@ -102,7 +111,13 @@ describe('course page', () => {
 
         expect(courseName?.textContent).toBe('Intro to CS');
         expect(foundState?.classList.contains('hidden')).toBe(false);
-        expect(dependencyCards).toHaveLength(1);
+        expect(dependencyGroups).toHaveLength(2);
+        expect(dependencyCards).toHaveLength(3);
+        expect(
+            Array.from(orLabels).some((label) =>
+                label.textContent?.includes('OR')
+            )
+        ).toBe(true);
         expect(adjacentCards).toHaveLength(1);
         expect(exclusiveCards).toHaveLength(1);
         expect(mocks.initCourseSyncMock).toHaveBeenCalledTimes(1);
