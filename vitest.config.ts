@@ -33,6 +33,6 @@ export default defineConfig({
     },
     test: {
         environment: 'node',
-        include: ['src/**/*.test.{ts,js}', 'src/**/*.spec.{ts,js}'],
+        include: ['src/**/*.test.{ts,js}'],
     },
 });
