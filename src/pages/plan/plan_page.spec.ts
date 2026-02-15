@@ -76,10 +76,7 @@ test.describe('/plan page route', () => {
                     row.querySelector<HTMLElement>('[data-course-action]') !==
                         null
             );
-            if (
-                sourceRow === undefined ||
-                sourceRow.dataset.rowId === undefined
-            ) {
+            if (sourceRow?.dataset.rowId === undefined) {
                 return null;
             }
 
