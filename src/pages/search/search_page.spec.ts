@@ -42,7 +42,7 @@ describe('search page integration filters', () => {
             programId: 'p1',
             data: { he: 'ליבה', courses: ['234114'] },
         });
-        getMetaMock.mockImplementation(async (key: string) => {
+        getMetaMock.mockImplementation((key: string) => {
             if (key === 'requirementsActiveProgramId') {
                 return { key, value: 'p1' };
             }
@@ -81,8 +81,12 @@ describe('search page integration filters', () => {
         const available = page.querySelector<HTMLInputElement>(
             '[data-filter-available]'
         );
-        available!.checked = true;
-        available!.dispatchEvent(new Event('change'));
+        const availableFilter = requireElement(
+            available,
+            'Expected availability filter'
+        );
+        availableFilter.checked = true;
+        availableFilter.dispatchEvent(new Event('change'));
         await settle();
 
         expect(lastQuery()).toEqual(
@@ -98,8 +102,12 @@ describe('search page integration filters', () => {
         const faculty = page.querySelector<HTMLSelectElement>(
             '[data-filter-faculty]'
         );
-        faculty!.value = 'Math';
-        faculty!.dispatchEvent(new Event('change'));
+        const facultyFilter = requireElement(
+            faculty,
+            'Expected faculty filter'
+        );
+        facultyFilter.value = 'Math';
+        facultyFilter.dispatchEvent(new Event('change'));
         await settle();
 
         expect(lastQuery()).toEqual(
@@ -118,11 +126,19 @@ describe('search page integration filters', () => {
         const pointsMax = page.querySelector<HTMLInputElement>(
             '[data-filter-points-max]'
         );
+        const pointsMinFilter = requireElement(
+            pointsMin,
+            'Expected points min filter'
+        );
+        const pointsMaxFilter = requireElement(
+            pointsMax,
+            'Expected points max filter'
+        );
 
-        pointsMin!.value = '3.5';
-        pointsMin!.dispatchEvent(new Event('input'));
-        pointsMax!.value = '5';
-        pointsMax!.dispatchEvent(new Event('input'));
+        pointsMinFilter.value = '3.5';
+        pointsMinFilter.dispatchEvent(new Event('input'));
+        pointsMaxFilter.value = '5';
+        pointsMaxFilter.dispatchEvent(new Event('input'));
         await settle();
 
         expect(lastQuery()).toEqual(
@@ -138,8 +154,12 @@ describe('search page integration filters', () => {
         const medianMin = page.querySelector<HTMLInputElement>(
             '[data-filter-median-min]'
         );
-        medianMin!.value = '82';
-        medianMin!.dispatchEvent(new Event('input'));
+        const medianMinFilter = requireElement(
+            medianMin,
+            'Expected median min filter'
+        );
+        medianMinFilter.value = '82';
+        medianMinFilter.dispatchEvent(new Event('input'));
         await settle();
 
         expect(lastQuery()).toEqual(expect.objectContaining({ medianMin: 82 }));
@@ -153,8 +173,12 @@ describe('search page integration filters', () => {
         const requirement = page.querySelector<HTMLSelectElement>(
             '[data-filter-requirement]'
         );
-        requirement!.value = 'ליבה';
-        requirement!.dispatchEvent(new Event('change'));
+        const requirementFilter = requireElement(
+            requirement,
+            'Expected requirement filter'
+        );
+        requirementFilter.value = 'ליבה';
+        requirementFilter.dispatchEvent(new Event('change'));
         await settle();
 
         expect(lastQuery()).toEqual(
@@ -171,4 +195,15 @@ async function settle(): Promise<void> {
     await new Promise((resolve) => {
         window.setTimeout(resolve, 0);
     });
+}
+
+function requireElement<T extends Element>(
+    value: T | null,
+    message: string
+): T {
+    if (value === null) {
+        throw new Error(message);
+    }
+
+    return value;
 }

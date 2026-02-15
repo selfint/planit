@@ -50,7 +50,7 @@ describe('SearchPage', () => {
         getCourseFacultiesMock.mockResolvedValue(['CS', 'Math']);
         getCoursesCountMock.mockResolvedValue(10);
         getRequirementMock.mockResolvedValue(undefined);
-        getMetaMock.mockImplementation(async (key: string) => {
+        getMetaMock.mockImplementation((key: string) => {
             if (key === 'courseDataLastSync') {
                 return { key, value: '' };
             }
@@ -111,7 +111,11 @@ describe('SearchPage', () => {
             expect.objectContaining({ pageSize: 'all', page: 1 })
         );
         expect(links).toHaveLength(2);
-        expect(links[0]?.getAttribute('href')).toBe('/course?code=234114');
-        expect(links[1]?.className).toContain('opacity-45');
+
+        const firstLink = links[0];
+        const secondLink = links[1];
+
+        expect(firstLink.getAttribute('href')).toBe('/course?code=234114');
+        expect(secondLink.className).toContain('opacity-45');
     });
 });

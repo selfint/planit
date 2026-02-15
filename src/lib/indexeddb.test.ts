@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
-    getCourseFaculties,
-    getCoursesCount,
     getCatalogs,
     getCourse,
+    getCourseFaculties,
+    getCoursesCount,
     getCoursesPage,
     getMeta,
     getRequirement,

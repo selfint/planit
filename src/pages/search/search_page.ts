@@ -1,13 +1,13 @@
-import { CourseCard } from '$components/CourseCard';
 import {
+    type CourseQueryParams,
+    type CourseRecord,
     getCourseFaculties,
     getCoursesCount,
     getMeta,
     getRequirement,
     queryCourses,
-    type CourseQueryParams,
-    type CourseRecord,
 } from '$lib/indexeddb';
+import { CourseCard } from '$components/CourseCard';
 
 import templateHtml from './search_page.html?raw';
 
@@ -292,7 +292,7 @@ async function hydrateFilterOptions(
             state.requirement = '';
             elements.requirement.value = '';
         }
-    } catch (_error: unknown) {
+    } catch {
         elements.status.textContent =
             'הפילטרים נטענו חלקית (נתוני דרישות חסרים).';
     }
@@ -335,7 +335,7 @@ async function runSearch(
 
         const totalCourses = state.totalCourses ?? result.total;
         elements.status.textContent = `מציג ${String(result.total)} מתוך ${String(totalCourses)}`;
-    } catch (_error: unknown) {
+    } catch {
         if (requestId !== state.requestId) {
             return;
         }
@@ -577,7 +577,7 @@ async function hydrateTotalCourses(
     try {
         state.totalCourses = await getCoursesCount();
         void runSearch(elements, state, false);
-    } catch (_error: unknown) {
+    } catch {
         state.totalCourses = undefined;
     }
 }
