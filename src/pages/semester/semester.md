@@ -22,20 +22,22 @@ It separates three course scopes:
 2-column page layout
 
 +------------------------------------------+  +------------------------------------------------------+
-| קורסי הסמסטר הנבחר                       |  | קורסים נוספים מהקטלוג                                |
-| (עמודה קבועה: כרטיס אחד בכל שורה)        |  | [CourseCard] [CourseCard] [CourseCard] [CourseCard] |
-| [CourseCard]                             |  | [CourseCard] [CourseCard] [CourseCard] [CourseCard] |
-| [CourseCard]                             |  +------------------------------------------------------+
-| [CourseCard]                             |
-| [CourseCard]                             |  בחירה חופשית: מדעי המחשב
-+------------------------------------------+  [CourseCard] [CourseCard] [CourseCard] [CourseCard] [CourseCard]
-                                              [CourseCard]
-
-                                              בחירה חופשית: מתמטיקה
-                                              [CourseCard] [CourseCard] [CourseCard] [CourseCard]
-
-                                              בחירה חופשית: פיזיקה
-                                              [CourseCard] [CourseCard] [CourseCard]
+| קורסים נוספים מהקטלוג                     |  | קורסי הסמסטר הנבחר                                   |
+| [CourseCard] [CourseCard] [CourseCard]   |  | (עמודה קבועה: כרטיס אחד בכל שורה)                    |
+| [CourseCard] [CourseCard] [CourseCard]   |  | [CourseCard]                                          |
+| [CourseCard] [CourseCard] [CourseCard]   |  | [CourseCard]                                          |
+|                                            |  | [CourseCard]                                          |
+| בחירה חופשית: מדעי המחשב                  |  | [CourseCard]                                          |
+| [CourseCard] [CourseCard] [CourseCard]   |  +------------------------------------------------------+
+| [CourseCard] [CourseCard] [CourseCard]   |
+|                                            |
+| בחירה חופשית: מתמטיקה                     |
+| [CourseCard] [CourseCard] [CourseCard]   |
+| [CourseCard]                               |
+|                                            |
+| בחירה חופשית: פיזיקה                      |
+| [CourseCard] [CourseCard] [CourseCard]    |
++------------------------------------------+
 ```
 
 ### Mobile (<1024)
@@ -70,8 +72,8 @@ It separates three course scopes:
 
 - The main title only shows semester number, year, and season.
 - Desktop uses a 2-column layout.
-- The selected semester is the side column with one course card per row.
-- The right column contains all other groups and may render multiple courses per row.
+- The right column contains only the selected semester and keeps one course card per row.
+- The left column contains all other groups and may render multiple courses per row.
 - Mobile places the current semester block first, then all other groups.
 - Each non-semester group is rendered as a title plus one course row (catalog style),
   without wrapping each group in a card container.
