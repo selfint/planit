@@ -157,7 +157,34 @@ describe('SearchPage', () => {
 
         try {
             queryCoursesMock.mockImplementation(
-                () => new Promise(() => undefined)
+                (params: { signal?: AbortSignal }) =>
+                    new Promise((resolve, reject) => {
+                        const signal = params.signal;
+                        if (signal?.aborted === true) {
+                            reject(
+                                new DOMException(
+                                    'The operation was aborted.',
+                                    'AbortError'
+                                )
+                            );
+                            return;
+                        }
+
+                        signal?.addEventListener(
+                            'abort',
+                            () => {
+                                reject(
+                                    new DOMException(
+                                        'The operation was aborted.',
+                                        'AbortError'
+                                    )
+                                );
+                            },
+                            { once: true }
+                        );
+
+                        void resolve;
+                    })
             );
             getCoursesCountMock.mockImplementation(
                 () => new Promise(() => undefined)
@@ -187,8 +214,36 @@ describe('SearchPage', () => {
 
             expect(queryCoursesMock).toHaveBeenCalled();
             expect(queryCoursesMock).toHaveBeenLastCalledWith(
-                expect.objectContaining({ availableOnly: true })
+                expect.objectContaining({
+                    availableOnly: true,
+                    signal: expect.any(Object),
+                })
             );
+
+            const firstSignal = queryCoursesMock.mock.calls[0][0].signal as
+                | AbortSignal
+                | undefined;
+
+            availableFilter!.checked = false;
+            availableFilter!.dispatchEvent(
+                new Event('change', { bubbles: true })
+            );
+
+            expect(firstSignal?.aborted).toBe(true);
+            expect(status?.textContent).toBe('מחפש...');
+
+            await vi.advanceTimersByTimeAsync(0);
+
+            const latestCallArgs = queryCoursesMock.mock.calls.at(-1)?.[0] as
+                | { signal?: AbortSignal; availableOnly?: boolean }
+                | undefined;
+            expect(latestCallArgs?.availableOnly).toBe(false);
+            expect(latestCallArgs?.signal?.aborted).toBe(false);
+
+            const empty = page.querySelector<HTMLElement>(
+                '[data-search-empty]'
+            );
+            expect(empty?.classList.contains('hidden')).toBe(true);
         } finally {
             vi.useRealTimers();
         }

@@ -20,7 +20,8 @@ The search page is the `/search` route and provides fast, local course lookup ov
 4. Requirement filter options are derived from the active requirements record (`requirementsActiveProgramId` + `getRequirement`).
 5. Matching `CourseRecord` items are rendered into linked `CourseCard` nodes in the results grid.
 6. Current query/filter state is written back to the URL with `history.replaceState`, and sync metadata is read from `getMeta('courseDataLastSync')`.
-7. A request id guard is checked again after the defer point to discard stale searches before querying IndexedDB.
+7. Each new search creates an `AbortController` and aborts the previous in-flight query so expensive IndexedDB scans stop early when filters change quickly.
+8. A request id guard is checked again after the defer point to discard stale searches before querying IndexedDB.
 
 ## Unit Tests
 
@@ -28,7 +29,7 @@ The search page is the `/search` route and provides fast, local course lookup ov
 - Validates filter controls are rendered and suggestion pills are not present.
 - Validates default page size is `all` and linked course cards render from queried results.
 - Validates empty state messaging stays hidden before courses are loaded.
-- Validates filter interactions stay reactive while results are pending: status/URL update synchronously, query is deferred to the next tick, then runs with the updated filter state.
+- Validates filter interactions stay reactive while results are pending: status/URL update synchronously, query is deferred to the next tick, previous in-flight request is aborted, and the latest query runs with updated filter state.
 
 ## Integration Tests
 

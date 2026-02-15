@@ -53,6 +53,7 @@ export type CourseQueryParams = {
     pointsMax?: number;
     medianMin?: number;
     requirementCourseCodes?: readonly string[];
+    signal?: AbortSignal;
     page?: number;
     pageSize?: number | 'all';
 };
@@ -609,6 +610,10 @@ export async function getCoursesCount(): Promise<number> {
 export async function queryCourses(
     params: CourseQueryParams
 ): Promise<CourseQueryResult> {
+    if (params.signal?.aborted === true) {
+        throw createAbortError();
+    }
+
     const normalizedQuery = normalizeSearchQuery(params.query ?? '');
     const queryTokens =
         normalizedQuery.length === 0 ? [] : normalizedQuery.split(' ');
@@ -626,6 +631,36 @@ export async function queryCourses(
     const db = await openDb();
 
     return new Promise((resolve, reject) => {
+        const signal = params.signal;
+        let aborted = false;
+        let completed = false;
+
+        function cleanup(): void {
+            if (signal !== undefined) {
+                signal.removeEventListener('abort', abortHandler);
+            }
+        }
+
+        function finishWithReject(error: Error): void {
+            if (completed) {
+                return;
+            }
+            completed = true;
+            cleanup();
+            db.close();
+            reject(error);
+        }
+
+        function finishWithResolve(result: CourseQueryResult): void {
+            if (completed) {
+                return;
+            }
+            completed = true;
+            cleanup();
+            db.close();
+            resolve(result);
+        }
+
         const plainMatches: CourseRecord[] = [];
         const codeMatches: CourseRecord[] = [];
         const namePrefixMatches: CourseRecord[] = [];
@@ -635,7 +670,30 @@ export async function queryCourses(
         const store = tx.objectStore(STORE_COURSES);
         const request = store.openCursor();
 
+        function abortHandler(): void {
+            if (aborted || completed) {
+                return;
+            }
+            aborted = true;
+            try {
+                tx.abort();
+            } catch {
+                finishWithReject(createAbortError());
+            }
+        }
+
+        if (signal !== undefined) {
+            signal.addEventListener('abort', abortHandler, { once: true });
+            if (signal.aborted) {
+                abortHandler();
+            }
+        }
+
         request.onsuccess = (): void => {
+            if (aborted) {
+                return;
+            }
+
             const cursor = request.result;
             if (cursor === null) {
                 return;
@@ -689,11 +747,21 @@ export async function queryCourses(
         };
 
         request.onerror = (): void => {
-            reject(request.error ?? new Error('Failed to query courses'));
+            if (aborted) {
+                finishWithReject(createAbortError());
+                return;
+            }
+            finishWithReject(
+                request.error ?? new Error('Failed to query courses')
+            );
         };
 
         tx.oncomplete = (): void => {
-            db.close();
+            if (aborted) {
+                finishWithReject(createAbortError());
+                return;
+            }
+
             const ranked =
                 queryTokens.length === 0
                     ? plainMatches
@@ -701,22 +769,44 @@ export async function queryCourses(
             const total = ranked.length;
 
             if (pageSize === 'all') {
-                resolve({ courses: ranked, total });
+                finishWithResolve({ courses: ranked, total });
                 return;
             }
 
-            resolve({
+            finishWithResolve({
                 courses: ranked.slice(offset, offset + pageSize),
                 total,
             });
         };
         tx.onerror = (): void => {
-            reject(tx.error ?? new Error('Course query transaction failed'));
+            if (aborted) {
+                finishWithReject(createAbortError());
+                return;
+            }
+            finishWithReject(
+                tx.error ?? new Error('Course query transaction failed')
+            );
         };
         tx.onabort = (): void => {
-            reject(tx.error ?? new Error('Course query transaction aborted'));
+            if (aborted) {
+                finishWithReject(createAbortError());
+                return;
+            }
+            finishWithReject(
+                tx.error ?? new Error('Course query transaction aborted')
+            );
         };
     });
+}
+
+function createAbortError(): Error {
+    if (typeof DOMException === 'function') {
+        return new DOMException('The operation was aborted.', 'AbortError');
+    }
+
+    const error = new Error('The operation was aborted.');
+    error.name = 'AbortError';
+    return error;
 }
 
 function normalizeSearchQuery(value: string): string {
