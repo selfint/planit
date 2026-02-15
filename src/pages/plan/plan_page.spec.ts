@@ -109,6 +109,18 @@ test.describe('/plan page route', () => {
             `[data-course-action][data-row-id="${sourceRowId}"][data-course-code="${courseCode}"]`
         );
 
+        await expect(
+            page.locator(
+                `[data-cancel-selection][data-row-id="${sourceRowId}"]`
+            )
+        ).not.toHaveClass(/invisible/);
+        await expect(
+            page.locator(`[data-plan-row][data-row-id="wishlist"]`)
+        ).toHaveClass(/!bg-surface-2\/80/);
+        await expect(
+            page.locator(`[data-plan-row][data-row-id="exemptions"]`)
+        ).toHaveClass(/!bg-surface-2\/80/);
+
         await expect
             .poll(async () => getVisibleMoveTargetCount(page))
             .toBeGreaterThan(0);
@@ -129,6 +141,24 @@ test.describe('/plan page route', () => {
                 `[data-course-action][data-course-code="${courseCode}"][data-row-id="${sourceRowId}"]`
             )
         ).toHaveCount(0);
+
+        await expect(
+            page.getByText('אין קורסים בסמסטר זה. אפשר ללחוץ כדי להעביר לכאן.')
+        ).toHaveCount(0);
+    });
+
+    test('keeps semester count minimum at last populated semester', async ({
+        page,
+    }) => {
+        await page.goto('plan');
+
+        const semesterCountInput = page.locator('[data-semester-count]');
+        await expect(semesterCountInput).toBeVisible();
+        await expect(semesterCountInput).toHaveAttribute('min', '6');
+
+        await semesterCountInput.fill('3');
+        await semesterCountInput.dispatchEvent('change');
+        await expect(semesterCountInput).toHaveValue('6');
     });
 
     test('renders schedule errors section below planner rows', async ({
