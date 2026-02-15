@@ -8,11 +8,11 @@ navigation and is rendered by the client-side router.
 
 ## Page Contents
 
-- Header card with route label, course code, course name, and description.
+- Header card with course name and description.
 - Key stats tiles for points, median, faculty, and seasons.
 - Loading state, query validation state, and course-not-found state.
-- Related course sections for dependencies, adjacent courses, and exclusive
-  courses.
+- Related course sections for dependencies, dependants (inverse dependency
+  lookup), adjacent courses, and exclusive courses.
 - Related courses rendered as `CourseCard` components linked to
   `/course?code=...`.
 
@@ -24,7 +24,11 @@ navigation and is rendered by the client-side router.
    on sync callbacks.
 4. It resolves connection codes (dependencies/adjacent/exclusive) and fetches
    each related course from IndexedDB.
-5. The UI updates between loading, found, and not-found states, and related
+5. It scans the courses store in batches to find dependants (courses whose
+   dependency groups include the current course code).
+6. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
+   `חורף`, `spring`/`B` -> `אביב`, `summer`/`C` -> `קיץ`).
+7. The UI updates between loading, found, and not-found states, and related
    course cards are rendered in dedicated grids.
 
 ## Unit Tests
@@ -36,4 +40,5 @@ navigation and is rendered by the client-side router.
 ## Integration Tests
 
 - Navigating to `/course` shows validation guidance for missing `code`.
-- Navigating to `/course?code=...` renders the route and query-specific label.
+- Navigating to `/course?code=...` renders the page without exposing the raw
+  route query string in the header.

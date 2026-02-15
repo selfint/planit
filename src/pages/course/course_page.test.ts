@@ -4,12 +4,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 const mocks = vi.hoisted(() => {
     return {
         getCourseMock: vi.fn(),
+        getCoursesCountMock: vi.fn(),
+        getCoursesPageMock: vi.fn(),
         initCourseSyncMock: vi.fn(),
     };
 });
 
 vi.mock('$lib/indexeddb', () => ({
     getCourse: mocks.getCourseMock,
+    getCoursesCount: mocks.getCoursesCountMock,
+    getCoursesPage: mocks.getCoursesPageMock,
 }));
 
 vi.mock('$lib/courseSync', () => ({
@@ -29,7 +33,11 @@ import { CoursePage } from './course_page';
 describe('course page', () => {
     beforeEach(() => {
         mocks.getCourseMock.mockReset();
+        mocks.getCoursesCountMock.mockReset();
+        mocks.getCoursesPageMock.mockReset();
         mocks.initCourseSyncMock.mockReset();
+        mocks.getCoursesCountMock.mockResolvedValue(0);
+        mocks.getCoursesPageMock.mockResolvedValue([]);
         window.history.replaceState(null, '', '/course');
     });
 
@@ -91,6 +99,41 @@ describe('course page', () => {
             }
             return undefined;
         });
+        mocks.getCoursesCountMock.mockResolvedValue(4);
+        mocks.getCoursesPageMock.mockImplementation(
+            (limit: number, offset: number) => {
+                if (limit !== 300) {
+                    return [];
+                }
+                if (offset === 0) {
+                    return [
+                        {
+                            code: 'CS201',
+                            name: 'Algorithms',
+                            connections: { dependencies: [['CS101']] },
+                        },
+                        {
+                            code: 'CS301',
+                            name: 'Operating Systems',
+                            connections: { dependencies: [['CS201']] },
+                        },
+                        {
+                            code: 'CS210',
+                            name: 'Systems Programming',
+                            connections: {
+                                dependencies: [['CS101', 'CS102']],
+                            },
+                        },
+                        {
+                            code: 'CS101',
+                            name: 'Intro to CS',
+                            connections: { dependencies: [['MATH100']] },
+                        },
+                    ];
+                }
+                return [];
+            }
+        );
 
         const page = CoursePage();
         await flushPromises();
@@ -113,6 +156,9 @@ describe('course page', () => {
         const adjacentCards = page.querySelectorAll(
             "[data-role='adjacent-grid'] [data-component='CourseCard']"
         );
+        const dependantCards = page.querySelectorAll(
+            "[data-role='dependants-grid'] [data-component='CourseCard']"
+        );
         const exclusiveCards = page.querySelectorAll(
             "[data-role='exclusive-grid'] [data-component='CourseCard']"
         );
@@ -126,6 +172,7 @@ describe('course page', () => {
                 label.textContent.includes('או')
             )
         ).toBe(true);
+        expect(dependantCards).toHaveLength(2);
         expect(adjacentCards).toHaveLength(1);
         expect(exclusiveCards).toHaveLength(1);
         expect(mocks.initCourseSyncMock).toHaveBeenCalledTimes(1);

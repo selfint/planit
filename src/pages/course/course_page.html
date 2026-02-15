@@ -6,20 +6,11 @@
             data-role="course-page-root"
         >
             <header class="flex w-full flex-col gap-3">
-                <p class="text-text-muted text-xs" data-role="route-label">
-                    /course
-                </p>
                 <div class="flex w-full flex-col gap-4 py-1">
                     <div
                         class="flex flex-wrap items-start justify-between gap-4"
                     >
                         <div class="flex flex-col gap-2">
-                            <p
-                                class="text-text-muted text-xs"
-                                data-role="course-code"
-                            >
-                                —
-                            </p>
                             <h1
                                 class="text-2xl font-medium sm:text-3xl"
                                 data-role="course-name"
@@ -149,6 +140,28 @@
                         data-role="dependencies-empty"
                     >
                         אין לקורס קורסי קדם רשומים.
+                    </p>
+                </article>
+
+                <article class="mt-4 flex w-full flex-col gap-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="text-lg font-medium">קורסים תלויים</h2>
+                        <p
+                            class="text-text-muted text-xs"
+                            data-role="dependants-count"
+                        >
+                            0 קורסים
+                        </p>
+                    </div>
+                    <div
+                        class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                        data-role="dependants-grid"
+                    ></div>
+                    <p
+                        class="text-text-muted text-xs"
+                        data-role="dependants-empty"
+                    >
+                        אין קורסים שתלויים בקורס זה.
                     </p>
                 </article>
 

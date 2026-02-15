@@ -13,6 +13,9 @@ test.describe('/course page route', () => {
         await page.goto('course?code=104031');
 
         await expect(page.getByRole('main')).toBeVisible();
-        await expect(page.getByText('/course?code=104031')).toBeVisible();
+        await expect(
+            page.getByRole('heading', { name: 'פרטי קורס' })
+        ).toBeVisible();
+        await expect(page.getByText('/course?code=104031')).toHaveCount(0);
     });
 });

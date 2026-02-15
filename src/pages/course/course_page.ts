@@ -1,4 +1,9 @@
-import { type CourseRecord, getCourse } from '$lib/indexeddb';
+import {
+    type CourseRecord,
+    getCourse,
+    getCoursesCount,
+    getCoursesPage,
+} from '$lib/indexeddb';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
 import { initCourseSync } from '$lib/courseSync';
@@ -8,12 +13,10 @@ import templateHtml from './course_page.html?raw';
 const EMPTY_VALUE = '—';
 const UNKNOWN_COURSE_LABEL = 'קורס לא זמין במאגר';
 const LOADING_LABEL = 'טוען פרטי קורס...';
-const READY_LABEL = 'עודכן מהמאגר המקומי';
 const NOT_FOUND_LABEL = 'קורס לא נמצא במאגר המקומי';
+const COURSES_BATCH_SIZE = 300;
 
 type CoursePageElements = {
-    routeLabel: HTMLElement;
-    courseCode: HTMLElement;
     courseName: HTMLElement;
     courseAbout: HTMLElement;
     coursePoints: HTMLElement;
@@ -29,6 +32,9 @@ type CoursePageElements = {
     dependenciesGrid: HTMLElement;
     dependenciesCount: HTMLElement;
     dependenciesEmpty: HTMLElement;
+    dependantsGrid: HTMLElement;
+    dependantsCount: HTMLElement;
+    dependantsEmpty: HTMLElement;
     adjacentGrid: HTMLElement;
     adjacentCount: HTMLElement;
     adjacentEmpty: HTMLElement;
@@ -61,7 +67,6 @@ export function CoursePage(): HTMLElement {
 
     const elements = queryElements(root);
     const requestedCode = getRequestedCourseCode(window.location.search);
-    updateRouteLabel(elements.routeLabel, requestedCode);
     updateSearchLink(elements.searchLink, requestedCode);
 
     if (requestedCode === undefined) {
@@ -80,7 +85,10 @@ export function CoursePage(): HTMLElement {
             void loadAndRenderCourse(elements, requestedCode);
         },
         onError: () => {
-            elements.syncState.textContent = 'שגיאה בסנכרון, מוצג מידע מקומי';
+            setSyncStateText(
+                elements.syncState,
+                'שגיאה בסנכרון, מוצג מידע מקומי'
+            );
         },
     });
 
@@ -88,12 +96,6 @@ export function CoursePage(): HTMLElement {
 }
 
 function queryElements(root: HTMLElement): CoursePageElements {
-    const routeLabel = root.querySelector<HTMLElement>(
-        "[data-role='route-label']"
-    );
-    const courseCode = root.querySelector<HTMLElement>(
-        "[data-role='course-code']"
-    );
     const courseName = root.querySelector<HTMLElement>(
         "[data-role='course-name']"
     );
@@ -137,6 +139,15 @@ function queryElements(root: HTMLElement): CoursePageElements {
     const dependenciesEmpty = root.querySelector<HTMLElement>(
         "[data-role='dependencies-empty']"
     );
+    const dependantsGrid = root.querySelector<HTMLElement>(
+        "[data-role='dependants-grid']"
+    );
+    const dependantsCount = root.querySelector<HTMLElement>(
+        "[data-role='dependants-count']"
+    );
+    const dependantsEmpty = root.querySelector<HTMLElement>(
+        "[data-role='dependants-empty']"
+    );
     const adjacentGrid = root.querySelector<HTMLElement>(
         "[data-role='adjacent-grid']"
     );
@@ -157,8 +168,6 @@ function queryElements(root: HTMLElement): CoursePageElements {
     );
 
     if (
-        routeLabel === null ||
-        courseCode === null ||
         courseName === null ||
         courseAbout === null ||
         coursePoints === null ||
@@ -174,6 +183,9 @@ function queryElements(root: HTMLElement): CoursePageElements {
         dependenciesGrid === null ||
         dependenciesCount === null ||
         dependenciesEmpty === null ||
+        dependantsGrid === null ||
+        dependantsCount === null ||
+        dependantsEmpty === null ||
         adjacentGrid === null ||
         adjacentCount === null ||
         adjacentEmpty === null ||
@@ -185,8 +197,6 @@ function queryElements(root: HTMLElement): CoursePageElements {
     }
 
     return {
-        routeLabel,
-        courseCode,
         courseName,
         courseAbout,
         coursePoints,
@@ -202,6 +212,9 @@ function queryElements(root: HTMLElement): CoursePageElements {
         dependenciesGrid,
         dependenciesCount,
         dependenciesEmpty,
+        dependantsGrid,
+        dependantsCount,
+        dependantsEmpty,
         adjacentGrid,
         adjacentCount,
         adjacentEmpty,
@@ -226,18 +239,6 @@ function getRequestedCourseCode(search: string): string | undefined {
     return normalized;
 }
 
-function updateRouteLabel(
-    element: HTMLElement,
-    code: string | undefined
-): void {
-    if (code === undefined) {
-        element.textContent = '/course';
-        return;
-    }
-
-    element.textContent = `/course?code=${code}`;
-}
-
 function updateSearchLink(
     link: HTMLAnchorElement,
     code: string | undefined
@@ -254,7 +255,7 @@ function showLoading(elements: CoursePageElements): void {
     elements.loadingState.classList.remove('hidden');
     elements.notFoundState.classList.add('hidden');
     elements.foundState.classList.add('hidden');
-    elements.syncState.textContent = LOADING_LABEL;
+    setSyncStateText(elements.syncState, LOADING_LABEL);
 }
 
 function showNotFound(elements: CoursePageElements, message: string): void {
@@ -262,14 +263,25 @@ function showNotFound(elements: CoursePageElements, message: string): void {
     elements.notFoundState.classList.remove('hidden');
     elements.foundState.classList.add('hidden');
     elements.notFoundMessage.textContent = message;
-    elements.syncState.textContent = NOT_FOUND_LABEL;
+    setSyncStateText(elements.syncState, NOT_FOUND_LABEL);
 }
 
 function showCourseFound(elements: CoursePageElements): void {
     elements.loadingState.classList.add('hidden');
     elements.notFoundState.classList.add('hidden');
     elements.foundState.classList.remove('hidden');
-    elements.syncState.textContent = READY_LABEL;
+    elements.syncState.classList.add('hidden');
+}
+
+function setSyncStateText(element: HTMLElement, message: string): void {
+    const normalized = message.trim();
+    element.textContent = normalized;
+    if (normalized.length === 0) {
+        element.classList.add('hidden');
+        return;
+    }
+
+    element.classList.remove('hidden');
 }
 
 async function loadAndRenderCourse(
@@ -287,17 +299,25 @@ async function loadAndRenderCourse(
     const adjacentCodes = getConnectionCodes(course.connections?.adjacent);
     const exclusiveCodes = getConnectionCodes(course.connections?.exclusive);
 
-    const [dependenciesByGroup, adjacent, exclusive] = await Promise.all([
-        loadRelatedCourseGroups(code, dependencyGroups),
-        loadRelatedCourses(code, adjacentCodes),
-        loadRelatedCourses(code, exclusiveCodes),
-    ]);
+    const [dependenciesByGroup, dependants, adjacent, exclusive] =
+        await Promise.all([
+            loadRelatedCourseGroups(code, dependencyGroups),
+            loadDependantCourses(code),
+            loadRelatedCourses(code, adjacentCodes),
+            loadRelatedCourses(code, exclusiveCodes),
+        ]);
 
     renderDependencyGroups(
         elements.dependenciesGrid,
         elements.dependenciesCount,
         elements.dependenciesEmpty,
         dependenciesByGroup
+    );
+    renderRelatedCourseCards(
+        elements.dependantsGrid,
+        elements.dependantsCount,
+        elements.dependantsEmpty,
+        dependants
     );
     renderRelatedCourseCards(
         elements.adjacentGrid,
@@ -319,7 +339,6 @@ function fillPrimaryCourseData(
     elements: CoursePageElements,
     course: CourseRecord
 ): void {
-    elements.courseCode.textContent = course.code;
     elements.courseName.textContent =
         getNonEmptyString(course.name) ?? UNKNOWN_COURSE_LABEL;
     elements.courseAbout.textContent =
@@ -345,12 +364,51 @@ function formatSeasons(seasons: string[] | undefined): string {
     }
 
     const formatted = seasons
-        .map((season) => season.trim())
+        .map((season) => toHebrewSeasonLabel(season))
         .filter((season) => season.length > 0);
     if (formatted.length === 0) {
         return EMPTY_VALUE;
     }
     return formatted.join(' · ');
+}
+
+function toHebrewSeasonLabel(value: string): string {
+    const normalized = value.trim().toLowerCase();
+    if (normalized.length === 0) {
+        return '';
+    }
+
+    if (
+        normalized === 'חורף' ||
+        normalized === 'winter' ||
+        normalized === 'a' ||
+        normalized === 'א' ||
+        normalized === 'semester a'
+    ) {
+        return 'חורף';
+    }
+
+    if (
+        normalized === 'אביב' ||
+        normalized === 'spring' ||
+        normalized === 'b' ||
+        normalized === 'ב' ||
+        normalized === 'semester b'
+    ) {
+        return 'אביב';
+    }
+
+    if (
+        normalized === 'קיץ' ||
+        normalized === 'summer' ||
+        normalized === 'c' ||
+        normalized === 'ג' ||
+        normalized === 'semester c'
+    ) {
+        return 'קיץ';
+    }
+
+    return value.trim();
 }
 
 function getNonEmptyString(value: string | undefined): string | undefined {
@@ -446,6 +504,67 @@ async function loadRelatedCourseGroups(
             return loadRelatedCourses(currentCourseCode, groupCodes);
         })
     );
+}
+
+async function loadDependantCourses(
+    currentCourseCode: string
+): Promise<CourseRecord[]> {
+    const normalizedCode = currentCourseCode.trim().toUpperCase();
+    if (normalizedCode.length === 0) {
+        return [];
+    }
+
+    const totalCourses = await getCoursesCount();
+    if (totalCourses === 0) {
+        return [];
+    }
+
+    const dependants: CourseRecord[] = [];
+    for (let offset = 0; offset < totalCourses; offset += COURSES_BATCH_SIZE) {
+        const coursesBatch = await getCoursesPage(COURSES_BATCH_SIZE, offset);
+        if (coursesBatch.length === 0) {
+            break;
+        }
+
+        for (const course of coursesBatch) {
+            if (course.code === normalizedCode) {
+                continue;
+            }
+            if (courseHasDependency(course, normalizedCode)) {
+                dependants.push(course);
+            }
+        }
+    }
+
+    return dependants;
+}
+
+function courseHasDependency(
+    course: CourseRecord,
+    dependencyCode: string
+): boolean {
+    const dependencies = course.connections?.dependencies;
+    if (!Array.isArray(dependencies)) {
+        return false;
+    }
+
+    for (const group of dependencies) {
+        if (!Array.isArray(group)) {
+            continue;
+        }
+
+        for (const code of group) {
+            if (typeof code !== 'string') {
+                continue;
+            }
+
+            if (code.trim().toUpperCase() === dependencyCode) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 function renderDependencyGroups(
