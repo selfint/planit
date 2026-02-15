@@ -19,8 +19,10 @@ type SemesterState = {
 
 type PlanState = {
     semesters: SemesterState[];
+    wishlist: CourseRecord[];
+    exemptions: CourseRecord[];
     semesterCount: number;
-    selected?: { semesterId: string; courseCode: string };
+    selected?: { rowId: string; courseCode: string };
     warning?: string;
     problems: string[];
 };
@@ -29,12 +31,26 @@ type PersistedPlan = {
     version: number;
     semesterCount?: number;
     semesters: { id: string; courseCodes: string[] }[];
+    wishlistCourseCodes?: string[];
+    exemptionsCourseCodes?: string[];
 };
 
 const PLAN_META_KEY = 'planPageState';
-const PLAN_META_VERSION = 1;
+const PLAN_META_VERSION = 2;
 const MIN_SEMESTERS = 3;
 const DEFAULT_SEMESTER_COUNT = 6;
+const WISHLIST_ROW_ID = 'wishlist';
+const EXEMPTIONS_ROW_ID = 'exemptions';
+const WISHLIST_ROW_TITLE = 'רשימת משאלות';
+const EXEMPTIONS_ROW_TITLE = 'פטורים';
+
+type PlanRow = {
+    id: string;
+    title: string;
+    kind: 'semester' | 'wishlist' | 'exemptions';
+    courses: CourseRecord[];
+    season?: string;
+};
 
 type SemesterBlueprint = Omit<SemesterState, 'courses'>;
 
@@ -137,6 +153,8 @@ function createInitialPlanState(): PlanState {
             ...semester,
             courses: [],
         })),
+        wishlist: [],
+        exemptions: [],
         problems: [],
     };
 }
@@ -197,10 +215,6 @@ export function PlanPage(): HTMLElement {
     const semesterCountInput = root.querySelector<HTMLInputElement>(
         '[data-semester-count]'
     );
-    const prevButton =
-        root.querySelector<HTMLButtonElement>('[data-rail-prev]');
-    const nextButton =
-        root.querySelector<HTMLButtonElement>('[data-rail-next]');
 
     if (
         rail === null ||
@@ -209,9 +223,7 @@ export function PlanPage(): HTMLElement {
         warning === null ||
         problemsList === null ||
         problemsCount === null ||
-        semesterCountInput === null ||
-        prevButton === null ||
-        nextButton === null
+        semesterCountInput === null
     ) {
         throw new Error('PlanPage required elements not found');
     }
@@ -226,7 +238,7 @@ export function PlanPage(): HTMLElement {
 
         const selectedCourseButton = getCourseButtonElement(
             rail,
-            state.selected.semesterId,
+            state.selected.rowId,
             state.selected.courseCode
         );
         if (selectedCourseButton !== undefined) {
@@ -265,15 +277,15 @@ export function PlanPage(): HTMLElement {
             '[data-course-action]'
         );
         if (courseButton !== null) {
-            const semesterId = courseButton.dataset.semesterId;
+            const rowId = courseButton.dataset.rowId;
             const courseCode = courseButton.dataset.courseCode;
-            if (semesterId === undefined || courseCode === undefined) {
+            if (rowId === undefined || courseCode === undefined) {
                 return;
             }
 
             handleCourseClick(
                 state,
-                semesterId,
+                rowId,
                 courseCode,
                 rail,
                 selectedStatus,
@@ -282,24 +294,21 @@ export function PlanPage(): HTMLElement {
             return;
         }
 
-        const semesterColumn = target.closest<HTMLElement>(
-            '[data-semester-column]'
-        );
-        const targetSemesterId = semesterColumn?.dataset.semesterId;
-        if (targetSemesterId === undefined) {
+        const planRow = target.closest<HTMLElement>('[data-plan-row]');
+        const targetRowId = planRow?.dataset.rowId;
+        if (targetRowId === undefined) {
             return;
         }
 
-        void handleSemesterClick(
+        void handleRowClick(
             state,
-            targetSemesterId,
+            targetRowId,
             rail,
             selectedStatus,
             clearButton
         );
     });
 
-    setupRailNavigation(rail, prevButton, nextButton);
     renderPlan(
         state,
         rail,
@@ -346,8 +355,10 @@ async function hydratePlan(
 
     const restored = restoreSemestersFromMeta(meta?.value, map);
     if (restored !== undefined) {
-        state.semesterCount = restored.length;
-        state.semesters = restored;
+        state.semesterCount = restored.semesters.length;
+        state.semesters = restored.semesters;
+        state.wishlist = restored.wishlist;
+        state.exemptions = restored.exemptions;
     } else {
         state.semesters = distributeCoursesAcrossSemesters(
             usableCourses,
@@ -382,18 +393,6 @@ function renderPlan(
     problemsCount: HTMLElement,
     semesterCountInput: HTMLInputElement
 ): void {
-    const previousColumns = Array.from(
-        rail.querySelectorAll<HTMLElement>('[data-semester-column]')
-    );
-    const currentVisibleColumnIndex =
-        previousColumns.length > 0
-            ? getCurrentVisibleColumnIndex(rail, previousColumns)
-            : -1;
-    const anchorSemesterId =
-        currentVisibleColumnIndex >= 0
-            ? previousColumns[currentVisibleColumnIndex].dataset.semesterId
-            : undefined;
-
     updateSelectionControls(state, selectedStatus, clearButton);
     semesterCountInput.value = state.semesterCount.toString();
 
@@ -405,143 +404,118 @@ function renderPlan(
         warning.classList.add('hidden');
     }
 
-    state.problems = collectScheduleProblems(state);
+    state.problems = collectScheduleProblems(state.semesters);
     renderProblems(state.problems, problemsList, problemsCount);
 
     rail.replaceChildren();
 
-    const leadingSpacer = document.createElement('div');
-    leadingSpacer.className =
-        'w-4 min-w-4 shrink-0 sm:w-6 sm:min-w-6 lg:w-8 lg:min-w-8';
-    leadingSpacer.setAttribute('aria-hidden', 'true');
-    rail.append(leadingSpacer);
-
-    for (const semester of state.semesters) {
-        const column = createSemesterColumn(state, semester);
-        rail.append(column);
+    for (const row of getPlanRows(state)) {
+        const rowElement = createPlanRow(state, row);
+        rail.append(rowElement);
     }
 
-    const trailingSpacer = document.createElement('div');
-    trailingSpacer.className =
-        'w-4 min-w-4 shrink-0 sm:w-6 sm:min-w-6 lg:w-8 lg:min-w-8';
-    trailingSpacer.setAttribute('aria-hidden', 'true');
-    rail.append(trailingSpacer);
-
-    toggleMoveTargets(rail, state.selected?.semesterId);
-
-    if (anchorSemesterId !== undefined) {
-        const nextColumns = Array.from(
-            rail.querySelectorAll<HTMLElement>('[data-semester-column]')
-        );
-        if (nextColumns.length > 0) {
-            const anchorColumn =
-                nextColumns.find(
-                    (column) => column.dataset.semesterId === anchorSemesterId
-                ) ??
-                nextColumns[
-                    Math.max(
-                        0,
-                        Math.min(
-                            currentVisibleColumnIndex,
-                            nextColumns.length - 1
-                        )
-                    )
-                ];
-            alignColumnWithRailStart(rail, anchorColumn);
-        }
-    }
-
-    updateRailButtonState(rail);
+    toggleMoveTargets(rail, state.selected?.rowId);
 }
 
-function alignColumnWithRailStart(
-    rail: HTMLElement,
-    column: HTMLElement
-): void {
-    const railRect = rail.getBoundingClientRect();
-    const columnRect = column.getBoundingClientRect();
-    const isRtl = getComputedStyle(rail).direction === 'rtl';
+function getPlanRows(state: PlanState): PlanRow[] {
+    const semesterRows: PlanRow[] = state.semesters.map((semester) => ({
+        id: semester.id,
+        title: semester.title,
+        kind: 'semester',
+        courses: semester.courses,
+        season: semester.season,
+    }));
 
-    const horizontalDelta = isRtl
-        ? columnRect.right - railRect.right
-        : columnRect.left - railRect.left;
-
-    if (Math.abs(horizontalDelta) <= 1) {
-        return;
-    }
-
-    rail.scrollBy({ left: horizontalDelta });
+    return [
+        ...semesterRows,
+        {
+            id: WISHLIST_ROW_ID,
+            title: WISHLIST_ROW_TITLE,
+            kind: 'wishlist',
+            courses: state.wishlist,
+        },
+        {
+            id: EXEMPTIONS_ROW_ID,
+            title: EXEMPTIONS_ROW_TITLE,
+            kind: 'exemptions',
+            courses: state.exemptions,
+        },
+    ];
 }
 
-function createSemesterColumn(
-    state: PlanState,
-    semester: SemesterState
-): HTMLElement {
-    const column = document.createElement('section');
-    column.className =
-        'touch-manipulation flex h-[100svh] w-[min(92vw,28rem)] shrink-0 snap-start flex-col gap-3 px-1 md:w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-3rem)/3)]';
-    column.dataset.semesterColumn = 'true';
-    column.dataset.semesterId = semester.id;
+function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
+    const rowElement = document.createElement('section');
+    rowElement.className =
+        'border-border/50 bg-surface-1/40 flex flex-col gap-3 rounded-2xl border p-3 sm:p-4';
+    rowElement.dataset.planRow = 'true';
+    rowElement.dataset.rowId = row.id;
 
     const header = document.createElement('header');
     header.className = 'flex flex-wrap items-center gap-x-3 gap-y-2';
 
     const title = document.createElement('p');
     title.className = 'text-sm font-medium whitespace-nowrap';
-    title.textContent = semester.title;
+    title.textContent = row.title;
 
     const metrics = document.createElement('div');
     metrics.className =
         'text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 text-xs';
-    const semesterMetrics = summarizeSemester(semester.courses);
-    metrics.append(createMetricChip('נק״ז', semesterMetrics.totalPoints));
-    metrics.append(createMetricChip('חציון', semesterMetrics.avgMedian));
-    metrics.append(createMetricChip('מבחנים', semesterMetrics.testsCount));
+    if (row.kind === 'semester') {
+        const semesterMetrics = summarizeSemester(row.courses);
+        metrics.append(createMetricChip('נק״ז', semesterMetrics.totalPoints));
+        metrics.append(createMetricChip('חציון', semesterMetrics.avgMedian));
+        metrics.append(createMetricChip('מבחנים', semesterMetrics.testsCount));
+    } else {
+        metrics.append(createMetricChip('קורסים', String(row.courses.length)));
+    }
 
     const moveTarget = document.createElement('p');
     moveTarget.className =
         'border-accent/40 bg-accent/10 text-accent hidden rounded-xl border px-2 py-1 text-xs';
     moveTarget.textContent = 'לחצו כאן להעברת הקורס הנבחר';
     moveTarget.dataset.moveTarget = 'true';
-    moveTarget.dataset.semesterId = semester.id;
+    moveTarget.dataset.rowId = row.id;
 
     header.append(title, metrics, moveTarget);
 
     const list = document.createElement('div');
-    list.className = 'flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pe-1';
-    list.dataset.semesterCourseList = 'true';
+    list.className = 'flex flex-wrap gap-2';
+    list.dataset.rowCourseList = 'true';
 
-    if (semester.courses.length === 0) {
+    if (row.courses.length === 0) {
         list.append(createSemesterEmptyStateElement());
     }
 
-    for (const course of semester.courses) {
-        list.append(createSemesterCourse(state, semester, course));
+    for (const course of row.courses) {
+        list.append(createSemesterCourse(state, row, course));
     }
-    column.append(header, list);
-    return column;
+    rowElement.append(header, list);
+    return rowElement;
 }
 
 function createSemesterCourse(
     state: PlanState,
-    semester: SemesterState,
+    row: PlanRow,
     course: CourseRecord
 ): HTMLElement {
     const holder = document.createElement('button');
     holder.type = 'button';
     holder.className =
-        'focus-visible:ring-accent/60 w-full rounded-2xl text-start transition duration-200 ease-out focus-visible:ring-2';
+        'focus-visible:ring-accent/60 basis-full rounded-2xl text-start transition duration-200 ease-out focus-visible:ring-2 sm:basis-[calc(50%-0.25rem)] lg:basis-[calc(33.333%-0.35rem)]';
     holder.dataset.courseAction = 'true';
     holder.dataset.courseCode = course.code;
-    holder.dataset.semesterId = semester.id;
+    holder.dataset.rowId = row.id;
 
     const isSelected =
         state.selected?.courseCode === course.code &&
-        state.selected.semesterId === semester.id;
+        state.selected.rowId === row.id;
     setCourseSelectionState(holder, isSelected);
 
     const card = CourseCard(course, {
-        statusClass: getStatusClassForSeason(semester.season),
+        statusClass:
+            row.kind === 'semester' && row.season !== undefined
+                ? getStatusClassForSeason(row.season)
+                : 'bg-accent',
     });
 
     const cardRoot = card.querySelector<HTMLElement>(
@@ -664,7 +638,7 @@ function resizeSemesters(state: PlanState, semesterCount: number): void {
         );
         if (selectedSemester !== undefined) {
             state.selected = {
-                semesterId: selectedSemester.id,
+                rowId: selectedSemester.id,
                 courseCode: selectedCode,
             };
         } else {
@@ -696,18 +670,18 @@ function renderProblems(
     }
 }
 
-function collectScheduleProblems(state: PlanState): string[] {
+function collectScheduleProblems(semesters: SemesterState[]): string[] {
     const problems: string[] = [];
     const allCourses = new Set<string>();
     const priorCourses = new Set<string>();
 
-    for (const semester of state.semesters) {
+    for (const semester of semesters) {
         for (const course of semester.courses) {
             allCourses.add(course.code);
         }
     }
 
-    for (const semester of state.semesters) {
+    for (const semester of semesters) {
         for (const course of semester.courses) {
             const availability = getAvailabilityWarning(
                 course,
@@ -800,18 +774,18 @@ function getSelectedStatusText(state: PlanState): string {
         return 'לא נבחר קורס';
     }
 
-    const semester = state.semesters.find(
-        (item) => item.id === state.selected?.semesterId
+    const row = getPlanRows(state).find(
+        (item) => item.id === state.selected?.rowId
     );
-    const course = semester?.courses.find(
+    const course = row?.courses.find(
         (item) => item.code === state.selected?.courseCode
     );
-    if (semester === undefined || course === undefined) {
+    if (row === undefined || course === undefined) {
         return 'לא נבחר קורס';
     }
 
     const label = course.name ?? course.code;
-    return `נבחר: ${label} (${semester.title})`;
+    return `נבחר: ${label} (${row.title})`;
 }
 
 function updateSelectionControls(
@@ -837,27 +811,27 @@ function setCourseSelectionState(
 
 function getCourseButtonElement(
     rail: HTMLElement,
-    semesterId: string,
+    rowId: string,
     courseCode: string
 ): HTMLElement | undefined {
     const candidate = rail.querySelector<HTMLElement>(
-        `[data-course-action][data-semester-id="${CSS.escape(semesterId)}"][data-course-code="${CSS.escape(courseCode)}"]`
+        `[data-course-action][data-row-id="${CSS.escape(rowId)}"][data-course-code="${CSS.escape(courseCode)}"]`
     );
     return candidate ?? undefined;
 }
 
 function toggleMoveTargets(
     rail: HTMLElement,
-    sourceSemesterId: string | undefined
+    sourceRowId: string | undefined
 ): void {
     const moveTargets =
         rail.querySelectorAll<HTMLElement>('[data-move-target]');
     for (const moveTarget of moveTargets) {
-        const targetSemesterId = moveTarget.dataset.semesterId;
+        const targetRowId = moveTarget.dataset.rowId;
         const shouldShow =
-            sourceSemesterId !== undefined &&
-            targetSemesterId !== undefined &&
-            targetSemesterId !== sourceSemesterId;
+            sourceRowId !== undefined &&
+            targetRowId !== undefined &&
+            targetRowId !== sourceRowId;
         moveTarget.classList.toggle('hidden', !shouldShow);
     }
 }
@@ -873,14 +847,12 @@ function createSemesterEmptyStateElement(): HTMLElement {
 
 function getSemesterCourseListElement(
     rail: HTMLElement,
-    semesterId: string
+    rowId: string
 ): HTMLElement | undefined {
-    const column = rail.querySelector<HTMLElement>(
-        `[data-semester-column][data-semester-id="${CSS.escape(semesterId)}"]`
+    const row = rail.querySelector<HTMLElement>(
+        `[data-plan-row][data-row-id="${CSS.escape(rowId)}"]`
     );
-    const list = column?.querySelector<HTMLElement>(
-        '[data-semester-course-list]'
-    );
+    const list = row?.querySelector<HTMLElement>('[data-row-course-list]');
     return list ?? undefined;
 }
 
@@ -906,14 +878,14 @@ function ensureSemesterEmptyStateElement(list: HTMLElement): void {
 
 function handleCourseClick(
     state: PlanState,
-    semesterId: string,
+    rowId: string,
     courseCode: string,
     rail: HTMLElement,
     selectedStatus: HTMLElement,
     clearButton: HTMLButtonElement
 ): void {
     const isSameSelection =
-        state.selected?.semesterId === semesterId &&
+        state.selected?.rowId === rowId &&
         state.selected.courseCode === courseCode;
     if (isSameSelection) {
         navigateToCoursePage(courseCode);
@@ -924,7 +896,7 @@ function handleCourseClick(
     if (previousSelected !== undefined) {
         const previousButton = getCourseButtonElement(
             rail,
-            previousSelected.semesterId,
+            previousSelected.rowId,
             previousSelected.courseCode
         );
         if (previousButton !== undefined) {
@@ -932,19 +904,23 @@ function handleCourseClick(
         }
     }
 
-    state.selected = { semesterId, courseCode };
-    const selectedButton = getCourseButtonElement(rail, semesterId, courseCode);
+    state.selected = { rowId, courseCode };
+    const selectedButton = getCourseButtonElement(rail, rowId, courseCode);
     if (selectedButton !== undefined) {
         setCourseSelectionState(selectedButton, true);
     }
 
     updateSelectionControls(state, selectedStatus, clearButton);
-    toggleMoveTargets(rail, semesterId);
+    toggleMoveTargets(rail, rowId);
 }
 
-async function handleSemesterClick(
+function getRowById(state: PlanState, rowId: string): PlanRow | undefined {
+    return getPlanRows(state).find((row) => row.id === rowId);
+}
+
+async function handleRowClick(
     state: PlanState,
-    targetSemesterId: string,
+    targetRowId: string,
     rail: HTMLElement,
     selectedStatus: HTMLElement,
     clearButton: HTMLButtonElement
@@ -954,43 +930,39 @@ async function handleSemesterClick(
     }
 
     const selectedCourseCode = state.selected.courseCode;
-    const sourceSemesterId = state.selected.semesterId;
+    const sourceRowId = state.selected.rowId;
 
-    const sourceSemester = state.semesters.find(
-        (semester) => semester.id === sourceSemesterId
-    );
-    const targetSemester = state.semesters.find(
-        (semester) => semester.id === targetSemesterId
-    );
-    if (sourceSemester === undefined || targetSemester === undefined) {
+    const sourceRow = getRowById(state, sourceRowId);
+    const targetRow = getRowById(state, targetRowId);
+    if (sourceRow === undefined || targetRow === undefined) {
         return;
     }
 
-    if (sourceSemester.id === targetSemester.id) {
+    if (sourceRow.id === targetRow.id) {
         return;
     }
 
-    const courseIndex = sourceSemester.courses.findIndex(
+    const courseIndex = sourceRow.courses.findIndex(
         (course) => course.code === selectedCourseCode
     );
     if (courseIndex < 0) {
         return;
     }
 
-    const [course] = sourceSemester.courses.splice(courseIndex, 1);
-    targetSemester.courses.push(course);
+    const [course] = sourceRow.courses.splice(courseIndex, 1);
+    targetRow.courses.push(course);
 
     const movedButton = getCourseButtonElement(
         rail,
-        sourceSemesterId,
+        sourceRowId,
         selectedCourseCode
     );
-    const sourceList = getSemesterCourseListElement(rail, sourceSemesterId);
-    const targetList = getSemesterCourseListElement(rail, targetSemesterId);
+    const sourceList = getSemesterCourseListElement(rail, sourceRowId);
+    const targetList = getSemesterCourseListElement(rail, targetRowId);
 
     if (movedButton !== undefined && targetList !== undefined) {
         removeSemesterEmptyStateElement(targetList);
-        movedButton.dataset.semesterId = targetSemesterId;
+        movedButton.dataset.rowId = targetRowId;
         setCourseSelectionState(movedButton, false);
         targetList.append(movedButton);
     }
@@ -1058,16 +1030,20 @@ function createCourseMap(courses: CourseRecord[]): Map<string, CourseRecord> {
 function restoreSemestersFromMeta(
     value: unknown,
     courseMap: Map<string, CourseRecord>
-): SemesterState[] | undefined {
+):
+    | {
+          semesters: SemesterState[];
+          wishlist: CourseRecord[];
+          exemptions: CourseRecord[];
+      }
+    | undefined {
     if (typeof value !== 'object' || value === null) {
         return undefined;
     }
 
     const record = value as Partial<PersistedPlan>;
-    if (
-        record.version !== PLAN_META_VERSION ||
-        !Array.isArray(record.semesters)
-    ) {
+    const version = Number(record.version);
+    if (!Array.isArray(record.semesters) || (version !== 1 && version !== 2)) {
         return undefined;
     }
 
@@ -1098,7 +1074,22 @@ function restoreSemestersFromMeta(
         }
     });
 
-    return semesters;
+    const wishlistCodes = Array.isArray(record.wishlistCourseCodes)
+        ? record.wishlistCourseCodes
+        : [];
+    const exemptionsCodes = Array.isArray(record.exemptionsCourseCodes)
+        ? record.exemptionsCourseCodes
+        : [];
+
+    return {
+        semesters,
+        wishlist: wishlistCodes
+            .map((code) => courseMap.get(code))
+            .filter((course): course is CourseRecord => course !== undefined),
+        exemptions: exemptionsCodes
+            .map((code) => courseMap.get(code))
+            .filter((course): course is CourseRecord => course !== undefined),
+    };
 }
 
 function normalizeDuplicateCourses(
@@ -1133,112 +1124,12 @@ async function persistPlanState(state: PlanState): Promise<void> {
             id: semester.id,
             courseCodes: semester.courses.map((course) => course.code),
         })),
+        wishlistCourseCodes: state.wishlist.map((course) => course.code),
+        exemptionsCourseCodes: state.exemptions.map((course) => course.code),
     };
 
     await setMeta({
         key: PLAN_META_KEY,
         value: payload,
     }).catch(() => undefined);
-}
-
-function setupRailNavigation(
-    rail: HTMLElement,
-    prevButton: HTMLButtonElement,
-    nextButton: HTMLButtonElement
-): void {
-    prevButton.addEventListener('click', () => {
-        scrollRailBySemester(rail, 'prev');
-    });
-
-    nextButton.addEventListener('click', () => {
-        scrollRailBySemester(rail, 'next');
-    });
-
-    rail.addEventListener('scroll', () => {
-        updateRailButtonState(rail);
-    });
-
-    window.addEventListener('resize', () => {
-        updateRailButtonState(rail);
-    });
-}
-
-function updateRailButtonState(rail: HTMLElement): void {
-    const prevButton =
-        document.querySelector<HTMLButtonElement>('[data-rail-prev]');
-    const nextButton =
-        document.querySelector<HTMLButtonElement>('[data-rail-next]');
-    if (prevButton === null || nextButton === null) {
-        return;
-    }
-
-    const columns = Array.from(
-        rail.querySelectorAll<HTMLElement>('[data-semester-column]')
-    );
-    const hasOverflow = rail.scrollWidth > rail.clientWidth + 2;
-    if (!hasOverflow || columns.length <= 1) {
-        prevButton.disabled = true;
-        nextButton.disabled = true;
-        return;
-    }
-
-    const currentIndex = getCurrentVisibleColumnIndex(rail, columns);
-    prevButton.disabled = currentIndex <= 0;
-    nextButton.disabled = currentIndex >= columns.length - 1;
-}
-
-function scrollRailBySemester(
-    rail: HTMLElement,
-    direction: 'prev' | 'next'
-): void {
-    const columns = Array.from(
-        rail.querySelectorAll<HTMLElement>('[data-semester-column]')
-    );
-    if (columns.length === 0) {
-        return;
-    }
-
-    const currentIndex = getCurrentVisibleColumnIndex(rail, columns);
-    const step = direction === 'next' ? 1 : -1;
-    const nextIndex = Math.min(
-        columns.length - 1,
-        Math.max(0, currentIndex + step)
-    );
-
-    const railRect = rail.getBoundingClientRect();
-    const targetRect = columns[nextIndex].getBoundingClientRect();
-    const isRtl = getComputedStyle(rail).direction === 'rtl';
-
-    const horizontalDelta = isRtl
-        ? targetRect.right - railRect.right
-        : targetRect.left - railRect.left;
-
-    rail.scrollBy({
-        left: horizontalDelta,
-        behavior: 'smooth',
-    });
-}
-
-function getCurrentVisibleColumnIndex(
-    rail: HTMLElement,
-    columns: HTMLElement[]
-): number {
-    const railRect = rail.getBoundingClientRect();
-    const isRtl = getComputedStyle(rail).direction === 'rtl';
-
-    let closestIndex = 0;
-    let closestDistance = Number.POSITIVE_INFINITY;
-
-    columns.forEach((column, index) => {
-        const columnRect = column.getBoundingClientRect();
-        const distance = isRtl
-            ? Math.abs(columnRect.right - railRect.right)
-            : Math.abs(columnRect.left - railRect.left);
-        if (distance < closestDistance) {
-            closestDistance = distance;
-            closestIndex = index;
-        }
-    });
-
-    return closestIndex;
 }

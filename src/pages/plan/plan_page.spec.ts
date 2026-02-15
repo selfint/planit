@@ -1,48 +1,11 @@
-import { type Page, expect, test } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
-async function getVisibleSemesterId(page: Page): Promise<string | null> {
-    return page.evaluate(() => {
-        const rail = document.querySelector<HTMLElement>(
-            '[data-semester-rail]'
-        );
-        if (rail === null) {
-            return null;
-        }
-
-        const columns = Array.from(
-            rail.querySelectorAll<HTMLElement>('[data-semester-column]')
-        );
-        if (columns.length === 0) {
-            return null;
-        }
-
-        const railRect = rail.getBoundingClientRect();
-        const isRtl = getComputedStyle(rail).direction === 'rtl';
-
-        let closestId: string | null = null;
-        let closestDistance = Number.POSITIVE_INFINITY;
-
-        for (const column of columns) {
-            const columnRect = column.getBoundingClientRect();
-            const distance = isRtl
-                ? Math.abs(columnRect.right - railRect.right)
-                : Math.abs(columnRect.left - railRect.left);
-            if (distance < closestDistance) {
-                closestDistance = distance;
-                closestId = column.dataset.semesterId ?? null;
-            }
-        }
-
-        return closestId;
-    });
-}
-
-async function getVisibleMoveTargetCount(page: Page): Promise<number> {
+async function getVisibleMoveTargetCount(
+    page: import('@playwright/test').Page
+): Promise<number> {
     return page.evaluate(() => {
         const moveTargets = Array.from(
-            document.querySelectorAll<HTMLElement>('p')
-        ).filter(
-            (item) => item.textContent.trim() === 'לחצו כאן להעברת הקורס הנבחר'
+            document.querySelectorAll<HTMLElement>('[data-move-target]')
         );
         let visibleCount = 0;
         for (const moveTarget of moveTargets) {
@@ -60,155 +23,95 @@ async function getVisibleMoveTargetCount(page: Page): Promise<number> {
 }
 
 test.describe('/plan page route', () => {
-    test('keeps horizontal rail position on course select', async ({
+    test('renders vertical rows with wishlist and exemptions', async ({
         page,
     }) => {
         await page.goto('plan');
+
         await expect(page.locator('[data-semester-rail]')).toBeVisible();
+        await expect(page.locator('[data-rail-prev]')).toHaveCount(0);
+        await expect(page.locator('[data-rail-next]')).toHaveCount(0);
+        await expect(page.locator('[data-plan-row]')).toHaveCount(8);
+        await expect(
+            page.locator('[data-plan-row][data-row-id="wishlist"]')
+        ).toContainText('רשימת משאלות');
+        await expect(
+            page.locator('[data-plan-row][data-row-id="exemptions"]')
+        ).toContainText('פטורים');
 
-        await page.waitForFunction(() => {
-            const rail = document.querySelector<HTMLElement>(
-                '[data-semester-rail]'
+        const usesHorizontalOverflow = await page
+            .locator('[data-semester-rail]')
+            .evaluate(
+                (node) =>
+                    node.classList.contains('overflow-x-auto') ||
+                    node.classList.contains('snap-x')
             );
-            return (
-                rail !== null &&
-                rail.querySelectorAll('[data-semester-column]').length >= 3 &&
-                rail.querySelector('[data-course-action]') !== null
-            );
-        });
-
-        const initialVisibleSemesterId = await getVisibleSemesterId(page);
-
-        await page.evaluate(() => {
-            const rail = document.querySelector<HTMLElement>(
-                '[data-semester-rail]'
-            );
-            if (rail === null) {
-                return;
-            }
-            const columns = Array.from(
-                rail.querySelectorAll<HTMLElement>('[data-semester-column]')
-            );
-            if (columns.length < 3) {
-                return;
-            }
-
-            const target = columns[2];
-            const railRect = rail.getBoundingClientRect();
-            const targetRect = target.getBoundingClientRect();
-            const isRtl = getComputedStyle(rail).direction === 'rtl';
-            const delta = isRtl
-                ? targetRect.right - railRect.right
-                : targetRect.left - railRect.left;
-            rail.scrollBy({ left: delta });
-        });
-
-        await page.waitForFunction((previousId) => {
-            const rail = document.querySelector<HTMLElement>(
-                '[data-semester-rail]'
-            );
-            if (rail === null) {
-                return false;
-            }
-            const columns = Array.from(
-                rail.querySelectorAll<HTMLElement>('[data-semester-column]')
-            );
-            if (columns.length === 0) {
-                return false;
-            }
-
-            const railRect = rail.getBoundingClientRect();
-            const isRtl = getComputedStyle(rail).direction === 'rtl';
-            let closestId: string | null = null;
-            let closestDistance = Number.POSITIVE_INFINITY;
-
-            for (const column of columns) {
-                const columnRect = column.getBoundingClientRect();
-                const distance = isRtl
-                    ? Math.abs(columnRect.right - railRect.right)
-                    : Math.abs(columnRect.left - railRect.left);
-                if (distance < closestDistance) {
-                    closestDistance = distance;
-                    closestId = column.dataset.semesterId ?? null;
-                }
-            }
-
-            return closestId !== null && closestId !== previousId;
-        }, initialVisibleSemesterId);
-
-        const beforeSelectSemesterId = await getVisibleSemesterId(page);
-        expect(beforeSelectSemesterId).not.toBeNull();
-
-        await page.click(
-            `[data-course-action][data-semester-id="${beforeSelectSemesterId}"]`
-        );
-
-        await expect(page.locator('[data-clear-selection]')).toBeEnabled();
-        await expect(page.locator('[data-selected-status]')).not.toHaveText(
-            'לא נבחר קורס'
-        );
-
-        const afterSelectSemesterId = await getVisibleSemesterId(page);
-        expect(afterSelectSemesterId).toBe(beforeSelectSemesterId);
+        expect(usesHorizontalOverflow).toBe(false);
     });
 
-    test('moves selected course without full rail reset', async ({ page }) => {
+    test('moves selected course to wishlist row', async ({ page }) => {
         await page.goto('plan');
-        await expect(page.locator('[data-semester-rail]')).toBeVisible();
+
+        await page.waitForFunction(() => {
+            const rows = Array.from(
+                document.querySelectorAll<HTMLElement>('[data-plan-row]')
+            );
+            const hasSource = rows.some(
+                (row) =>
+                    row.dataset.rowId !== 'wishlist' &&
+                    row.querySelector('[data-course-action]') !== null
+            );
+            return hasSource;
+        });
 
         const moveFixture = await page.evaluate(() => {
-            const columns = Array.from(
-                document.querySelectorAll<HTMLElement>('[data-semester-column]')
+            const sourceRow = Array.from(
+                document.querySelectorAll<HTMLElement>('[data-plan-row]')
+            ).find(
+                (row) =>
+                    row.dataset.rowId !== 'wishlist' &&
+                    row.dataset.rowId !== 'exemptions' &&
+                    row.querySelector<HTMLElement>('[data-course-action]') !==
+                        null
             );
-            const source = columns.find(
-                (column) =>
-                    column.querySelector('[data-course-action]') !== null &&
-                    column.dataset.semesterId !== undefined
-            );
-            if (source === undefined) {
+            if (
+                sourceRow === undefined ||
+                sourceRow.dataset.rowId === undefined
+            ) {
                 return null;
             }
 
-            const target = columns.find(
-                (column) =>
-                    column.dataset.semesterId !== undefined &&
-                    column.dataset.semesterId !== source.dataset.semesterId
-            );
-            if (target === undefined) {
-                return null;
-            }
-
-            const sourceButton = source.querySelector<HTMLElement>(
+            const sourceButton = sourceRow.querySelector<HTMLElement>(
                 '[data-course-action]'
             );
-            if (sourceButton === null) {
+            const sourceRowId = sourceRow.dataset.rowId;
+            const courseCode = sourceButton?.dataset.courseCode;
+            if (courseCode === undefined) {
                 return null;
             }
 
             return {
-                sourceSemesterId: source.dataset.semesterId,
-                targetSemesterId: target.dataset.semesterId,
-                courseCode: sourceButton.dataset.courseCode,
+                sourceRowId,
+                targetRowId: 'wishlist',
+                courseCode,
             };
         });
 
         expect(moveFixture).not.toBeNull();
 
-        const sourceSemesterId = moveFixture?.sourceSemesterId ?? '';
-        const targetSemesterId = moveFixture?.targetSemesterId ?? '';
+        const sourceRowId = moveFixture?.sourceRowId ?? '';
+        const targetRowId = moveFixture?.targetRowId ?? '';
         const courseCode = moveFixture?.courseCode ?? '';
 
         await page.click(
-            `[data-course-action][data-semester-id="${sourceSemesterId}"][data-course-code="${courseCode}"]`
+            `[data-course-action][data-row-id="${sourceRowId}"][data-course-code="${courseCode}"]`
         );
 
         await expect
             .poll(async () => getVisibleMoveTargetCount(page))
             .toBeGreaterThan(0);
 
-        await page.click(
-            `[data-semester-column][data-semester-id="${targetSemesterId}"]`
-        );
+        await page.click(`[data-plan-row][data-row-id="${targetRowId}"]`);
 
         await expect(page.locator('[data-selected-status]')).toHaveText(
             'לא נבחר קורס'
@@ -218,13 +121,34 @@ test.describe('/plan page route', () => {
 
         await expect(
             page.locator(
-                `[data-course-action][data-course-code="${courseCode}"][data-semester-id="${targetSemesterId}"]`
+                `[data-course-action][data-course-code="${courseCode}"][data-row-id="${targetRowId}"]`
             )
         ).toHaveCount(1);
         await expect(
             page.locator(
-                `[data-course-action][data-course-code="${courseCode}"][data-semester-id="${sourceSemesterId}"]`
+                `[data-course-action][data-course-code="${courseCode}"][data-row-id="${sourceRowId}"]`
             )
         ).toHaveCount(0);
+    });
+
+    test('renders schedule errors section below planner rows', async ({
+        page,
+    }) => {
+        await page.goto('plan');
+
+        const isProblemsSectionAfterRail = await page.evaluate(() => {
+            const rail = document.querySelector('[data-semester-rail]');
+            const problems = document.querySelector('[data-schedule-problems]');
+            if (rail === null || problems === null) {
+                return false;
+            }
+            return (
+                (rail.compareDocumentPosition(problems) &
+                    Node.DOCUMENT_POSITION_FOLLOWING) !==
+                0
+            );
+        });
+
+        expect(isProblemsSectionAfterRail).toBe(true);
     });
 });
