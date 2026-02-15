@@ -56,7 +56,7 @@ export function CourseCard(
         "[data-role='status-dot']"
     );
     if (statusDot !== null) {
-        statusDot.className = `me-[5px] h-3 w-3 min-h-3 min-w-3 shrink-0 ${shapeClass} ${statusClass}`;
+        statusDot.className = `me-[10px] h-3 w-3 min-h-3 min-w-3 shrink-0 ${shapeClass} ${statusClass}`;
     }
 
     const points = root.querySelector<HTMLSpanElement>(
