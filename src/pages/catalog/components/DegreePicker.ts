@@ -9,7 +9,7 @@ import {
 } from '$lib/requirementsUtils';
 import {
     getActiveRequirementsSelection,
-    setActiveRequirementsPath,
+    setActiveRequirementsSelection,
     syncRequirements,
 } from '$lib/requirementsSync';
 import { getCatalogs, getRequirement } from '$lib/indexeddb';
@@ -95,7 +95,6 @@ export function DegreePicker(): HTMLElement {
             state.selection = undefined;
             state.requirement = undefined;
             state.pathOptions = [];
-            void setActiveRequirementsPath(undefined);
             updateCatalogOptions(
                 state,
                 catalogSelect,
@@ -115,7 +114,6 @@ export function DegreePicker(): HTMLElement {
         };
         state.requirement = undefined;
         state.pathOptions = [];
-        void setActiveRequirementsPath(undefined);
         updateFacultyOptions(state, facultySelect, programSelect);
         updateProgramOptions(state, programSelect);
         resetRequirementView(pathSelect, pathEmpty, requirementRows);
@@ -135,7 +133,6 @@ export function DegreePicker(): HTMLElement {
         };
         state.requirement = undefined;
         state.pathOptions = [];
-        void setActiveRequirementsPath(undefined);
         updateProgramOptions(state, programSelect);
         resetRequirementView(pathSelect, pathEmpty, requirementRows);
         updateStatus(status, 'בחר תכנית כדי לטעון דרישות.');
@@ -158,8 +155,6 @@ export function DegreePicker(): HTMLElement {
         };
         state.requirement = undefined;
         state.pathOptions = [];
-
-        void setActiveRequirementsPath(undefined);
         void loadRequirements(
             state,
             programSelect,
@@ -180,7 +175,7 @@ export function DegreePicker(): HTMLElement {
             ...state.selection,
             path: path.length > 0 ? path : undefined,
         };
-        void setActiveRequirementsPath(state.selection.path);
+        void persistActiveSelectionIfComplete(state);
         renderRequirementsTable(state, requirementRows, state.selection.path);
 
         if (
@@ -366,7 +361,9 @@ async function loadRequirements(
     programSelect.disabled = true;
     updateStatus(status, 'טוען דרישות...');
 
-    const result = await syncRequirements(selection);
+    const result = await syncRequirements(selection, {
+        persistActiveSelection: false,
+    });
 
     programSelect.disabled = false;
 
@@ -421,6 +418,8 @@ async function hydrateRequirements(
         return;
     }
 
+    void persistActiveSelectionIfComplete(state);
+
     renderRequirementsTable(state, requirementRows, selectedPath);
     if (state.requirement === undefined) {
         updateStatus(status, REQUIREMENTS_MISSING_MESSAGE);
@@ -442,7 +441,6 @@ function updatePathSection(
         if (state.selection !== undefined) {
             state.selection = { ...state.selection, path: undefined };
         }
-        void setActiveRequirementsPath(undefined);
         return;
     }
 
@@ -649,4 +647,31 @@ function toRequirementNode(value: unknown): RequirementNode | undefined {
 
 function updateStatus(element: HTMLParagraphElement, message: string): void {
     element.textContent = message;
+}
+
+function isSelectionComplete(state: PickerState): boolean {
+    const selection = state.selection;
+    if (selection === undefined) {
+        return false;
+    }
+    if (
+        selection.catalogId.length === 0 ||
+        selection.facultyId.length === 0 ||
+        selection.programId.length === 0
+    ) {
+        return false;
+    }
+    if (state.pathOptions.length > 0 && (selection.path?.length ?? 0) === 0) {
+        return false;
+    }
+    return true;
+}
+
+async function persistActiveSelectionIfComplete(
+    state: PickerState
+): Promise<void> {
+    if (!isSelectionComplete(state) || state.selection === undefined) {
+        return;
+    }
+    await setActiveRequirementsSelection(state.selection);
 }

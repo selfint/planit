@@ -21,6 +21,10 @@ export type RequirementsSyncResult = {
     error?: string;
 };
 
+type RequirementsSyncOptions = {
+    persistActiveSelection?: boolean;
+};
+
 function isOnline(): boolean {
     return 'onLine' in navigator ? navigator.onLine : true;
 }
@@ -84,12 +88,38 @@ export async function setActiveRequirementsPath(path?: string): Promise<void> {
     });
 }
 
-export async function syncRequirements(
+export async function setActiveRequirementsSelection(
     selection: RequirementsSelection
+): Promise<void> {
+    await Promise.all([
+        setMeta({
+            key: REQUIREMENTS_META_KEYS.activeCatalogId,
+            value: selection.catalogId,
+        }),
+        setMeta({
+            key: REQUIREMENTS_META_KEYS.activeFacultyId,
+            value: selection.facultyId,
+        }),
+        setMeta({
+            key: REQUIREMENTS_META_KEYS.activeProgramId,
+            value: selection.programId,
+        }),
+        setMeta({
+            key: REQUIREMENTS_META_KEYS.activePath,
+            value: selection.path ?? '',
+        }),
+    ]);
+}
+
+export async function syncRequirements(
+    selection: RequirementsSelection,
+    options?: RequirementsSyncOptions
 ): Promise<RequirementsSyncResult> {
     if (!isOnline()) {
         return { status: 'offline' };
     }
+
+    const persistActiveSelection = options?.persistActiveSelection ?? true;
 
     const previousProgramEntry = await getMeta(
         REQUIREMENTS_META_KEYS.activeProgramId
@@ -117,7 +147,8 @@ export async function syncRequirements(
             path: selection.path,
             data,
         },
-        previousProgramId
+        previousProgramId,
+        persistActiveSelection
     );
 
     await setMeta({

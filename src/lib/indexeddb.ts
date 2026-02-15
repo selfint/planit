@@ -286,7 +286,8 @@ export async function getRequirement(
 
 export async function replaceRequirementsWithCow(
     record: RequirementRecord,
-    previousProgramId?: string
+    previousProgramId?: string,
+    persistActiveSelection = true
 ): Promise<void> {
     await withStores(
         [STORE_REQUIREMENTS, STORE_META],
@@ -300,22 +301,24 @@ export async function replaceRequirementsWithCow(
             ) {
                 stores[STORE_REQUIREMENTS].delete(previousProgramId);
             }
-            stores[STORE_META].put({
-                key: 'requirementsActiveCatalogId',
-                value: record.catalogId,
-            });
-            stores[STORE_META].put({
-                key: 'requirementsActiveFacultyId',
-                value: record.facultyId,
-            });
-            stores[STORE_META].put({
-                key: 'requirementsActiveProgramId',
-                value: record.programId,
-            });
-            stores[STORE_META].put({
-                key: 'requirementsActivePath',
-                value: record.path ?? '',
-            });
+            if (persistActiveSelection) {
+                stores[STORE_META].put({
+                    key: 'requirementsActiveCatalogId',
+                    value: record.catalogId,
+                });
+                stores[STORE_META].put({
+                    key: 'requirementsActiveFacultyId',
+                    value: record.facultyId,
+                });
+                stores[STORE_META].put({
+                    key: 'requirementsActiveProgramId',
+                    value: record.programId,
+                });
+                stores[STORE_META].put({
+                    key: 'requirementsActivePath',
+                    value: record.path ?? '',
+                });
+            }
         }
     );
 }
