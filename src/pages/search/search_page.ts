@@ -7,8 +7,8 @@ import {
     getRequirement,
     queryCourses,
 } from '$lib/indexeddb';
-import { CourseCard } from '$components/CourseCard';
 import { ConsoleNav } from '$components/ConsoleNav';
+import { CourseCard } from '$components/CourseCard';
 
 import templateHtml from './search_page.html?raw';
 

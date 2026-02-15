@@ -1,6 +1,6 @@
 import logoUrl from '$assets/logo.webp';
-import titleUrl from '$assets/Title.svg?url';
 import templateHtml from './ConsoleNav.html?raw';
+import titleUrl from '$assets/Title.svg?url';
 
 type ConsoleLinkKey = 'catalog' | 'plan' | 'search' | 'login';
 

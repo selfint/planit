@@ -5,8 +5,8 @@ import {
     getRequirementId,
     getRequirementLabel,
 } from '$lib/requirementsUtils';
-import { CourseCard } from '$components/CourseCard';
 import { ConsoleNav } from '$components/ConsoleNav';
+import { CourseCard } from '$components/CourseCard';
 import { getActiveRequirementsSelection } from '$lib/requirementsSync';
 import templateHtml from './catalog_page.html?raw';
 

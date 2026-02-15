@@ -4,8 +4,8 @@ import {
     getMeta,
     setMeta,
 } from '$lib/indexeddb';
-import { CourseCard } from '$components/CourseCard';
 import { ConsoleNav } from '$components/ConsoleNav';
+import { CourseCard } from '$components/CourseCard';
 
 import templateHtml from './plan_page.html?raw';
 
