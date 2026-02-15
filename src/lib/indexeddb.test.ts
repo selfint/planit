@@ -512,5 +512,51 @@ describe('indexeddb lib', () => {
         expect(oldRequirement).toBeUndefined();
         expect(newRequirement?.data).toEqual({ name: 'Program B' });
         expect(newRequirement?.catalogId).toBe('2025_200');
+
+        const activeProgram = await getMeta('requirementsActiveProgramId');
+        expect(activeProgram?.value).toBe('SC00001404_CG00010389');
+    });
+
+    it('can replace requirements without persisting active selection meta', async () => {
+        await setMeta({
+            key: 'requirementsActiveCatalogId',
+            value: '2024_200',
+        });
+        await setMeta({
+            key: 'requirementsActiveFacultyId',
+            value: 'OLD_FACULTY',
+        });
+        await setMeta({
+            key: 'requirementsActiveProgramId',
+            value: 'OLD_PROGRAM',
+        });
+        await setMeta({
+            key: 'requirementsActivePath',
+            value: 'legacy-path',
+        });
+
+        await replaceRequirementsWithCow(
+            {
+                catalogId: '2025_200',
+                facultyId: '00002010',
+                programId: 'SC00001403_CG00001322',
+                path: 'new-path',
+                data: { name: 'Program A' },
+            },
+            'OLD_PROGRAM',
+            false
+        );
+
+        const activeCatalog = await getMeta('requirementsActiveCatalogId');
+        const activeFaculty = await getMeta('requirementsActiveFacultyId');
+        const activeProgram = await getMeta('requirementsActiveProgramId');
+        const activePath = await getMeta('requirementsActivePath');
+        const requirement = await getRequirement('SC00001403_CG00001322');
+
+        expect(activeCatalog?.value).toBe('2024_200');
+        expect(activeFaculty?.value).toBe('OLD_FACULTY');
+        expect(activeProgram?.value).toBe('OLD_PROGRAM');
+        expect(activePath?.value).toBe('legacy-path');
+        expect(requirement?.path).toBe('new-path');
     });
 });
