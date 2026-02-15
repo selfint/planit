@@ -548,11 +548,6 @@ function setupStickyExpansion(aside: HTMLElement, section: HTMLElement): void {
 
     function setExpanded(nextExpanded: boolean): void {
         expanded = nextExpanded;
-        aside.classList.toggle('-mx-4', nextExpanded);
-        aside.classList.toggle('sm:-mx-6', nextExpanded);
-        aside.style.width = nextExpanded ? '100vw' : '';
-        aside.style.maxWidth = nextExpanded ? '100vw' : '';
-        aside.style.marginInline = nextExpanded ? 'calc(50% - 50vw)' : '';
         section.classList.toggle('rounded-none', nextExpanded);
         section.classList.toggle('border-s-0', nextExpanded);
         section.classList.toggle('border-e-0', nextExpanded);
