@@ -13,7 +13,6 @@ import templateHtml from './course_page.html?raw';
 const EMPTY_VALUE = '—';
 const UNKNOWN_COURSE_LABEL = 'קורס לא זמין במאגר';
 const LOADING_LABEL = 'טוען פרטי קורס...';
-const READY_LABEL = '';
 const NOT_FOUND_LABEL = 'קורס לא נמצא במאגר המקומי';
 const COURSES_BATCH_SIZE = 300;
 
@@ -271,7 +270,7 @@ function showCourseFound(elements: CoursePageElements): void {
     elements.loadingState.classList.add('hidden');
     elements.notFoundState.classList.add('hidden');
     elements.foundState.classList.remove('hidden');
-    setSyncStateText(elements.syncState, READY_LABEL);
+    elements.syncState.classList.add('hidden');
 }
 
 function setSyncStateText(element: HTMLElement, message: string): void {
