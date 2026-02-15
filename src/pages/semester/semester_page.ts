@@ -454,7 +454,7 @@ function renderCurrentSemesterCourses(
     courses: CourseRecord[]
 ): void {
     container.replaceChildren();
-    container.append(createLeadingSeparator('lg:hidden'));
+    container.append(createLeadingSeparator('lg:hidden', 'w-2'));
     if (courses.length === 0) {
         empty.classList.remove('hidden');
         return;
@@ -482,7 +482,7 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
         const row = document.createElement('div');
         row.className =
             'flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:thin] md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-3';
-        row.append(createLeadingSeparator('md:hidden'));
+        row.append(createLeadingSeparator('md:hidden', 'w-3'));
 
         if (group.courses.length === 0) {
             const empty = document.createElement('p');
@@ -514,9 +514,12 @@ function createCourseLink(course: CourseRecord): HTMLAnchorElement {
     return link;
 }
 
-function createLeadingSeparator(hiddenClass: string): HTMLElement {
+function createLeadingSeparator(
+    hiddenClass: string,
+    widthClass: string
+): HTMLElement {
     const separator = document.createElement('span');
-    separator.className = `${hiddenClass} w-3 shrink-0`;
+    separator.className = `${hiddenClass} ${widthClass} shrink-0`;
     separator.setAttribute('aria-hidden', 'true');
     return separator;
 }
