@@ -2,7 +2,9 @@
 import { describe, expect, it, vi } from 'vitest';
 
 function mockPage(): HTMLElement {
-    return document.createElement('div');
+    const page = document.createElement('div');
+    page.dataset.page = 'mock';
+    return page;
 }
 
 vi.mock('../pages/catalog/catalog_page', () => ({
@@ -114,5 +116,15 @@ describe('router lib', () => {
         expect(window.location.search).toBe('?q=test');
         expect(window.location.hash).toBe('#top');
         expect(window.sessionStorage.getItem(REDIRECT_SESSION_KEY)).toBeNull();
+    });
+
+    it('keeps query params when initializing semester route', () => {
+        document.body.innerHTML = '<div id="app"></div>';
+        window.history.replaceState(null, '', '/semester?number=3');
+
+        initRouter();
+
+        expect(window.location.pathname).toBe('/semester');
+        expect(window.location.search).toBe('?number=3');
     });
 });
