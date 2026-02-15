@@ -1,20 +1,46 @@
 <template>
-    <section class="text-text min-h-screen w-full">
+    <section class="text-text min-h-screen w-full" data-page="catalog">
         <main
-            class="mx-auto flex min-h-screen w-full max-w-5xl flex-col items-start justify-center gap-6 px-4 pt-[calc(env(safe-area-inset-top)+2rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:px-8"
+            class="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:px-8"
         >
-            <p class="text-text-muted text-xs">/catalog</p>
-            <h1 class="text-3xl font-medium">עמוד קטלוגים</h1>
-            <p class="text-text-muted max-w-2xl text-sm">
-                זהו עמוד Placeholder לנתיב הקטלוגים. כאן יוצגו דרישות המסלול
-                וקבוצות הקורסים.
-            </p>
-            <a
-                class="bg-accent text-accent-contrast rounded-full px-5 py-2 text-xs font-medium"
-                href="/"
-            >
-                חזרה לעמוד הבית
-            </a>
+            <header class="flex flex-col gap-3">
+                <div class="flex flex-col gap-2">
+                    <h1 class="text-2xl font-medium sm:text-3xl">
+                        קטלוג מסלולים
+                    </h1>
+                    <p class="text-text-muted max-w-3xl text-xs sm:text-sm">
+                        בחרו קטלוג, פקולטה ותכנית כדי לראות דרישות.
+                    </p>
+                </div>
+                <p class="text-text-muted text-xs" data-catalog-summary>
+                    בחרו תכנית כדי להתחיל.
+                </p>
+            </header>
+
+            <section class="grid gap-5 xl:grid-cols-[minmax(0,390px)_1fr]">
+                <div data-catalog-degree-picker></div>
+
+                <section
+                    class="flex min-h-88 flex-col gap-4"
+                    aria-live="polite"
+                >
+                    <div
+                        class="border-border/60 flex flex-wrap items-center justify-between gap-3 border-b pb-3"
+                    >
+                        <h2 class="text-lg font-medium">
+                            קבוצות דרישה וקורסים
+                        </h2>
+                        <p class="text-text-muted text-xs" data-catalog-state>
+                            טוען נתוני דרישות...
+                        </p>
+                    </div>
+
+                    <div
+                        class="divide-border/45 flex flex-col divide-y"
+                        data-catalog-groups
+                    ></div>
+                </section>
+            </section>
         </main>
     </section>
 </template>

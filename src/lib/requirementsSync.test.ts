@@ -74,9 +74,11 @@ describe('requirements sync lib', () => {
                 catalogId: '2025_200',
                 facultyId: '00002010',
                 programId: 'SC00001403_CG00001322',
+                path: undefined,
                 data: { name: 'Program A' },
             },
-            'OLD_PROGRAM'
+            'OLD_PROGRAM',
+            true
         );
         expect(mockSetMeta).toHaveBeenCalledWith(
             expect.objectContaining({ key: 'requirementsLastSync' })

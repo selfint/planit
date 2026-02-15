@@ -9,7 +9,7 @@ IndexedDB access layer for courses, catalogs, requirements, and metadata.
 - Store constants: `DB_NAME`, `DB_VERSION`, `STORE_COURSES`, `STORE_META`, `STORE_CATALOGS`, `STORE_REQUIREMENTS`.
 - Meta helpers: `getMeta(key)`, `setMeta(entry)`.
 - Catalog helpers: `putCatalogs(catalogs)`, `getCatalogs()`.
-- Requirements helpers: `getRequirement(programId)`, `replaceRequirementsWithCow(record, previousProgramId)`.
+- Requirements helpers: `getRequirement(programId)`, `replaceRequirementsWithCow(record, previousProgramId, persistActiveSelection?)`.
 - Course helpers: `putCourses(courses)`, `getCourse(code)`, `getCourses(limit)`, `getCoursesPage(limit, offset)`, `getCoursesPageSorted(...)`, `searchCourses(query, limit)`, `getCourseFaculties()`, `queryCourses(params)`.
 - Course query types: `CourseQueryParams`, `CourseQueryResult`.
 - Types: `MetaEntry`, `CourseRecord`, `CatalogRecord`, `RequirementRecord`.
@@ -19,6 +19,7 @@ IndexedDB access layer for courses, catalogs, requirements, and metadata.
 - Opens the database and creates stores/indexes during upgrades.
 - Wraps read/write operations in transactions with explicit completion/error handling.
 - Uses copy-on-write semantics for requirements to avoid deleting old data until new data is stored.
+- Optionally skips active requirements meta updates during COW writes (for incomplete picker states).
 - Supports course querying with combined text search, availability, faculty, points range, median threshold, requirement membership, and pagination.
 
 ## Dependencies
@@ -28,6 +29,7 @@ IndexedDB access layer for courses, catalogs, requirements, and metadata.
 ## Notes
 
 - Requirements store uses `programId` as the keyPath.
+- `replaceRequirementsWithCow(..., persistActiveSelection)` defaults to `true`; pass `false` to store requirement payload without mutating active catalog/faculty/program/path meta keys.
 - Sorting uses indexes for `name`, `points`, and `median`.
 - `availableOnly` filtering in `queryCourses` is strict: a course matches only when `course.current === true`.
 - `pageSize: 'all'` returns all matching rows without slicing.
@@ -40,3 +42,4 @@ IndexedDB access layer for courses, catalogs, requirements, and metadata.
 - Reads unique faculty options from stored course data.
 - Writes catalogs and reads them back through catalog helpers.
 - Replaces requirements with copy-on-write semantics.
+- Supports COW replacement without changing active requirements selection metadata.
