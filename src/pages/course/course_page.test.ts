@@ -16,6 +16,14 @@ vi.mock('$lib/courseSync', () => ({
     initCourseSync: mocks.initCourseSyncMock,
 }));
 
+vi.mock('$components/ConsoleNav', () => ({
+    ConsoleNav: (): HTMLElement => {
+        const nav = document.createElement('nav');
+        nav.dataset.component = 'ConsoleNav';
+        return nav;
+    },
+}));
+
 import { CoursePage } from './course_page';
 
 describe('course page', () => {

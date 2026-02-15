@@ -1,0 +1,89 @@
+<template>
+    <header
+        class="border-border/50 bg-surface-1/45 sticky top-[env(safe-area-inset-top)] z-40 border-b backdrop-blur-md"
+        data-component="ConsoleNav"
+    >
+        <nav
+            class="mx-auto flex min-h-11 w-full items-center justify-between gap-4 px-3 py-1 sm:px-5 md:py-2 lg:max-w-6xl lg:px-8"
+            aria-label="ניווט ראשי"
+        >
+            <div class="flex items-center gap-0.5 sm:gap-1 md:gap-1.5">
+                <a
+                    class="focus-visible:ring-accent/60 text-text-muted hover:text-text inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl transition duration-200 ease-out focus-visible:ring-2"
+                    href="/login"
+                    data-console-link="login"
+                    aria-label="כניסה"
+                    title="כניסה"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="size-4"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <circle cx="12" cy="8" r="4"></circle>
+                        <path d="M5 20c0-3.5 3.1-6 7-6s7 2.5 7 6"></path>
+                    </svg>
+                </a>
+                <a
+                    class="focus-visible:ring-accent/60 text-text-muted hover:text-text inline-flex min-h-10 min-w-10 items-center justify-center rounded-xl transition duration-200 ease-out focus-visible:ring-2"
+                    href="/search"
+                    data-console-link="search"
+                    aria-label="חיפוש"
+                    title="חיפוש"
+                >
+                    <svg
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                        class="size-4"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                    >
+                        <circle cx="11" cy="11" r="7"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </a>
+                <a
+                    class="focus-visible:ring-accent/60 text-text-muted hover:text-text inline-flex min-h-10 items-center rounded-xl px-2.5 text-sm font-medium transition duration-200 ease-out focus-visible:ring-2"
+                    href="/plan"
+                    data-console-link="plan"
+                >
+                    מתכנן
+                </a>
+                <a
+                    class="focus-visible:ring-accent/60 text-text-muted hover:text-text inline-flex min-h-10 items-center rounded-xl px-2.5 text-sm font-medium transition duration-200 ease-out focus-visible:ring-2"
+                    href="/catalog"
+                    data-console-link="catalog"
+                >
+                    קטלוג
+                </a>
+            </div>
+
+            <div class="flex min-w-0 items-center gap-2" data-slot="logo">
+                <a
+                    class="focus-visible:ring-accent/60 flex min-h-10 items-center gap-1 rounded-2xl px-2 py-0.5 focus-visible:ring-2"
+                    href="/"
+                    data-console-link="home"
+                    aria-label="מעבר לעמוד הבית"
+                    title="עמוד הבית"
+                >
+                    <svg
+                        class="text-text hidden h-6 w-16 md:block"
+                        aria-label="Planit"
+                        role="img"
+                    >
+                        <use data-title-use></use>
+                    </svg>
+                    <img class="size-9" alt="לוגו Planit" data-logo />
+                </a>
+            </div>
+        </nav>
+    </header>
+</template>

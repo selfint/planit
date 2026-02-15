@@ -5,6 +5,7 @@ import {
     getRequirementId,
     getRequirementLabel,
 } from '$lib/requirementsUtils';
+import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
 import { getActiveRequirementsSelection } from '$lib/requirementsSync';
 import templateHtml from './catalog_page.html?raw';
@@ -60,6 +61,12 @@ export function CatalogPage(): HTMLElement {
     const root = templateElement.content.firstElementChild?.cloneNode(true);
     if (!(root instanceof HTMLElement)) {
         throw new Error('CatalogPage template root not found');
+    }
+
+    const consoleNavHost =
+        root.querySelector<HTMLElement>('[data-console-nav]');
+    if (consoleNavHost !== null) {
+        consoleNavHost.replaceWith(ConsoleNav({ activePath: '/catalog' }));
     }
 
     const degreePickerHost = root.querySelector<HTMLElement>(

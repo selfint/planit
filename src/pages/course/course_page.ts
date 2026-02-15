@@ -1,4 +1,5 @@
 import { type CourseRecord, getCourse } from '$lib/indexeddb';
+import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
 import { initCourseSync } from '$lib/courseSync';
 
@@ -50,6 +51,12 @@ export function CoursePage(): HTMLElement {
     const root = templateElement.content.firstElementChild?.cloneNode(true);
     if (!(root instanceof HTMLElement)) {
         throw new Error('CoursePage template root not found');
+    }
+
+    const consoleNavHost =
+        root.querySelector<HTMLElement>('[data-console-nav]');
+    if (consoleNavHost !== null) {
+        consoleNavHost.replaceWith(ConsoleNav({ activePath: '/course' }));
     }
 
     const elements = queryElements(root);
