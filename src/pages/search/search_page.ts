@@ -327,8 +327,19 @@ async function runSearch(
         if (result.total === 0) {
             const totalCourses = state.totalCourses ?? 0;
             elements.status.textContent = `מציג 0 מתוך ${String(totalCourses)}`;
-            elements.empty.textContent =
-                'נסו להרחיב את הטווחים או לנקות חלק מהפילטרים.';
+
+            if (totalCourses === 0) {
+                elements.empty.replaceChildren(
+                    document.createTextNode(
+                        'עדיין אין קורסים זמינים כי לא נבחר מסלול לימודים. '
+                    ),
+                    createCatalogLink()
+                );
+            } else {
+                elements.empty.textContent =
+                    'נסו להרחיב את הטווחים או לנקות חלק מהפילטרים.';
+            }
+
             elements.empty.classList.remove('hidden');
             return;
         }
@@ -580,4 +591,13 @@ async function hydrateTotalCourses(
     } catch {
         state.totalCourses = undefined;
     }
+}
+
+function createCatalogLink(): HTMLAnchorElement {
+    const link = document.createElement('a');
+    link.href = '/catalog';
+    link.className =
+        'text-accent hover:text-accent/80 underline underline-offset-2';
+    link.textContent = 'עברו לעמוד הקטלוג כדי לבחור מסלול.';
+    return link;
 }
