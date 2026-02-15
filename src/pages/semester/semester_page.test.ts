@@ -56,7 +56,7 @@ describe('SemesterPage', () => {
         window.history.replaceState(null, '', '/semester');
     });
 
-    it('uses query param number and shows semester metadata', async () => {
+    it('uses query param number and shows semester metadata in sticky title', async () => {
         window.history.replaceState(null, '', '/semester?number=3');
         mocks.getMetaMock.mockResolvedValue({
             value: {
@@ -76,15 +76,11 @@ describe('SemesterPage', () => {
         const page = SemesterPage();
         await flushPromises();
 
-        const title = page.querySelector('[data-role="title"]');
-        const subtitle = page.querySelector('[data-role="semester-subtitle"]');
-        const currentMeta = page.querySelector(
-            '[data-role="current-semester-meta"]'
+        const currentTitle = page.querySelector(
+            '[data-role="current-semester-title"]'
         );
-        expect(title?.textContent).toBe('סמסטר 3');
-        expect(subtitle?.textContent).toBe('חורף 2027');
-        expect(currentMeta?.textContent).toContain('סמסטר 3');
-        expect(currentMeta?.textContent).toContain('חורף 2027');
+        expect(currentTitle?.textContent).toContain('סמסטר 3');
+        expect(currentTitle?.textContent).toContain('חורף 2027');
     });
 
     it('renders current semester separately from catalog and free-elective groups', async () => {
@@ -150,7 +146,15 @@ describe('SemesterPage', () => {
         ).map((node) => node.getAttribute('data-course-code'));
         expect(currentCodes).toEqual(['A100']);
 
-        expect(page.textContent).not.toContain('קורסים נוספים מהקטלוג');
+        const requirementSections = page.querySelectorAll(
+            '[data-group-kind="requirement"]'
+        );
+        expect(requirementSections.length).toBeGreaterThan(0);
+        const requirementCodes = Array.from(
+            requirementSections[0]?.querySelectorAll('a[data-course-code]') ??
+                []
+        ).map((node) => node.getAttribute('data-course-code'));
+        expect(requirementCodes).toContain('B200');
 
         const freeTitles = Array.from(
             page.querySelectorAll<HTMLElement>('[data-group-kind="free"] h2')

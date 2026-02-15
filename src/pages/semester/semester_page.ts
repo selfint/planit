@@ -11,6 +11,8 @@ import { getActiveRequirementsSelection } from '$lib/requirementsSync';
 import {
     type RequirementNode,
     filterRequirementsByPath,
+    getRequirementId,
+    getRequirementLabel,
 } from '$lib/requirementsUtils';
 import templateHtml from './semester_page.html?raw';
 
@@ -25,11 +27,8 @@ type PersistedPlan = {
 };
 
 type SemesterPageElements = {
-    title: HTMLElement;
-    subtitle: HTMLElement;
-    status: HTMLElement;
     groupsRoot: HTMLElement;
-    currentMeta: HTMLElement;
+    currentTitle: HTMLElement;
     currentCount: HTMLElement;
     currentCourses: HTMLElement;
     currentEmpty: HTMLElement;
@@ -44,6 +43,7 @@ type SemesterInfo = {
 type CourseGroup = {
     title: string;
     courses: CourseRecord[];
+    kind: 'requirement' | 'free';
 };
 
 export function SemesterPage(): HTMLElement {
@@ -67,11 +67,6 @@ export function SemesterPage(): HTMLElement {
 
     const elements = queryElements(root);
     const semesterNumber = getSemesterNumberFromUrl(window.location.search);
-    const semesterInfo = getFallbackSemesterInfo(semesterNumber);
-
-    elements.title.textContent = `סמסטר ${String(semesterNumber)}`;
-    elements.subtitle.textContent = `${semesterInfo.season} ${String(semesterInfo.year)}`;
-    elements.status.textContent = 'טוען נתונים...';
 
     void hydratePage(elements, semesterNumber);
 
@@ -79,16 +74,11 @@ export function SemesterPage(): HTMLElement {
 }
 
 function queryElements(root: HTMLElement): SemesterPageElements {
-    const title = root.querySelector<HTMLElement>('[data-role="title"]');
-    const subtitle = root.querySelector<HTMLElement>(
-        '[data-role="semester-subtitle"]'
-    );
-    const status = root.querySelector<HTMLElement>('[data-role="status"]');
     const groupsRoot = root.querySelector<HTMLElement>(
         '[data-role="groups-root"]'
     );
-    const currentMeta = root.querySelector<HTMLElement>(
-        '[data-role="current-semester-meta"]'
+    const currentTitle = root.querySelector<HTMLElement>(
+        '[data-role="current-semester-title"]'
     );
     const currentCount = root.querySelector<HTMLElement>(
         '[data-role="current-semester-count"]'
@@ -101,11 +91,8 @@ function queryElements(root: HTMLElement): SemesterPageElements {
     );
 
     if (
-        title === null ||
-        subtitle === null ||
-        status === null ||
         groupsRoot === null ||
-        currentMeta === null ||
+        currentTitle === null ||
         currentCount === null ||
         currentCourses === null ||
         currentEmpty === null
@@ -114,11 +101,8 @@ function queryElements(root: HTMLElement): SemesterPageElements {
     }
 
     return {
-        title,
-        subtitle,
-        status,
         groupsRoot,
-        currentMeta,
+        currentTitle,
         currentCount,
         currentCourses,
         currentEmpty,
@@ -180,8 +164,7 @@ async function hydratePage(
         );
 
         const semesterInfo = getSemesterInfo(semesterNumber, semesterEntry?.id);
-        elements.subtitle.textContent = `${semesterInfo.season} ${String(semesterInfo.year)}`;
-        elements.currentMeta.textContent = `סמסטר ${String(semesterInfo.number)} • ${semesterInfo.season} ${String(semesterInfo.year)}`;
+        elements.currentTitle.textContent = `סמסטר ${String(semesterInfo.number)} • ${semesterInfo.season} ${String(semesterInfo.year)}`;
         elements.currentCount.textContent = `${String(semesterCourses.length)} קורסים`;
 
         renderCurrentSemesterCourses(
@@ -190,14 +173,18 @@ async function hydratePage(
             semesterCourses
         );
 
-        const catalogCodes =
+        const semesterCourseCodeSet = new Set(semesterCourseCodes);
+
+        const catalogGroups =
             selection === undefined
                 ? []
-                : await loadCatalogCourseCodes(
+                : await loadRequirementCourseGroups(
                       selection.programId,
-                      selection.path
+                      selection.path,
+                      courseMap,
+                      semesterCourseCodeSet
                   );
-        const semesterCourseCodeSet = new Set(semesterCourseCodes);
+        const catalogCodes = collectUniqueCodesFromGroups(catalogGroups);
 
         const catalogCodeSet = new Set(catalogCodes);
         const freeElectiveGroups = groupFreeElectiveCourses(
@@ -206,11 +193,11 @@ async function hydratePage(
             semesterCourseCodeSet
         );
 
-        renderGroups(elements.groupsRoot, freeElectiveGroups);
-
-        elements.status.textContent = `הוצגו ${String(semesterCourses.length)} קורסים בסמסטר ו-${String(freeElectiveGroups.length)} קבוצות בחירה חופשית.`;
+        renderGroups(elements.groupsRoot, [
+            ...catalogGroups,
+            ...freeElectiveGroups,
+        ]);
     } catch {
-        elements.status.textContent = 'טעינת נתוני הסמסטר נכשלה.';
         elements.groupsRoot.replaceChildren();
         const error = document.createElement('p');
         error.className = 'text-danger text-xs';
@@ -299,10 +286,12 @@ function toRequirementNode(value: unknown): RequirementNode | undefined {
     return value as RequirementNode;
 }
 
-async function loadCatalogCourseCodes(
+async function loadRequirementCourseGroups(
     programId: string,
-    path: string | undefined
-): Promise<string[]> {
+    path: string | undefined,
+    courseMap: Map<string, CourseRecord>,
+    semesterCodeSet: Set<string>
+): Promise<CourseGroup[]> {
     const requirementRecord = await getRequirement(programId);
     const requirementRoot = toRequirementNode(requirementRecord?.data);
     if (requirementRoot === undefined) {
@@ -310,29 +299,52 @@ async function loadCatalogCourseCodes(
     }
 
     const filteredRequirement = filterRequirementsByPath(requirementRoot, path);
-    return collectRequirementCourseCodes(filteredRequirement);
-}
+    const rawGroups = collectRequirementGroups(filteredRequirement);
+    const result: CourseGroup[] = [];
 
-function collectRequirementCourseCodes(root: RequirementNode): string[] {
-    const codes = new Set<string>();
-    collectRequirementCourseCodesRecursive(root, codes);
-    return [...codes];
-}
-
-function collectRequirementCourseCodesRecursive(
-    node: RequirementNode,
-    target: Set<string>
-): void {
-    if (Array.isArray(node.courses)) {
-        for (const code of node.courses) {
-            if (typeof code !== 'string') {
-                continue;
-            }
-            const normalized = code.trim();
-            if (normalized.length > 0) {
-                target.add(normalized);
-            }
+    for (const rawGroup of rawGroups) {
+        const groupCodes = rawGroup.courseCodes.filter(
+            (code) => !semesterCodeSet.has(code)
+        );
+        if (groupCodes.length === 0) {
+            continue;
         }
+
+        const courses = sortCoursesByMedianAndCode(
+            await loadCoursesForCodes(groupCodes, courseMap)
+        );
+        result.push({
+            title: rawGroup.label,
+            courses,
+            kind: 'requirement',
+        });
+    }
+
+    return result;
+}
+
+type RequirementCourseGroup = {
+    label: string;
+    courseCodes: string[];
+};
+
+function collectRequirementGroups(
+    root: RequirementNode
+): RequirementCourseGroup[] {
+    const groups: RequirementCourseGroup[] = [];
+    collectRequirementGroupsRecursive(root, groups);
+    return groups;
+}
+
+function collectRequirementGroupsRecursive(
+    node: RequirementNode,
+    groups: RequirementCourseGroup[]
+): void {
+    const id = getRequirementId(node) ?? '—';
+    const label = getRequirementLabel(node, id);
+    const courseCodes = collectDirectCourses(node);
+    if (courseCodes.length > 0) {
+        groups.push({ label, courseCodes });
     }
 
     if (!Array.isArray(node.nested)) {
@@ -340,8 +352,36 @@ function collectRequirementCourseCodesRecursive(
     }
 
     for (const child of node.nested) {
-        collectRequirementCourseCodesRecursive(child, target);
+        collectRequirementGroupsRecursive(child, groups);
     }
+}
+
+function collectDirectCourses(node: RequirementNode): string[] {
+    if (!Array.isArray(node.courses)) {
+        return [];
+    }
+
+    const uniqueCodes = new Set<string>();
+    for (const course of node.courses) {
+        if (typeof course !== 'string') {
+            continue;
+        }
+        const normalized = course.trim();
+        if (normalized.length > 0) {
+            uniqueCodes.add(normalized);
+        }
+    }
+    return [...uniqueCodes];
+}
+
+function collectUniqueCodesFromGroups(groups: CourseGroup[]): string[] {
+    const codes = new Set<string>();
+    for (const group of groups) {
+        for (const course of group.courses) {
+            codes.add(course.code);
+        }
+    }
+    return [...codes];
 }
 
 function sortCoursesByMedianAndCode(courses: CourseRecord[]): CourseRecord[] {
@@ -395,6 +435,7 @@ function groupFreeElectiveCourses(
         .map(([faculty, courses]) => ({
             title: `בחירה חופשית: ${faculty}`,
             courses: sortCoursesByMedianAndCode(courses),
+            kind: 'free' as const,
         }));
 }
 
@@ -420,7 +461,7 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
     for (const group of groups) {
         const section = document.createElement('section');
         section.className = 'flex min-w-0 flex-col gap-3';
-        section.dataset.groupKind = 'free';
+        section.dataset.groupKind = group.kind;
         section.dataset.groupTitle = group.title;
 
         const title = document.createElement('h2');
@@ -430,7 +471,7 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
 
         const row = document.createElement('div');
         row.className =
-            'grid min-w-0 grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3';
+            'flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:thin] md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-3';
 
         if (group.courses.length === 0) {
             const empty = document.createElement('p');
@@ -452,7 +493,7 @@ function createCourseLink(course: CourseRecord): HTMLAnchorElement {
     const link = document.createElement('a');
     link.href = `/course?code=${encodeURIComponent(course.code)}`;
     link.className =
-        'touch-manipulation focus-visible:ring-accent/60 block min-w-0 rounded-2xl focus-visible:ring-2';
+        'touch-manipulation focus-visible:ring-accent/60 block w-[15.5rem] shrink-0 snap-start rounded-2xl focus-visible:ring-2 md:w-auto md:shrink';
     link.dataset.courseCode = course.code;
     if (course.current !== true) {
         link.classList.add('opacity-70');
