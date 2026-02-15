@@ -1,7 +1,6 @@
+import { type CourseRecord, getCourse } from '$lib/indexeddb';
 import { CourseCard } from '$components/CourseCard';
 import { initCourseSync } from '$lib/courseSync';
-import { getCourse } from '$lib/indexeddb';
-import type { CourseRecord } from '$lib/indexeddb';
 
 import templateHtml from './course_page.html?raw';
 
@@ -476,12 +475,7 @@ function renderDependencyGroups(
         groupGrid.className =
             'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3';
 
-        for (
-            let courseIndex = 0;
-            courseIndex < groupCourses.length;
-            courseIndex += 1
-        ) {
-            const course = groupCourses[courseIndex];
+        for (const course of groupCourses) {
             const link = createCourseCardLink(course);
             groupGrid.append(link);
         }

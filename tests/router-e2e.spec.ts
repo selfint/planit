@@ -42,7 +42,7 @@ test.describe('SPA router behavior', () => {
 
         await expect(page).toHaveURL(/\/course\?code=236501#details$/);
         await expect(
-            page.getByRole('heading', { name: 'עמוד פרטי קורס' })
+            page.getByRole('heading', { name: 'פרטי קורס' })
         ).toBeVisible();
 
         const redirectValue = await page.evaluate(() =>

@@ -55,7 +55,7 @@ describe('course page', () => {
 
     it('renders fetched course and related course cards', async () => {
         window.history.replaceState(null, '', '/course?code=CS101');
-        mocks.getCourseMock.mockImplementation(async (code: string) => {
+        mocks.getCourseMock.mockImplementation((code: string) => {
             if (code === 'CS101') {
                 return {
                     code: 'CS101',
@@ -115,7 +115,7 @@ describe('course page', () => {
         expect(dependencyCards).toHaveLength(3);
         expect(
             Array.from(orLabels).some((label) =>
-                label.textContent?.includes('או')
+                label.textContent.includes('או')
             )
         ).toBe(true);
         expect(adjacentCards).toHaveLength(1);
