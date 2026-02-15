@@ -409,19 +409,20 @@ function createSemesterColumn(
 ): HTMLElement {
     const column = document.createElement('section');
     column.className =
-        'flex h-[100svh] w-[min(90vw,28rem)] shrink-0 snap-start flex-col gap-3 px-1 md:w-[calc((100vw-6rem)/2)] lg:w-[calc((100vw-9rem)/3)]';
+        'flex h-[100svh] w-[min(92vw,28rem)] shrink-0 snap-start flex-col gap-3 px-1 md:w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-3rem)/3)]';
     column.dataset.semesterColumn = 'true';
     column.dataset.semesterId = semester.id;
 
     const header = document.createElement('header');
-    header.className = 'flex flex-col gap-2';
+    header.className = 'flex flex-wrap items-center gap-x-3 gap-y-2';
 
     const title = document.createElement('p');
-    title.className = 'text-sm font-medium';
+    title.className = 'text-sm font-medium whitespace-nowrap';
     title.textContent = semester.title;
 
     const metrics = document.createElement('div');
-    metrics.className = 'grid grid-cols-3 gap-2 text-xs';
+    metrics.className =
+        'text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 text-xs';
     const semesterMetrics = summarizeSemester(semester.courses);
     metrics.append(createMetricChip('נק״ז', semesterMetrics.totalPoints));
     metrics.append(createMetricChip('חציון', semesterMetrics.avgMedian));
