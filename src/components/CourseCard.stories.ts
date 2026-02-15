@@ -68,7 +68,7 @@ function createCardRow(course: CourseRecord): HTMLElement {
 
 function createRailItem(card: HTMLElement): HTMLDivElement {
     const item = document.createElement('div');
-    item.className = 'min-w-[6.5rem] shrink-0 basis-[calc((100%-1.5rem)/3)]';
+    item.className = 'min-w-[6.4rem] shrink-0 basis-[calc((100%-1.5rem)/3)]';
     item.append(card);
     return item;
 }
