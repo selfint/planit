@@ -1,4 +1,9 @@
-import { type CourseRecord, getCourse } from '$lib/indexeddb';
+import {
+    type CourseRecord,
+    getCourse,
+    getCoursesCount,
+    getCoursesPage,
+} from '$lib/indexeddb';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
 import { initCourseSync } from '$lib/courseSync';
@@ -10,6 +15,7 @@ const UNKNOWN_COURSE_LABEL = 'קורס לא זמין במאגר';
 const LOADING_LABEL = 'טוען פרטי קורס...';
 const READY_LABEL = 'עודכן מהמאגר המקומי';
 const NOT_FOUND_LABEL = 'קורס לא נמצא במאגר המקומי';
+const COURSES_BATCH_SIZE = 300;
 
 type CoursePageElements = {
     routeLabel: HTMLElement;
@@ -29,6 +35,9 @@ type CoursePageElements = {
     dependenciesGrid: HTMLElement;
     dependenciesCount: HTMLElement;
     dependenciesEmpty: HTMLElement;
+    dependantsGrid: HTMLElement;
+    dependantsCount: HTMLElement;
+    dependantsEmpty: HTMLElement;
     adjacentGrid: HTMLElement;
     adjacentCount: HTMLElement;
     adjacentEmpty: HTMLElement;
@@ -137,6 +146,15 @@ function queryElements(root: HTMLElement): CoursePageElements {
     const dependenciesEmpty = root.querySelector<HTMLElement>(
         "[data-role='dependencies-empty']"
     );
+    const dependantsGrid = root.querySelector<HTMLElement>(
+        "[data-role='dependants-grid']"
+    );
+    const dependantsCount = root.querySelector<HTMLElement>(
+        "[data-role='dependants-count']"
+    );
+    const dependantsEmpty = root.querySelector<HTMLElement>(
+        "[data-role='dependants-empty']"
+    );
     const adjacentGrid = root.querySelector<HTMLElement>(
         "[data-role='adjacent-grid']"
     );
@@ -174,6 +192,9 @@ function queryElements(root: HTMLElement): CoursePageElements {
         dependenciesGrid === null ||
         dependenciesCount === null ||
         dependenciesEmpty === null ||
+        dependantsGrid === null ||
+        dependantsCount === null ||
+        dependantsEmpty === null ||
         adjacentGrid === null ||
         adjacentCount === null ||
         adjacentEmpty === null ||
@@ -202,6 +223,9 @@ function queryElements(root: HTMLElement): CoursePageElements {
         dependenciesGrid,
         dependenciesCount,
         dependenciesEmpty,
+        dependantsGrid,
+        dependantsCount,
+        dependantsEmpty,
         adjacentGrid,
         adjacentCount,
         adjacentEmpty,
@@ -287,17 +311,25 @@ async function loadAndRenderCourse(
     const adjacentCodes = getConnectionCodes(course.connections?.adjacent);
     const exclusiveCodes = getConnectionCodes(course.connections?.exclusive);
 
-    const [dependenciesByGroup, adjacent, exclusive] = await Promise.all([
-        loadRelatedCourseGroups(code, dependencyGroups),
-        loadRelatedCourses(code, adjacentCodes),
-        loadRelatedCourses(code, exclusiveCodes),
-    ]);
+    const [dependenciesByGroup, dependants, adjacent, exclusive] =
+        await Promise.all([
+            loadRelatedCourseGroups(code, dependencyGroups),
+            loadDependantCourses(code),
+            loadRelatedCourses(code, adjacentCodes),
+            loadRelatedCourses(code, exclusiveCodes),
+        ]);
 
     renderDependencyGroups(
         elements.dependenciesGrid,
         elements.dependenciesCount,
         elements.dependenciesEmpty,
         dependenciesByGroup
+    );
+    renderRelatedCourseCards(
+        elements.dependantsGrid,
+        elements.dependantsCount,
+        elements.dependantsEmpty,
+        dependants
     );
     renderRelatedCourseCards(
         elements.adjacentGrid,
@@ -446,6 +478,67 @@ async function loadRelatedCourseGroups(
             return loadRelatedCourses(currentCourseCode, groupCodes);
         })
     );
+}
+
+async function loadDependantCourses(
+    currentCourseCode: string
+): Promise<CourseRecord[]> {
+    const normalizedCode = currentCourseCode.trim().toUpperCase();
+    if (normalizedCode.length === 0) {
+        return [];
+    }
+
+    const totalCourses = await getCoursesCount();
+    if (totalCourses === 0) {
+        return [];
+    }
+
+    const dependants: CourseRecord[] = [];
+    for (let offset = 0; offset < totalCourses; offset += COURSES_BATCH_SIZE) {
+        const coursesBatch = await getCoursesPage(COURSES_BATCH_SIZE, offset);
+        if (coursesBatch.length === 0) {
+            break;
+        }
+
+        for (const course of coursesBatch) {
+            if (course.code === normalizedCode) {
+                continue;
+            }
+            if (courseHasDependency(course, normalizedCode)) {
+                dependants.push(course);
+            }
+        }
+    }
+
+    return dependants;
+}
+
+function courseHasDependency(
+    course: CourseRecord,
+    dependencyCode: string
+): boolean {
+    const dependencies = course.connections?.dependencies;
+    if (!Array.isArray(dependencies)) {
+        return false;
+    }
+
+    for (const group of dependencies) {
+        if (!Array.isArray(group)) {
+            continue;
+        }
+
+        for (const code of group) {
+            if (typeof code !== 'string') {
+                continue;
+            }
+
+            if (code.trim().toUpperCase() === dependencyCode) {
+                return true;
+            }
+        }
+    }
+
+    return false;
 }
 
 function renderDependencyGroups(

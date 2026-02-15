@@ -11,8 +11,8 @@ navigation and is rendered by the client-side router.
 - Header card with route label, course code, course name, and description.
 - Key stats tiles for points, median, faculty, and seasons.
 - Loading state, query validation state, and course-not-found state.
-- Related course sections for dependencies, adjacent courses, and exclusive
-  courses.
+- Related course sections for dependencies, dependants (inverse dependency
+  lookup), adjacent courses, and exclusive courses.
 - Related courses rendered as `CourseCard` components linked to
   `/course?code=...`.
 
@@ -24,7 +24,9 @@ navigation and is rendered by the client-side router.
    on sync callbacks.
 4. It resolves connection codes (dependencies/adjacent/exclusive) and fetches
    each related course from IndexedDB.
-5. The UI updates between loading, found, and not-found states, and related
+5. It scans the courses store in batches to find dependants (courses whose
+   dependency groups include the current course code).
+6. The UI updates between loading, found, and not-found states, and related
    course cards are rendered in dedicated grids.
 
 ## Unit Tests
