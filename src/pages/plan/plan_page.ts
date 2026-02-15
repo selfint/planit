@@ -445,10 +445,6 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
     list.className = 'flex flex-wrap gap-2';
     list.dataset.rowCourseList = 'true';
 
-    if (row.courses.length === 0) {
-        list.append(createSemesterEmptyStateElement());
-    }
-
     for (const course of row.courses) {
         list.append(createSemesterCourse(state, row, course));
     }
@@ -843,15 +839,6 @@ function clearSelection(state: PlanState, rail: HTMLElement): void {
     toggleMoveTargets(rail, undefined);
 }
 
-function createSemesterEmptyStateElement(): HTMLElement {
-    const empty = document.createElement('p');
-    empty.className =
-        'border-border/50 bg-surface-1/60 text-text-muted rounded-xl border border-dashed px-3 py-4 text-xs';
-    empty.textContent = 'אין קורסים בסמסטר זה. אפשר ללחוץ כדי להעביר לכאן.';
-    empty.dataset.semesterEmpty = 'true';
-    return empty;
-}
-
 function getSemesterCourseListElement(
     rail: HTMLElement,
     rowId: string
@@ -861,26 +848,6 @@ function getSemesterCourseListElement(
     );
     const list = row?.querySelector<HTMLElement>('[data-row-course-list]');
     return list ?? undefined;
-}
-
-function removeSemesterEmptyStateElement(list: HTMLElement): void {
-    const emptyState = list.querySelector('[data-semester-empty]');
-    if (emptyState !== null) {
-        emptyState.remove();
-    }
-}
-
-function ensureSemesterEmptyStateElement(list: HTMLElement): void {
-    const hasCourses = list.querySelector('[data-course-action]') !== null;
-    if (hasCourses) {
-        removeSemesterEmptyStateElement(list);
-        return;
-    }
-
-    const hasEmptyState = list.querySelector('[data-semester-empty]') !== null;
-    if (!hasEmptyState) {
-        list.append(createSemesterEmptyStateElement());
-    }
 }
 
 function handleCourseClick(
@@ -959,21 +926,12 @@ async function handleRowClick(
         sourceRowId,
         selectedCourseCode
     );
-    const sourceList = getSemesterCourseListElement(rail, sourceRowId);
     const targetList = getSemesterCourseListElement(rail, targetRowId);
 
     if (movedButton !== undefined && targetList !== undefined) {
-        removeSemesterEmptyStateElement(targetList);
         movedButton.dataset.rowId = targetRowId;
         setCourseSelectionState(movedButton, false);
         targetList.append(movedButton);
-    }
-
-    if (sourceList !== undefined) {
-        ensureSemesterEmptyStateElement(sourceList);
-    }
-    if (targetList !== undefined) {
-        ensureSemesterEmptyStateElement(targetList);
     }
 
     refreshRowMetrics(state, rail, sourceRowId);
