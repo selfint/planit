@@ -9,6 +9,7 @@ import {
     putCatalogs,
     putCourses,
     replaceRequirementsWithCow,
+    searchCourses,
     setMeta,
 } from '$lib/indexeddb';
 
@@ -328,6 +329,39 @@ describe('indexeddb lib', () => {
         expect(page).toHaveLength(2);
         expect(page[0]?.code).toBe('CS102');
         expect(page[1]?.code).toBe('CS103');
+    });
+
+    it('searches courses by code and name in ranked order', async () => {
+        await putCourses([
+            { code: '234114', name: 'מבוא למדעי המחשב' },
+            { code: '234124', name: 'מבני נתונים' },
+            { code: '104031', name: 'אלגוריתמים 1' },
+            { code: '104166', name: 'מבוא לאלגוריתמים' },
+        ]);
+
+        const byCode = await searchCourses('2341', 10);
+        const byName = await searchCourses('אלגוריתמים', 10);
+
+        expect(byCode.map((course) => course.code)).toEqual([
+            '234114',
+            '234124',
+        ]);
+        expect(byName.map((course) => course.code)).toEqual([
+            '104031',
+            '104166',
+        ]);
+    });
+
+    it('limits course search results', async () => {
+        await putCourses([
+            { code: '1', name: 'א' },
+            { code: '2', name: 'אב' },
+            { code: '3', name: 'אבג' },
+        ]);
+
+        const results = await searchCourses('א', 2);
+
+        expect(results).toHaveLength(2);
     });
 
     it('writes catalogs and reads back data', async () => {

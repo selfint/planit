@@ -483,6 +483,83 @@ export async function getCoursesPage(
     });
 }
 
+export async function searchCourses(
+    query: string,
+    limit: number
+): Promise<CourseRecord[]> {
+    const normalizedQuery = normalizeSearchQuery(query);
+    if (normalizedQuery.length === 0 || limit <= 0) {
+        return [];
+    }
+
+    const queryTokens = normalizedQuery.split(' ');
+    const db = await openDb();
+
+    return new Promise((resolve, reject) => {
+        const prefixMatches: CourseRecord[] = [];
+        const codeMatches: CourseRecord[] = [];
+        const textMatches: CourseRecord[] = [];
+
+        const tx = db.transaction(STORE_COURSES, 'readonly');
+        const store = tx.objectStore(STORE_COURSES);
+        const request = store.openCursor();
+
+        request.onsuccess = (): void => {
+            const cursor = request.result;
+            if (cursor === null) {
+                return;
+            }
+
+            const course = cursor.value as CourseRecord;
+            const searchText = normalizeSearchQuery(
+                `${course.code} ${course.name ?? ''}`
+            );
+            const hasAllTokens = queryTokens.every((token) =>
+                searchText.includes(token)
+            );
+
+            if (hasAllTokens) {
+                const normalizedCode = normalizeSearchQuery(course.code);
+                const normalizedName = normalizeSearchQuery(course.name ?? '');
+
+                if (normalizedCode.startsWith(normalizedQuery)) {
+                    codeMatches.push(course);
+                } else if (normalizedName.startsWith(normalizedQuery)) {
+                    prefixMatches.push(course);
+                } else {
+                    textMatches.push(course);
+                }
+            }
+
+            cursor.continue();
+        };
+
+        request.onerror = (): void => {
+            reject(request.error ?? new Error('Failed to search courses'));
+        };
+
+        tx.oncomplete = (): void => {
+            db.close();
+            const mergedResults = [
+                ...codeMatches,
+                ...prefixMatches,
+                ...textMatches,
+            ];
+            resolve(mergedResults.slice(0, limit));
+        };
+        tx.onerror = (): void => {
+            reject(tx.error ?? new Error('Course search transaction failed'));
+        };
+        tx.onabort = (): void => {
+            reject(tx.error ?? new Error('Course search transaction aborted'));
+        };
+    });
+}
+
+function normalizeSearchQuery(value: string): string {
+    return value.trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+}
+
 function getCourseSortSource(
     store: IDBObjectStore,
     sortKey: 'code' | 'name' | 'points' | 'median'
