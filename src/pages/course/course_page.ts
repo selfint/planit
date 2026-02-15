@@ -13,13 +13,11 @@ import templateHtml from './course_page.html?raw';
 const EMPTY_VALUE = '—';
 const UNKNOWN_COURSE_LABEL = 'קורס לא זמין במאגר';
 const LOADING_LABEL = 'טוען פרטי קורס...';
-const READY_LABEL = 'עודכן מהמאגר המקומי';
+const READY_LABEL = '';
 const NOT_FOUND_LABEL = 'קורס לא נמצא במאגר המקומי';
 const COURSES_BATCH_SIZE = 300;
 
 type CoursePageElements = {
-    routeLabel: HTMLElement;
-    courseCode: HTMLElement;
     courseName: HTMLElement;
     courseAbout: HTMLElement;
     coursePoints: HTMLElement;
@@ -70,7 +68,6 @@ export function CoursePage(): HTMLElement {
 
     const elements = queryElements(root);
     const requestedCode = getRequestedCourseCode(window.location.search);
-    updateRouteLabel(elements.routeLabel, requestedCode);
     updateSearchLink(elements.searchLink, requestedCode);
 
     if (requestedCode === undefined) {
@@ -97,12 +94,6 @@ export function CoursePage(): HTMLElement {
 }
 
 function queryElements(root: HTMLElement): CoursePageElements {
-    const routeLabel = root.querySelector<HTMLElement>(
-        "[data-role='route-label']"
-    );
-    const courseCode = root.querySelector<HTMLElement>(
-        "[data-role='course-code']"
-    );
     const courseName = root.querySelector<HTMLElement>(
         "[data-role='course-name']"
     );
@@ -175,8 +166,6 @@ function queryElements(root: HTMLElement): CoursePageElements {
     );
 
     if (
-        routeLabel === null ||
-        courseCode === null ||
         courseName === null ||
         courseAbout === null ||
         coursePoints === null ||
@@ -206,8 +195,6 @@ function queryElements(root: HTMLElement): CoursePageElements {
     }
 
     return {
-        routeLabel,
-        courseCode,
         courseName,
         courseAbout,
         coursePoints,
@@ -248,18 +235,6 @@ function getRequestedCourseCode(search: string): string | undefined {
     }
 
     return normalized;
-}
-
-function updateRouteLabel(
-    element: HTMLElement,
-    code: string | undefined
-): void {
-    if (code === undefined) {
-        element.textContent = '/course';
-        return;
-    }
-
-    element.textContent = `/course?code=${code}`;
 }
 
 function updateSearchLink(
@@ -351,7 +326,6 @@ function fillPrimaryCourseData(
     elements: CoursePageElements,
     course: CourseRecord
 ): void {
-    elements.courseCode.textContent = course.code;
     elements.courseName.textContent =
         getNonEmptyString(course.name) ?? UNKNOWN_COURSE_LABEL;
     elements.courseAbout.textContent =
@@ -377,12 +351,51 @@ function formatSeasons(seasons: string[] | undefined): string {
     }
 
     const formatted = seasons
-        .map((season) => season.trim())
+        .map((season) => toHebrewSeasonLabel(season))
         .filter((season) => season.length > 0);
     if (formatted.length === 0) {
         return EMPTY_VALUE;
     }
     return formatted.join(' · ');
+}
+
+function toHebrewSeasonLabel(value: string): string {
+    const normalized = value.trim().toLowerCase();
+    if (normalized.length === 0) {
+        return '';
+    }
+
+    if (
+        normalized === 'חורף' ||
+        normalized === 'winter' ||
+        normalized === 'a' ||
+        normalized === 'א' ||
+        normalized === 'semester a'
+    ) {
+        return 'חורף';
+    }
+
+    if (
+        normalized === 'אביב' ||
+        normalized === 'spring' ||
+        normalized === 'b' ||
+        normalized === 'ב' ||
+        normalized === 'semester b'
+    ) {
+        return 'אביב';
+    }
+
+    if (
+        normalized === 'קיץ' ||
+        normalized === 'summer' ||
+        normalized === 'c' ||
+        normalized === 'ג' ||
+        normalized === 'semester c'
+    ) {
+        return 'קיץ';
+    }
+
+    return value.trim();
 }
 
 function getNonEmptyString(value: string | undefined): string | undefined {
