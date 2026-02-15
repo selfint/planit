@@ -418,14 +418,9 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
     const metrics = document.createElement('div');
     metrics.className =
         'text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 text-xs';
-    if (row.kind === 'semester') {
-        const semesterMetrics = summarizeSemester(row.courses);
-        metrics.append(createMetricChip('נק״ז', semesterMetrics.totalPoints));
-        metrics.append(createMetricChip('חציון', semesterMetrics.avgMedian));
-        metrics.append(createMetricChip('מבחנים', semesterMetrics.testsCount));
-    } else {
-        metrics.append(createMetricChip('קורסים', String(row.courses.length)));
-    }
+    metrics.dataset.rowMetrics = 'true';
+    metrics.dataset.rowId = row.id;
+    renderRowMetrics(metrics, row);
 
     const moveTarget = document.createElement('p');
     moveTarget.className =
@@ -501,6 +496,38 @@ function createMetricChip(label: string, value: string): HTMLElement {
     chip.className = 'text-text-muted rounded-xl px-1 py-1';
     chip.textContent = `${label}: ${value}`;
     return chip;
+}
+
+function renderRowMetrics(container: HTMLElement, row: PlanRow): void {
+    container.replaceChildren();
+
+    if (row.kind === 'semester') {
+        const semesterMetrics = summarizeSemester(row.courses);
+        container.append(createMetricChip('נק״ז', semesterMetrics.totalPoints));
+        container.append(createMetricChip('חציון', semesterMetrics.avgMedian));
+        container.append(
+            createMetricChip('מבחנים', semesterMetrics.testsCount)
+        );
+        return;
+    }
+
+    container.append(createMetricChip('קורסים', String(row.courses.length)));
+}
+
+function refreshRowMetrics(
+    state: PlanState,
+    rail: HTMLElement,
+    rowId: string
+): void {
+    const rowMetrics = rail.querySelector<HTMLElement>(
+        `[data-row-metrics][data-row-id="${CSS.escape(rowId)}"]`
+    );
+    const row = getRowById(state, rowId);
+    if (rowMetrics === null || row === undefined) {
+        return;
+    }
+
+    renderRowMetrics(rowMetrics, row);
 }
 
 function summarizeSemester(courses: CourseRecord[]): {
@@ -937,6 +964,9 @@ async function handleRowClick(
     if (targetList !== undefined) {
         ensureSemesterEmptyStateElement(targetList);
     }
+
+    refreshRowMetrics(state, rail, sourceRowId);
+    refreshRowMetrics(state, rail, targetRowId);
 
     state.selected = undefined;
     toggleMoveTargets(rail, undefined);
