@@ -3,97 +3,208 @@
         class="from-bg via-surface-2/40 to-bg text-text min-h-screen w-full bg-gradient-to-b"
     >
         <main
-            class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-6 px-4 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:px-8"
+            class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-4 px-3 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:gap-5 sm:px-5 lg:px-8"
             data-page="search"
         >
-            <header class="flex flex-col gap-3">
-                <p class="text-text-muted text-xs">/search</p>
+            <header class="flex flex-col gap-2">
+                <p class="text-text-muted text-[11px]">/search</p>
                 <div class="flex flex-col gap-1">
-                    <h1 class="text-2xl font-medium sm:text-3xl">
-                        חיפוש קורסים מהיר
+                    <h1 class="text-xl font-medium sm:text-2xl">
+                        חיפוש קורסים
                     </h1>
-                    <p class="text-text-muted max-w-3xl text-xs sm:text-sm">
-                        הקלידו קוד או שם קורס כדי למצוא התאמות ישירות מתוך
-                        הנתונים המקומיים ב-IndexedDB.
+                    <p class="text-text-muted max-w-3xl text-[11px] sm:text-xs">
+                        חיפוש מהיר מתוך IndexedDB עם סינון לפי זמינות, פקולטה,
+                        נק״ז, חציון ודרישה.
                     </p>
                 </div>
             </header>
 
             <section
-                class="border-border/60 bg-surface-1/85 flex flex-col gap-3 rounded-3xl border p-4 shadow-sm"
+                class="border-border/60 bg-surface-1/85 flex flex-col gap-3 rounded-3xl border p-3 shadow-sm sm:p-4"
             >
                 <form class="flex flex-col gap-3" data-search-form>
-                    <div class="flex flex-wrap items-center gap-2">
+                    <div
+                        class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]"
+                    >
                         <input
                             type="search"
                             name="q"
                             inputmode="search"
                             autocomplete="off"
                             placeholder="לדוגמה: 234114 או מבוא למדעי המחשב"
-                            class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-11 min-w-0 flex-1 rounded-2xl border px-4 text-xs transition duration-200 ease-out focus-visible:ring-2"
+                            class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 min-w-0 rounded-2xl border px-3 text-[11px] transition duration-200 ease-out focus-visible:ring-2 sm:text-xs"
                             data-search-input
                         />
                         <button
                             type="submit"
-                            class="bg-accent text-accent-contrast min-h-11 rounded-2xl px-4 text-xs font-medium shadow-sm"
+                            class="bg-accent text-accent-contrast min-h-10 rounded-2xl px-3 text-[11px] font-medium shadow-sm sm:text-xs"
                             data-search-submit
                         >
                             חיפוש
                         </button>
                         <button
                             type="button"
-                            class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text min-h-11 rounded-2xl border px-4 text-xs font-medium transition duration-200 ease-out"
+                            class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text min-h-10 rounded-2xl border px-3 text-[11px] font-medium transition duration-200 ease-out sm:text-xs"
                             data-search-clear
                         >
                             ניקוי
                         </button>
                     </div>
-                    <div class="flex flex-wrap gap-2">
-                        <button
-                            type="button"
-                            class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text min-h-11 rounded-full border px-3 text-xs transition duration-200 ease-out"
-                            data-search-suggestion="234114"
+
+                    <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                        <label
+                            class="border-border/60 bg-surface-2/50 flex min-h-10 items-center gap-2 rounded-xl border px-3"
                         >
-                            234114
-                        </button>
-                        <button
-                            type="button"
-                            class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text min-h-11 rounded-full border px-3 text-xs transition duration-200 ease-out"
-                            data-search-suggestion="מבוא"
-                        >
-                            מבוא
-                        </button>
-                        <button
-                            type="button"
-                            class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text min-h-11 rounded-full border px-3 text-xs transition duration-200 ease-out"
-                            data-search-suggestion="אלגוריתמים"
-                        >
-                            אלגוריתמים
-                        </button>
+                            <input
+                                type="checkbox"
+                                class="accent-accent h-4 w-4"
+                                data-filter-available
+                            />
+                            <span class="text-text text-[11px] sm:text-xs"
+                                >זמין עכשיו בלבד</span
+                            >
+                        </label>
+
+                        <label class="flex flex-col gap-1">
+                            <span class="text-text-muted text-[11px] sm:text-xs"
+                                >פקולטה</span
+                            >
+                            <select
+                                class="border-border/70 bg-surface-2/80 text-text focus-visible:ring-accent/60 min-h-10 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
+                                data-filter-faculty
+                            >
+                                <option value="">כל הפקולטות</option>
+                            </select>
+                        </label>
+
+                        <label class="flex flex-col gap-1">
+                            <span class="text-text-muted text-[11px] sm:text-xs"
+                                >דרישה</span
+                            >
+                            <select
+                                class="border-border/70 bg-surface-2/80 text-text focus-visible:ring-accent/60 min-h-10 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
+                                data-filter-requirement
+                            >
+                                <option value="">כל הדרישות</option>
+                            </select>
+                        </label>
+
+                        <label class="flex flex-col gap-1">
+                            <span class="text-text-muted text-[11px] sm:text-xs"
+                                >נק״ז מינימום</span
+                            >
+                            <input
+                                type="number"
+                                inputmode="decimal"
+                                step="0.5"
+                                min="0"
+                                class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
+                                placeholder="ללא"
+                                data-filter-points-min
+                            />
+                        </label>
+
+                        <label class="flex flex-col gap-1">
+                            <span class="text-text-muted text-[11px] sm:text-xs"
+                                >נק״ז מקסימום</span
+                            >
+                            <input
+                                type="number"
+                                inputmode="decimal"
+                                step="0.5"
+                                min="0"
+                                class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
+                                placeholder="ללא"
+                                data-filter-points-max
+                            />
+                        </label>
+
+                        <label class="flex flex-col gap-1">
+                            <span class="text-text-muted text-[11px] sm:text-xs"
+                                >חציון מינימום</span
+                            >
+                            <input
+                                type="number"
+                                inputmode="decimal"
+                                min="0"
+                                max="100"
+                                class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
+                                placeholder="ללא"
+                                data-filter-median-min
+                            />
+                        </label>
                     </div>
                 </form>
             </section>
 
-            <section class="flex flex-col gap-3" aria-live="polite">
+            <section class="flex flex-col gap-2" aria-live="polite">
                 <div class="flex flex-wrap items-center justify-between gap-2">
-                    <p class="text-text-muted text-xs" data-search-status>
-                        התחילו להקליד כדי לראות תוצאות.
+                    <p
+                        class="text-text-muted text-[11px] sm:text-xs"
+                        data-search-status
+                    >
+                        טוען נתונים...
                     </p>
-                    <p class="text-text-muted text-xs" data-search-count>
+                    <p
+                        class="text-text-muted text-[11px] sm:text-xs"
+                        data-search-count
+                    >
                         0 תוצאות
                     </p>
                 </div>
-                <p class="text-text-muted text-xs" data-search-sync></p>
+                <p
+                    class="text-text-muted text-[11px] sm:text-xs"
+                    data-search-sync
+                ></p>
+
+                <div class="flex flex-wrap items-center justify-between gap-2">
+                    <label class="flex items-center gap-2">
+                        <span class="text-text-muted text-[11px] sm:text-xs"
+                            >גודל עמוד</span
+                        >
+                        <select
+                            class="border-border/70 bg-surface-2/80 text-text focus-visible:ring-accent/60 min-h-9 rounded-xl border px-2 text-[11px] focus-visible:ring-2 sm:text-xs"
+                            data-search-page-size
+                        >
+                            <option value="all">הכל</option>
+                            <option value="12">12</option>
+                            <option value="24">24</option>
+                            <option value="48">48</option>
+                        </select>
+                    </label>
+
+                    <div class="flex items-center gap-2" data-search-pagination>
+                        <button
+                            type="button"
+                            class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text min-h-9 rounded-xl border px-3 text-[11px] transition duration-200 ease-out sm:text-xs"
+                            data-search-prev
+                        >
+                            הקודם
+                        </button>
+                        <span
+                            class="text-text-muted min-w-20 text-center text-[11px] sm:text-xs"
+                            data-search-page-label
+                            >עמוד 1 מתוך 1</span
+                        >
+                        <button
+                            type="button"
+                            class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text min-h-9 rounded-xl border px-3 text-[11px] transition duration-200 ease-out sm:text-xs"
+                            data-search-next
+                        >
+                            הבא
+                        </button>
+                    </div>
+                </div>
 
                 <p
-                    class="border-border/60 bg-surface-1/70 text-text-muted rounded-2xl border p-4 text-xs"
+                    class="border-border/60 bg-surface-1/70 text-text-muted rounded-2xl border p-3 text-[11px] sm:text-xs"
                     data-search-empty
                 >
                     אין כרגע תוצאות להצגה.
                 </p>
 
                 <div
-                    class="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5"
+                    class="grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5"
                     data-search-results
                 ></div>
             </section>

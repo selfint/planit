@@ -1,16 +1,25 @@
 /* @vitest-environment jsdom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-const { searchCoursesMock, getMetaMock } = vi.hoisted(() => {
+const {
+    queryCoursesMock,
+    getMetaMock,
+    getCourseFacultiesMock,
+    getRequirementMock,
+} = vi.hoisted(() => {
     return {
-        searchCoursesMock: vi.fn(),
+        queryCoursesMock: vi.fn(),
         getMetaMock: vi.fn(),
+        getCourseFacultiesMock: vi.fn(),
+        getRequirementMock: vi.fn(),
     };
 });
 
 vi.mock('$lib/indexeddb', () => ({
-    searchCourses: searchCoursesMock,
+    queryCourses: queryCoursesMock,
     getMeta: getMetaMock,
+    getCourseFaculties: getCourseFacultiesMock,
+    getRequirement: getRequirementMock,
 }));
 
 vi.mock('$components/CourseCard', () => ({
@@ -28,10 +37,21 @@ import { SearchPage } from './search_page';
 
 describe('SearchPage', () => {
     beforeEach(() => {
-        searchCoursesMock.mockReset();
+        queryCoursesMock.mockReset();
         getMetaMock.mockReset();
-        searchCoursesMock.mockResolvedValue([]);
-        getMetaMock.mockResolvedValue({ key: 'courseDataLastSync', value: '' });
+        getCourseFacultiesMock.mockReset();
+        getRequirementMock.mockReset();
+
+        queryCoursesMock.mockResolvedValue({ courses: [], total: 0 });
+        getCourseFacultiesMock.mockResolvedValue(['CS', 'Math']);
+        getRequirementMock.mockResolvedValue(undefined);
+        getMetaMock.mockImplementation(async (key: string) => {
+            if (key === 'courseDataLastSync') {
+                return { key, value: '' };
+            }
+            return { key, value: '' };
+        });
+
         window.history.replaceState(null, '', '/search');
     });
 
@@ -39,22 +59,33 @@ describe('SearchPage', () => {
         document.body.innerHTML = '';
     });
 
-    it('renders search results grid with at least 3 columns classes', () => {
+    it('renders result grid and filter controls', () => {
         const page = SearchPage();
 
         const grid = page.querySelector<HTMLElement>('[data-search-results]');
+        const availableFilter = page.querySelector('[data-filter-available]');
+        const facultyFilter = page.querySelector('[data-filter-faculty]');
+        const requirementFilter = page.querySelector(
+            '[data-filter-requirement]'
+        );
 
         expect(grid).toBeInstanceOf(HTMLElement);
         expect(grid?.className).toContain('grid-cols-3');
         expect(grid?.className).toContain('sm:grid-cols-4');
+        expect(availableFilter).toBeInstanceOf(HTMLInputElement);
+        expect(facultyFilter).toBeInstanceOf(HTMLSelectElement);
+        expect(requirementFilter).toBeInstanceOf(HTMLSelectElement);
+        expect(page.querySelector('[data-search-suggestion]')).toBeNull();
     });
 
-    it('renders course cards from URL query search results', async () => {
-        searchCoursesMock.mockResolvedValue([
-            { code: '234114', name: 'מבוא למדעי המחשב' },
-            { code: '234124', name: 'מבני נתונים' },
-        ]);
-        window.history.replaceState(null, '', '/search?q=234');
+    it('defaults to page size all and renders cards from queried results', async () => {
+        queryCoursesMock.mockResolvedValue({
+            courses: [
+                { code: '234114', name: 'מבוא למדעי המחשב' },
+                { code: '234124', name: 'מבני נתונים' },
+            ],
+            total: 2,
+        });
 
         const page = SearchPage();
         await new Promise((resolve) => {
@@ -64,8 +95,14 @@ describe('SearchPage', () => {
         const links = page.querySelectorAll<HTMLAnchorElement>(
             '[data-search-results] > a'
         );
+        const pageSizeSelect = page.querySelector<HTMLSelectElement>(
+            '[data-search-page-size]'
+        );
 
-        expect(searchCoursesMock).toHaveBeenCalledWith('234', 25);
+        expect(queryCoursesMock).toHaveBeenCalledWith(
+            expect.objectContaining({ pageSize: 'all', page: 1 })
+        );
+        expect(pageSizeSelect?.value).toBe('all');
         expect(links).toHaveLength(2);
         expect(links[0]?.getAttribute('href')).toBe('/course?code=234114');
     });
