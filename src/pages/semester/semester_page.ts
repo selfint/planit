@@ -518,7 +518,7 @@ function createLeadingSeparator(
     hiddenClass: string,
     widthClass: string
 ): HTMLElement {
-    const separator = document.createElement('span');
+    const separator = document.createElement('div');
     separator.className = `${hiddenClass} ${widthClass} shrink-0`;
     separator.setAttribute('aria-hidden', 'true');
     return separator;
