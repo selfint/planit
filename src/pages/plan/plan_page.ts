@@ -471,7 +471,7 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
 
     const moveTarget = document.createElement('p');
     moveTarget.className =
-        'border-accent/40 bg-accent/10 text-accent hidden rounded-xl border px-2 py-1 text-xs';
+        'border-accent/40 bg-accent/10 text-accent min-h-7 rounded-xl border px-2 py-1 text-xs opacity-0 transition-opacity duration-200 ease-out invisible pointer-events-none';
     moveTarget.textContent = 'לחצו כאן להעברת הקורס הנבחר';
     moveTarget.dataset.moveTarget = 'true';
     moveTarget.dataset.rowId = row.id;
@@ -832,7 +832,9 @@ function toggleMoveTargets(
             sourceRowId !== undefined &&
             targetRowId !== undefined &&
             targetRowId !== sourceRowId;
-        moveTarget.classList.toggle('hidden', !shouldShow);
+        moveTarget.classList.toggle('invisible', !shouldShow);
+        moveTarget.classList.toggle('opacity-0', !shouldShow);
+        moveTarget.classList.toggle('pointer-events-none', !shouldShow);
     }
 }
 
