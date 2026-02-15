@@ -1,4 +1,4 @@
-const a=`<template>
+const a = `<template>
     <section class="grid place-items-center gap-8" data-component="LandingHero">
         <div class="flex flex-col items-center gap-6 text-center">
             <div class="flex flex-col gap-3">
@@ -43,4 +43,16 @@ const a=`<template>
         </div>
     </section>
 </template>
-`;function o(){const e=document.createElement("template");e.innerHTML=a;const t=e.content.firstElementChild;if(!(t instanceof HTMLTemplateElement))throw new Error("LandingHero template element not found");const n=t.content.firstElementChild?.cloneNode(!0);if(!(n instanceof HTMLElement))throw new Error("LandingHero template root not found");return n}export{o as L};
+`;
+function o() {
+    const e = document.createElement('template');
+    e.innerHTML = a;
+    const t = e.content.firstElementChild;
+    if (!(t instanceof HTMLTemplateElement))
+        throw new Error('LandingHero template element not found');
+    const n = t.content.firstElementChild?.cloneNode(!0);
+    if (!(n instanceof HTMLElement))
+        throw new Error('LandingHero template root not found');
+    return n;
+}
+export { o as L };

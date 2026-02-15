@@ -1,4 +1,7 @@
-import{C as d}from"./CourseTable-TMkINQyF.js";import{D as c}from"./DegreePicker-BI0M4dZA.js";import"./indexeddb-Ba_KKj-k.js";const m=`<template>
+import { C as d } from './CourseTable-TMkINQyF.js';
+import { D as c } from './DegreePicker-BI0M4dZA.js';
+import './indexeddb-Ba_KKj-k.js';
+const m = `<template>
     <section
         class="border-border/60 bg-surface-1/80 flex flex-col gap-5 rounded-3xl border p-6 shadow-sm"
         data-component="PlannerOverview"
@@ -52,12 +55,49 @@ import{C as d}from"./CourseTable-TMkINQyF.js";import{D as c}from"./DegreePicker-
         <div data-course-table></div>
     </section>
 </template>
-`;function l(){const r=document.createElement("template");r.innerHTML=m;const a=r.content.firstElementChild;if(!(a instanceof HTMLTemplateElement))throw new Error("PlannerOverview template element not found");const e=a.content.firstElementChild?.cloneNode(!0);if(!(e instanceof HTMLElement))throw new Error("PlannerOverview template root not found");const s=e.querySelector("[data-course-table]");s!==null&&s.replaceWith(d());const o=e.querySelector("[data-degree-picker]");return o!==null&&o.replaceWith(c()),e}const x={title:"Components/PlannerOverview"},t={render:()=>l(),globals:{theme:"light"}},n={render:()=>l(),globals:{theme:"dark"},parameters:{backgrounds:{default:"dark"}}};t.parameters={...t.parameters,docs:{...t.parameters?.docs,source:{originalSource:`{
+`;
+function l() {
+    const r = document.createElement('template');
+    r.innerHTML = m;
+    const a = r.content.firstElementChild;
+    if (!(a instanceof HTMLTemplateElement))
+        throw new Error('PlannerOverview template element not found');
+    const e = a.content.firstElementChild?.cloneNode(!0);
+    if (!(e instanceof HTMLElement))
+        throw new Error('PlannerOverview template root not found');
+    const s = e.querySelector('[data-course-table]');
+    s !== null && s.replaceWith(d());
+    const o = e.querySelector('[data-degree-picker]');
+    return (o !== null && o.replaceWith(c()), e);
+}
+const x = { title: 'Components/PlannerOverview' },
+    t = { render: () => l(), globals: { theme: 'light' } },
+    n = {
+        render: () => l(),
+        globals: { theme: 'dark' },
+        parameters: { backgrounds: { default: 'dark' } },
+    };
+t.parameters = {
+    ...t.parameters,
+    docs: {
+        ...t.parameters?.docs,
+        source: {
+            originalSource: `{
   render: () => PlannerOverview(),
   globals: {
     theme: 'light'
   }
-}`,...t.parameters?.docs?.source}}};n.parameters={...n.parameters,docs:{...n.parameters?.docs,source:{originalSource:`{
+}`,
+            ...t.parameters?.docs?.source,
+        },
+    },
+};
+n.parameters = {
+    ...n.parameters,
+    docs: {
+        ...n.parameters?.docs,
+        source: {
+            originalSource: `{
   render: () => PlannerOverview(),
   globals: {
     theme: 'dark'
@@ -67,4 +107,10 @@ import{C as d}from"./CourseTable-TMkINQyF.js";import{D as c}from"./DegreePicker-
       default: 'dark'
     }
   }
-}`,...n.parameters?.docs?.source}}};const b=["Default","Dark"];export{n as Dark,t as Default,b as __namedExportsOrder,x as default};
+}`,
+            ...n.parameters?.docs?.source,
+        },
+    },
+};
+const b = ['Default', 'Dark'];
+export { n as Dark, t as Default, b as __namedExportsOrder, x as default };

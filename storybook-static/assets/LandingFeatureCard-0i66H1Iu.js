@@ -1,4 +1,4 @@
-const u=`<template>
+const u = `<template>
     <article
         class="border-border/60 bg-surface-1/80 flex flex-col gap-4 rounded-3xl border p-5 shadow-sm lg:flex-row lg:items-start"
         data-component="LandingFeatureCard"
@@ -44,4 +44,42 @@ const u=`<template>
         </div>
     </article>
 </template>
-`;function m(e={}){const r=document.createElement("template");r.innerHTML=u;const d=r.content.firstElementChild;if(!(d instanceof HTMLTemplateElement))throw new Error("LandingFeatureCard template element not found");const t=d.content.firstElementChild?.cloneNode(!0);if(!(t instanceof HTMLElement))throw new Error("LandingFeatureCard template root not found");const o=t.querySelector('[data-slot="label"]');o!==null&&e.label!==void 0&&(o.textContent=e.label);const s=t.querySelector('[data-slot="title"]');s!==null&&e.title!==void 0&&(s.textContent=e.title);const i=t.querySelector('[data-slot="description"]');i!==null&&e.description!==void 0&&(i.textContent=e.description);const l=t.querySelector('[data-slot="link"]');if(l!==null&&e.linkLabel!==void 0&&(l.textContent=e.linkLabel),l!==null&&e.href!==void 0&&(l.href=e.href),e.mediaSrc!==void 0){const a=t.querySelector('[data-slot="media"]');if(a!==null){const n=document.createElement("img");n.className="h-full w-full object-cover",n.src=e.mediaSrc,n.loading="lazy",n.decoding="async",n.alt=e.mediaAlt??"תצוגת כרטיס",a.appendChild(n),a.removeAttribute("data-skeleton");const c=a.querySelector("[data-skeleton-layer]");c!==null&&c.remove()}}return t}export{m as L};
+`;
+function m(e = {}) {
+    const r = document.createElement('template');
+    r.innerHTML = u;
+    const d = r.content.firstElementChild;
+    if (!(d instanceof HTMLTemplateElement))
+        throw new Error('LandingFeatureCard template element not found');
+    const t = d.content.firstElementChild?.cloneNode(!0);
+    if (!(t instanceof HTMLElement))
+        throw new Error('LandingFeatureCard template root not found');
+    const o = t.querySelector('[data-slot="label"]');
+    o !== null && e.label !== void 0 && (o.textContent = e.label);
+    const s = t.querySelector('[data-slot="title"]');
+    s !== null && e.title !== void 0 && (s.textContent = e.title);
+    const i = t.querySelector('[data-slot="description"]');
+    i !== null && e.description !== void 0 && (i.textContent = e.description);
+    const l = t.querySelector('[data-slot="link"]');
+    if (
+        (l !== null && e.linkLabel !== void 0 && (l.textContent = e.linkLabel),
+        l !== null && e.href !== void 0 && (l.href = e.href),
+        e.mediaSrc !== void 0)
+    ) {
+        const a = t.querySelector('[data-slot="media"]');
+        if (a !== null) {
+            const n = document.createElement('img');
+            ((n.className = 'h-full w-full object-cover'),
+                (n.src = e.mediaSrc),
+                (n.loading = 'lazy'),
+                (n.decoding = 'async'),
+                (n.alt = e.mediaAlt ?? 'תצוגת כרטיס'),
+                a.appendChild(n),
+                a.removeAttribute('data-skeleton'));
+            const c = a.querySelector('[data-skeleton-layer]');
+            c !== null && c.remove();
+        }
+    }
+    return t;
+}
+export { m as L };

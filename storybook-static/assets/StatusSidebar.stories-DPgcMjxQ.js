@@ -1,4 +1,4 @@
-const d=`<template>
+const d = `<template>
     <aside class="flex flex-col gap-4" data-component="StatusSidebar">
         <div
             class="border-border/60 bg-surface-1/80 rounded-3xl border p-5 shadow-sm"
@@ -26,12 +26,46 @@ const d=`<template>
         </div>
     </aside>
 </template>
-`;function r(){const n=document.createElement("template");n.innerHTML=d;const s=n.content.firstElementChild;if(!(s instanceof HTMLTemplateElement))throw new Error("StatusSidebar template element not found");const a=s.content.firstElementChild?.cloneNode(!0);if(!(a instanceof HTMLElement))throw new Error("StatusSidebar template root not found");return a}const o={title:"Components/StatusSidebar"},e={render:()=>r(),globals:{theme:"light"}},t={render:()=>r(),globals:{theme:"dark"},parameters:{backgrounds:{default:"dark"}}};e.parameters={...e.parameters,docs:{...e.parameters?.docs,source:{originalSource:`{
+`;
+function r() {
+    const n = document.createElement('template');
+    n.innerHTML = d;
+    const s = n.content.firstElementChild;
+    if (!(s instanceof HTMLTemplateElement))
+        throw new Error('StatusSidebar template element not found');
+    const a = s.content.firstElementChild?.cloneNode(!0);
+    if (!(a instanceof HTMLElement))
+        throw new Error('StatusSidebar template root not found');
+    return a;
+}
+const o = { title: 'Components/StatusSidebar' },
+    e = { render: () => r(), globals: { theme: 'light' } },
+    t = {
+        render: () => r(),
+        globals: { theme: 'dark' },
+        parameters: { backgrounds: { default: 'dark' } },
+    };
+e.parameters = {
+    ...e.parameters,
+    docs: {
+        ...e.parameters?.docs,
+        source: {
+            originalSource: `{
   render: () => StatusSidebar(),
   globals: {
     theme: 'light'
   }
-}`,...e.parameters?.docs?.source}}};t.parameters={...t.parameters,docs:{...t.parameters?.docs,source:{originalSource:`{
+}`,
+            ...e.parameters?.docs?.source,
+        },
+    },
+};
+t.parameters = {
+    ...t.parameters,
+    docs: {
+        ...t.parameters?.docs,
+        source: {
+            originalSource: `{
   render: () => StatusSidebar(),
   globals: {
     theme: 'dark'
@@ -41,4 +75,10 @@ const d=`<template>
       default: 'dark'
     }
   }
-}`,...t.parameters?.docs?.source}}};const l=["Default","Dark"];export{t as Dark,e as Default,l as __namedExportsOrder,o as default};
+}`,
+            ...t.parameters?.docs?.source,
+        },
+    },
+};
+const l = ['Default', 'Dark'];
+export { t as Dark, e as Default, l as __namedExportsOrder, o as default };

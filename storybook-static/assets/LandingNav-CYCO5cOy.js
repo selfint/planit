@@ -1,4 +1,5 @@
-import{l as c}from"./logo-DOrqz8C6.js";const u=`<template>
+import { l as c } from './logo-DOrqz8C6.js';
+const u = `<template>
     <div class="relative" data-component="LandingNav">
         <header
             class="border-border/50 border-b bg-transparent backdrop-blur-sm"
@@ -112,4 +113,36 @@ import{l as c}from"./logo-DOrqz8C6.js";const u=`<template>
         </div>
     </div>
 </template>
-`,x=""+new URL("Title-CvVoNA55.svg",import.meta.url).href;function f(){const a=document.createElement("template");a.innerHTML=u;const l=a.content.firstElementChild;if(!(l instanceof HTMLTemplateElement))throw new Error("LandingNav template element not found");const n=l.content.firstElementChild?.cloneNode(!0);if(!(n instanceof HTMLElement))throw new Error("LandingNav template root not found");const s=n.querySelector("[data-logo]");s!==null&&(s.src=c);const o=n.querySelector("[data-title-use]");o!==null&&o.setAttribute("href",x);const e=n.querySelectorAll('[data-action="toggle-menu"]');if(e.length===0)throw new Error("LandingNav toggleButtons not found");const t=n.querySelector('[data-role="mobile-menu"]');if(t===null)throw new Error("LandingNav mobile menu not found");return e.forEach(i=>{i.addEventListener("click",()=>{const r=t.classList.contains("hidden");t.classList.toggle("hidden",!r),e.forEach(d=>{d.setAttribute("aria-expanded",String(r))})})}),n}export{f as L};
+`,
+    x = '' + new URL('Title-CvVoNA55.svg', import.meta.url).href;
+function f() {
+    const a = document.createElement('template');
+    a.innerHTML = u;
+    const l = a.content.firstElementChild;
+    if (!(l instanceof HTMLTemplateElement))
+        throw new Error('LandingNav template element not found');
+    const n = l.content.firstElementChild?.cloneNode(!0);
+    if (!(n instanceof HTMLElement))
+        throw new Error('LandingNav template root not found');
+    const s = n.querySelector('[data-logo]');
+    s !== null && (s.src = c);
+    const o = n.querySelector('[data-title-use]');
+    o !== null && o.setAttribute('href', x);
+    const e = n.querySelectorAll('[data-action="toggle-menu"]');
+    if (e.length === 0) throw new Error('LandingNav toggleButtons not found');
+    const t = n.querySelector('[data-role="mobile-menu"]');
+    if (t === null) throw new Error('LandingNav mobile menu not found');
+    return (
+        e.forEach((i) => {
+            i.addEventListener('click', () => {
+                const r = t.classList.contains('hidden');
+                (t.classList.toggle('hidden', !r),
+                    e.forEach((d) => {
+                        d.setAttribute('aria-expanded', String(r));
+                    }));
+            });
+        }),
+        n
+    );
+}
+export { f as L };
