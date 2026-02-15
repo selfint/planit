@@ -18,9 +18,7 @@ test.describe('SPA router behavior', () => {
         await page.click('#query-hash-link');
 
         await expect(page).toHaveURL(/\/search\?q=algo#top$/);
-        await expect(
-            page.getByRole('heading', { name: 'עמוד חיפוש' })
-        ).toBeVisible();
+        await expect(page.locator('[data-search-input]')).toBeVisible();
 
         const marker = await page.evaluate(
             () => (window as Window & { __spaMarker?: string }).__spaMarker

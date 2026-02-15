@@ -19,7 +19,7 @@ const buildSha = resolveBuildSha();
 
 // https://vitejs.dev/config/
 export default defineConfig(({ command }) => ({
-    base: command === 'build' ? '/planit/' : '/',
+    base: '/planit/',
     define: {
         __BUILD_SHA__: JSON.stringify(buildSha),
     },

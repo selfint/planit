@@ -3,12 +3,16 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import {
     getCatalogs,
     getCourse,
+    getCourseFaculties,
+    getCoursesCount,
     getCoursesPage,
     getMeta,
     getRequirement,
     putCatalogs,
     putCourses,
+    queryCourses,
     replaceRequirementsWithCow,
+    searchCourses,
     setMeta,
 } from '$lib/indexeddb';
 
@@ -328,6 +332,139 @@ describe('indexeddb lib', () => {
         expect(page).toHaveLength(2);
         expect(page[0]?.code).toBe('CS102');
         expect(page[1]?.code).toBe('CS103');
+    });
+
+    it('searches courses by code and name in ranked order', async () => {
+        await putCourses([
+            { code: '234114', name: 'מבוא למדעי המחשב' },
+            { code: '234124', name: 'מבני נתונים' },
+            { code: '104031', name: 'אלגוריתמים 1' },
+            { code: '104166', name: 'מבוא לאלגוריתמים' },
+        ]);
+
+        const byCode = await searchCourses('2341', 10);
+        const byName = await searchCourses('אלגוריתמים', 10);
+
+        expect(byCode.map((course) => course.code)).toEqual([
+            '234114',
+            '234124',
+        ]);
+        expect(byName.map((course) => course.code)).toEqual([
+            '104031',
+            '104166',
+        ]);
+    });
+
+    it('limits course search results', async () => {
+        await putCourses([
+            { code: '1', name: 'א' },
+            { code: '2', name: 'אב' },
+            { code: '3', name: 'אבג' },
+        ]);
+
+        const results = await searchCourses('א', 2);
+
+        expect(results).toHaveLength(2);
+    });
+
+    it('queries courses with combined filters and pagination', async () => {
+        await putCourses([
+            {
+                code: '234114',
+                name: 'מבוא למדעי המחשב',
+                faculty: 'CS',
+                points: 4,
+                median: 85,
+                current: true,
+            },
+            {
+                code: '234124',
+                name: 'מבני נתונים',
+                faculty: 'CS',
+                points: 3,
+                median: 74,
+                current: true,
+            },
+            {
+                code: '104031',
+                name: 'אלגברה',
+                faculty: 'Math',
+                points: 5,
+                median: 88,
+                current: false,
+            },
+        ]);
+
+        const filtered = await queryCourses({
+            query: 'מב',
+            availableOnly: true,
+            faculty: 'CS',
+            pointsMin: 3,
+            pointsMax: 4,
+            medianMin: 80,
+            requirementCourseCodes: ['234114', '999999'],
+            page: 1,
+            pageSize: 10,
+        });
+
+        const paged = await queryCourses({
+            availableOnly: true,
+            faculty: 'CS',
+            page: 1,
+            pageSize: 1,
+        });
+
+        expect(filtered.total).toBe(1);
+        expect(filtered.courses.map((course) => course.code)).toEqual([
+            '234114',
+        ]);
+        expect(paged.total).toBe(2);
+        expect(paged.courses).toHaveLength(1);
+    });
+
+    it('returns all records when page size is all and lists faculties', async () => {
+        await putCourses([
+            { code: '1', faculty: 'CS', current: true },
+            { code: '2', faculty: 'Math', current: true },
+            { code: '3', faculty: 'CS', current: false },
+        ]);
+
+        const all = await queryCourses({
+            availableOnly: false,
+            pageSize: 'all',
+        });
+        const faculties = await getCourseFaculties();
+
+        expect(all.total).toBe(3);
+        expect(all.courses).toHaveLength(3);
+        expect(faculties).toEqual(['CS', 'Math']);
+    });
+
+    it('returns total number of stored courses', async () => {
+        await putCourses([
+            { code: '1', name: 'א' },
+            { code: '2', name: 'ב' },
+            { code: '3', name: 'ג' },
+        ]);
+
+        const count = await getCoursesCount();
+
+        expect(count).toBe(3);
+    });
+
+    it('applies median minimum filter when median is stored as a string', async () => {
+        await putCourses([
+            { code: 'A1', name: 'Alpha', median: '85' as unknown as number },
+            { code: 'B1', name: 'Beta', median: '70' as unknown as number },
+        ]);
+
+        const filtered = await queryCourses({
+            medianMin: 80,
+            page: 1,
+            pageSize: 'all',
+        });
+
+        expect(filtered.courses.map((course) => course.code)).toEqual(['A1']);
     });
 
     it('writes catalogs and reads back data', async () => {

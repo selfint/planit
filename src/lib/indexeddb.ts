@@ -45,6 +45,23 @@ export type RequirementRecord = {
     data: unknown;
 };
 
+export type CourseQueryParams = {
+    query?: string;
+    availableOnly?: boolean;
+    faculty?: string;
+    pointsMin?: number;
+    pointsMax?: number;
+    medianMin?: number;
+    requirementCourseCodes?: readonly string[];
+    page?: number;
+    pageSize?: number | 'all';
+};
+
+export type CourseQueryResult = {
+    courses: CourseRecord[];
+    total: number;
+};
+
 function openDb(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
         const request = indexedDB.open(DB_NAME, DB_VERSION);
@@ -481,6 +498,336 @@ export async function getCoursesPage(
             reject(tx.error ?? new Error('Course transaction aborted'));
         };
     });
+}
+
+export async function searchCourses(
+    query: string,
+    limit: number
+): Promise<CourseRecord[]> {
+    if (limit <= 0) {
+        return [];
+    }
+
+    const result = await queryCourses({
+        query,
+        page: 1,
+        pageSize: limit,
+    });
+
+    return result.courses;
+}
+
+export async function getCourseFaculties(): Promise<string[]> {
+    const db = await openDb();
+
+    return new Promise((resolve, reject) => {
+        const faculties = new Set<string>();
+
+        const tx = db.transaction(STORE_COURSES, 'readonly');
+        const store = tx.objectStore(STORE_COURSES);
+        const request = store.openCursor();
+
+        request.onsuccess = (): void => {
+            const cursor = request.result;
+            if (cursor === null) {
+                return;
+            }
+
+            const course = cursor.value as CourseRecord;
+            if (
+                typeof course.faculty === 'string' &&
+                course.faculty.trim().length > 0
+            ) {
+                faculties.add(course.faculty.trim());
+            }
+
+            cursor.continue();
+        };
+
+        request.onerror = (): void => {
+            reject(
+                request.error ?? new Error('Failed to read course faculties')
+            );
+        };
+
+        tx.oncomplete = (): void => {
+            db.close();
+            resolve(
+                Array.from(faculties).sort((left, right) =>
+                    left.localeCompare(right)
+                )
+            );
+        };
+        tx.onerror = (): void => {
+            reject(tx.error ?? new Error('Course faculty transaction failed'));
+        };
+        tx.onabort = (): void => {
+            reject(tx.error ?? new Error('Course faculty transaction aborted'));
+        };
+    });
+}
+
+export async function getCoursesCount(): Promise<number> {
+    const db = await openDb();
+
+    return new Promise((resolve, reject) => {
+        let count = 0;
+        const tx = db.transaction(STORE_COURSES, 'readonly');
+        const store = tx.objectStore(STORE_COURSES);
+        const request = store.openCursor();
+
+        request.onsuccess = (): void => {
+            const cursor = request.result;
+            if (cursor === null) {
+                return;
+            }
+
+            count += 1;
+            cursor.continue();
+        };
+
+        request.onerror = (): void => {
+            reject(request.error ?? new Error('Failed to count courses'));
+        };
+
+        tx.oncomplete = (): void => {
+            db.close();
+            resolve(count);
+        };
+        tx.onerror = (): void => {
+            reject(tx.error ?? new Error('Course count transaction failed'));
+        };
+        tx.onabort = (): void => {
+            reject(tx.error ?? new Error('Course count transaction aborted'));
+        };
+    });
+}
+
+export async function queryCourses(
+    params: CourseQueryParams
+): Promise<CourseQueryResult> {
+    const normalizedQuery = normalizeSearchQuery(params.query ?? '');
+    const queryTokens =
+        normalizedQuery.length === 0 ? [] : normalizedQuery.split(' ');
+    const normalizedFaculty = normalizeFilterText(params.faculty);
+    const pointsMin = normalizePositiveNumber(params.pointsMin);
+    const pointsMax = normalizePositiveNumber(params.pointsMax);
+    const medianMin = normalizePositiveNumber(params.medianMin);
+    const requirementCodes = new Set(params.requirementCourseCodes ?? []);
+    const shouldFilterRequirement = requirementCodes.size > 0;
+
+    const pageSize = normalizePageSize(params.pageSize);
+    const page = normalizePage(params.page);
+    const offset = pageSize === 'all' ? 0 : (page - 1) * pageSize;
+
+    const db = await openDb();
+
+    return new Promise((resolve, reject) => {
+        const plainMatches: CourseRecord[] = [];
+        const codeMatches: CourseRecord[] = [];
+        const namePrefixMatches: CourseRecord[] = [];
+        const textMatches: CourseRecord[] = [];
+
+        const tx = db.transaction(STORE_COURSES, 'readonly');
+        const store = tx.objectStore(STORE_COURSES);
+        const request = store.openCursor();
+
+        request.onsuccess = (): void => {
+            const cursor = request.result;
+            if (cursor === null) {
+                return;
+            }
+
+            const course = cursor.value as CourseRecord;
+            if (
+                !isCourseMatchingFilters(
+                    course,
+                    params.availableOnly === true,
+                    normalizedFaculty,
+                    pointsMin,
+                    pointsMax,
+                    medianMin,
+                    requirementCodes,
+                    shouldFilterRequirement
+                )
+            ) {
+                cursor.continue();
+                return;
+            }
+
+            if (queryTokens.length === 0) {
+                plainMatches.push(course);
+                cursor.continue();
+                return;
+            }
+
+            const normalizedCode = normalizeSearchQuery(course.code);
+            const normalizedName = normalizeSearchQuery(course.name ?? '');
+            const searchText = normalizeSearchQuery(
+                `${course.code} ${course.name ?? ''}`
+            );
+            const hasAllTokens = queryTokens.every((token) =>
+                searchText.includes(token)
+            );
+            if (!hasAllTokens) {
+                cursor.continue();
+                return;
+            }
+
+            if (normalizedCode.startsWith(normalizedQuery)) {
+                codeMatches.push(course);
+            } else if (normalizedName.startsWith(normalizedQuery)) {
+                namePrefixMatches.push(course);
+            } else {
+                textMatches.push(course);
+            }
+
+            cursor.continue();
+        };
+
+        request.onerror = (): void => {
+            reject(request.error ?? new Error('Failed to query courses'));
+        };
+
+        tx.oncomplete = (): void => {
+            db.close();
+            const ranked =
+                queryTokens.length === 0
+                    ? plainMatches
+                    : [...codeMatches, ...namePrefixMatches, ...textMatches];
+            const total = ranked.length;
+
+            if (pageSize === 'all') {
+                resolve({ courses: ranked, total });
+                return;
+            }
+
+            resolve({
+                courses: ranked.slice(offset, offset + pageSize),
+                total,
+            });
+        };
+        tx.onerror = (): void => {
+            reject(tx.error ?? new Error('Course query transaction failed'));
+        };
+        tx.onabort = (): void => {
+            reject(tx.error ?? new Error('Course query transaction aborted'));
+        };
+    });
+}
+
+function normalizeSearchQuery(value: string): string {
+    return value.trim().toLocaleLowerCase().replace(/\s+/g, ' ');
+}
+
+function normalizeFilterText(value: string | undefined): string | undefined {
+    if (typeof value !== 'string') {
+        return undefined;
+    }
+
+    const normalized = value.trim();
+    if (normalized.length === 0) {
+        return undefined;
+    }
+    return normalized;
+}
+
+function normalizePositiveNumber(
+    value: number | undefined
+): number | undefined {
+    if (typeof value !== 'number' || !Number.isFinite(value)) {
+        return undefined;
+    }
+
+    return value;
+}
+
+function normalizePage(value: number | undefined): number {
+    if (typeof value !== 'number' || !Number.isInteger(value) || value < 1) {
+        return 1;
+    }
+
+    return value;
+}
+
+function normalizePageSize(value: number | 'all' | undefined): number | 'all' {
+    if (value === 'all' || value === undefined) {
+        return 'all';
+    }
+
+    if (!Number.isInteger(value) || value <= 0) {
+        return 'all';
+    }
+
+    return value;
+}
+
+function isCourseMatchingFilters(
+    course: CourseRecord,
+    availableOnly: boolean,
+    faculty: string | undefined,
+    pointsMin: number | undefined,
+    pointsMax: number | undefined,
+    medianMin: number | undefined,
+    requirementCodes: Set<string>,
+    shouldFilterRequirement: boolean
+): boolean {
+    if (availableOnly && course.current !== true) {
+        return false;
+    }
+
+    if (faculty !== undefined && course.faculty !== faculty) {
+        return false;
+    }
+
+    if (pointsMin !== undefined) {
+        const points = toFiniteNumber(course.points);
+        if (points === undefined) {
+            return false;
+        }
+        if (points < pointsMin) {
+            return false;
+        }
+    }
+
+    if (pointsMax !== undefined) {
+        const points = toFiniteNumber(course.points);
+        if (points === undefined) {
+            return false;
+        }
+        if (points > pointsMax) {
+            return false;
+        }
+    }
+
+    if (medianMin !== undefined) {
+        const median = toFiniteNumber(course.median);
+        if (median === undefined) {
+            return false;
+        }
+        if (median < medianMin) {
+            return false;
+        }
+    }
+
+    if (shouldFilterRequirement && !requirementCodes.has(course.code)) {
+        return false;
+    }
+
+    return true;
+}
+
+function toFiniteNumber(value: unknown): number | undefined {
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : undefined;
+    }
+
+    if (typeof value === 'string') {
+        const parsed = Number.parseFloat(value);
+        return Number.isFinite(parsed) ? parsed : undefined;
+    }
+
+    return undefined;
 }
 
 function getCourseSortSource(
