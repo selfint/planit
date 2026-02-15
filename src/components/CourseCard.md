@@ -10,8 +10,8 @@ course code using a small hash and a fixed palette.
 
 ## Template Structure
 
-- Root `article` with rounded border, `text-xs`, a minimum width of `min-w-26`
-  (`6.5rem`), and strict fixed height.
+- Root `article` with rounded border, `text-xs`, `min-w-fit` sizing behavior,
+  and strict fixed height.
 - Top row contains the status dot and meta numbers.
 - Bottom block reserves exactly three lines for the title and one line for the
   course code.
