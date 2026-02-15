@@ -1,29 +1,95 @@
-# /semester
+# Semester Page
 
-High-level design for a single-semester focus view. This is a client-side route in the single-page application.
+## Overview
 
-## Purpose
+The semester page displays a focused view of one semester from the URL query,
+for example `/semester?number=3`.
 
-Let users focus on one semester and browse all courses that could be taken then, including ineligible ones.
+It separates three course scopes:
 
-## Core UI
+1. Courses currently in the selected semester.
+2. Other courses from the active user catalog.
+3. All remaining non-catalog courses grouped by faculty under:
+   `בחירה חופשית: <פקולטה>`.
 
-- Semester header with term name, credit totals, and total courses with tests.
-- Course cards for that semester, including ineligible courses.
-- Ineligible courses appear grayed out with a note explaining why in the card header.
+## ASCII Layout
 
-## Key Behaviors
+### Desktop (>=1024)
 
-- Eligibility is derived from prerequisites and the course's `current` field.
-- Ineligible cards are visible but clearly disabled.
-- Adding a course updates the plan and returns to the list state.
+```text
++--------------------------------------------------------------------------------------------------+
+| /semester?number=3                                                                               |
+| סמסטר 3 • תצוגת סמסטר                                                                            |
+| קורסים מהסמסטר מודגשים בנפרד, מתחתיהם קורסים נוספים מהקטלוג והרחבות לפי פקולטה                 |
++--------------------------------------------------------------------------------------------------+
 
-## Data
++--------------------------------------------------+  +-------------------------------------------+
+| קורסי הסמסטר הנבחר (סמסטר 3)                     |  | קורסים נוספים מהקטלוג                    |
+| [CourseCard] [CourseCard] [CourseCard]           |  | [CourseCard] [CourseCard] [CourseCard]   |
+| [CourseCard] [CourseCard] [CourseCard]           |  | [CourseCard] [CourseCard] [CourseCard]   |
++--------------------------------------------------+  +-------------------------------------------+
 
-- Source: semester plan from IndexedDB and full course catalog.
-- Derived: eligibility and reason (missing prereq, not offered, credit limit).
++--------------------------------------------------------------------------------------------------+
+| בחירה חופשית: מדעי המחשב                                                                        |
+| [CourseCard] [CourseCard] [CourseCard] [CourseCard] [CourseCard] [CourseCard]                  |
++--------------------------------------------------------------------------------------------------+
 
-## Edge Cases
++--------------------------------------------------------------------------------------------------+
+| בחירה חופשית: מתמטיקה                                                                           |
+| [CourseCard] [CourseCard] [CourseCard] [CourseCard]                                             |
++--------------------------------------------------------------------------------------------------+
 
-- Multiple ineligibility reasons are prioritized with a single clear message.
-- If no courses are offered that term, still show the list with availability notes.
++--------------------------------------------------------------------------------------------------+
+| בחירה חופשית: פיזיקה                                                                            |
+| [CourseCard] [CourseCard] [CourseCard]                                                          |
++--------------------------------------------------------------------------------------------------+
+```
+
+### Mobile (<1024)
+
+```text
++----------------------------------------------+
+| /semester?number=3                           |
+| סמסטר 3 • תצוגת סמסטר                        |
++----------------------------------------------+
+
++----------------------------------------------+
+| קורסי הסמסטר הנבחר (סמסטר 3)                 |
+| [CourseCard]                                 |
+| [CourseCard]                                 |
+| [CourseCard]                                 |
++----------------------------------------------+
+
++----------------------------------------------+
+| קורסים נוספים מהקטלוג                        |
+| [CourseCard]                                 |
+| [CourseCard]                                 |
+| [CourseCard]                                 |
++----------------------------------------------+
+
++----------------------------------------------+
+| בחירה חופשית: מדעי המחשב                     |
+| [CourseCard]                                 |
+| [CourseCard]                                 |
+| [CourseCard]                                 |
++----------------------------------------------+
+
++----------------------------------------------+
+| בחירה חופשית: מתמטיקה                        |
+| [CourseCard]                                 |
+| [CourseCard]                                 |
++----------------------------------------------+
+
++----------------------------------------------+
+| בחירה חופשית: פיזיקה                         |
+| [CourseCard]                                 |
++----------------------------------------------+
+```
+
+## Layout Notes
+
+- The selected semester courses are visually separated in a dedicated top block.
+- The rest of the catalog courses appear right after the semester block.
+- Non-catalog courses are grouped by faculty with titles in the format
+  `בחירה חופשית: <פקולטה>`.
+- Desktop uses denser multi-column grids; mobile collapses to a single column.
