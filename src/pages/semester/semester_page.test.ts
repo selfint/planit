@@ -142,13 +142,7 @@ describe('SemesterPage', () => {
         ).map((node) => node.getAttribute('data-course-code'));
         expect(currentCodes).toEqual(['A100']);
 
-        const catalogSection = page.querySelector<HTMLElement>(
-            '[data-group-kind="catalog"]'
-        );
-        const catalogCodes = Array.from(
-            catalogSection?.querySelectorAll('a[data-course-code]') ?? []
-        ).map((node) => node.getAttribute('data-course-code'));
-        expect(catalogCodes).toEqual(['B200']);
+        expect(page.textContent).not.toContain('קורסים נוספים מהקטלוג');
 
         const freeTitles = Array.from(
             page.querySelectorAll<HTMLElement>('[data-group-kind="free"] h2')

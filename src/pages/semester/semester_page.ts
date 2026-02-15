@@ -24,7 +24,6 @@ type PersistedPlan = {
 };
 
 type SemesterPageElements = {
-    routeLabel: HTMLElement;
     title: HTMLElement;
     subtitle: HTMLElement;
     status: HTMLElement;
@@ -44,7 +43,6 @@ type SemesterInfo = {
 type CourseGroup = {
     title: string;
     courses: CourseRecord[];
-    kind: 'catalog' | 'free';
 };
 
 export function SemesterPage(): HTMLElement {
@@ -64,7 +62,6 @@ export function SemesterPage(): HTMLElement {
     const semesterNumber = getSemesterNumberFromUrl(window.location.search);
     const semesterInfo = getFallbackSemesterInfo(semesterNumber);
 
-    elements.routeLabel.textContent = `/semester?number=${String(semesterNumber)}`;
     elements.title.textContent = `סמסטר ${String(semesterNumber)}`;
     elements.subtitle.textContent = `${semesterInfo.season} ${String(semesterInfo.year)}`;
     elements.status.textContent = 'טוען נתונים...';
@@ -75,9 +72,6 @@ export function SemesterPage(): HTMLElement {
 }
 
 function queryElements(root: HTMLElement): SemesterPageElements {
-    const routeLabel = root.querySelector<HTMLElement>(
-        '[data-role="route-label"]'
-    );
     const title = root.querySelector<HTMLElement>('[data-role="title"]');
     const subtitle = root.querySelector<HTMLElement>(
         '[data-role="semester-subtitle"]'
@@ -100,7 +94,6 @@ function queryElements(root: HTMLElement): SemesterPageElements {
     );
 
     if (
-        routeLabel === null ||
         title === null ||
         subtitle === null ||
         status === null ||
@@ -114,7 +107,6 @@ function queryElements(root: HTMLElement): SemesterPageElements {
     }
 
     return {
-        routeLabel,
         title,
         subtitle,
         status,
@@ -191,47 +183,14 @@ async function hydratePage(
             semesterCourses
         );
 
-        if (selection === undefined) {
-            elements.status.textContent =
-                'בחרו מסלול בקטלוג כדי להציג קורסי מסלול.';
-            renderGroups(elements.groupsRoot, [
-                {
-                    kind: 'catalog',
-                    title: 'קורסים נוספים מהקטלוג',
-                    courses: [],
-                },
-            ]);
-            return;
-        }
-
-        const requirementRecord = await getRequirement(selection.programId);
-        const requirementRoot = toRequirementNode(requirementRecord?.data);
-        if (requirementRoot === undefined) {
-            elements.status.textContent =
-                'לא נמצאו דרישות שמורות למסלול שנבחר.';
-            renderGroups(elements.groupsRoot, [
-                {
-                    kind: 'catalog',
-                    title: 'קורסים נוספים מהקטלוג',
-                    courses: [],
-                },
-            ]);
-            return;
-        }
-
-        const filteredRequirement = filterRequirementsByPath(
-            requirementRoot,
-            selection.path
-        );
-        const catalogCodes = collectRequirementCourseCodes(filteredRequirement);
+        const catalogCodes =
+            selection === undefined
+                ? []
+                : await loadCatalogCourseCodes(
+                      selection.programId,
+                      selection.path
+                  );
         const semesterCourseCodeSet = new Set(semesterCourseCodes);
-
-        const catalogOtherCodes = catalogCodes.filter(
-            (code) => !semesterCourseCodeSet.has(code)
-        );
-        const catalogOtherCourses = sortCoursesByMedianAndCode(
-            await loadCoursesForCodes(catalogOtherCodes, courseMap)
-        );
 
         const catalogCodeSet = new Set(catalogCodes);
         const freeElectiveGroups = groupFreeElectiveCourses(
@@ -240,17 +199,9 @@ async function hydratePage(
             semesterCourseCodeSet
         );
 
-        const groups: CourseGroup[] = [
-            {
-                title: 'קורסים נוספים מהקטלוג',
-                courses: catalogOtherCourses,
-                kind: 'catalog',
-            },
-            ...freeElectiveGroups,
-        ];
-        renderGroups(elements.groupsRoot, groups);
+        renderGroups(elements.groupsRoot, freeElectiveGroups);
 
-        elements.status.textContent = `הוצגו ${String(semesterCourses.length)} קורסים בסמסטר ו-${String(groups.length)} קבוצות נוספות.`;
+        elements.status.textContent = `הוצגו ${String(semesterCourses.length)} קורסים בסמסטר ו-${String(freeElectiveGroups.length)} קבוצות בחירה חופשית.`;
     } catch {
         elements.status.textContent = 'טעינת נתוני הסמסטר נכשלה.';
         elements.groupsRoot.replaceChildren();
@@ -341,6 +292,20 @@ function toRequirementNode(value: unknown): RequirementNode | undefined {
     return value as RequirementNode;
 }
 
+async function loadCatalogCourseCodes(
+    programId: string,
+    path: string | undefined
+): Promise<string[]> {
+    const requirementRecord = await getRequirement(programId);
+    const requirementRoot = toRequirementNode(requirementRecord?.data);
+    if (requirementRoot === undefined) {
+        return [];
+    }
+
+    const filteredRequirement = filterRequirementsByPath(requirementRoot, path);
+    return collectRequirementCourseCodes(filteredRequirement);
+}
+
 function collectRequirementCourseCodes(root: RequirementNode): string[] {
     const codes = new Set<string>();
     collectRequirementCourseCodesRecursive(root, codes);
@@ -421,7 +386,6 @@ function groupFreeElectiveCourses(
     return [...groups.entries()]
         .sort(([left], [right]) => left.localeCompare(right, 'he'))
         .map(([faculty, courses]) => ({
-            kind: 'free' as const,
             title: `בחירה חופשית: ${faculty}`,
             courses: sortCoursesByMedianAndCode(courses),
         }));
@@ -449,7 +413,7 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
     for (const group of groups) {
         const section = document.createElement('section');
         section.className = 'flex min-w-0 flex-col gap-3';
-        section.dataset.groupKind = group.kind;
+        section.dataset.groupKind = 'free';
         section.dataset.groupTitle = group.title;
 
         const title = document.createElement('h2');

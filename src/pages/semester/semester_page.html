@@ -4,7 +4,6 @@
             class="mx-auto flex w-full max-w-7xl flex-col gap-6 px-4 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:px-6 lg:px-8"
         >
             <header class="flex flex-col gap-2">
-                <p class="text-text-muted text-xs" data-role="route-label"></p>
                 <h1
                     class="text-2xl font-medium sm:text-3xl"
                     data-role="title"
@@ -17,18 +16,18 @@
             </header>
 
             <div
-                class="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,24rem)] lg:items-start"
+                class="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)] lg:items-start"
             >
                 <section
-                    class="order-2 flex min-w-0 flex-col gap-5 lg:order-1"
+                    class="order-2 flex min-w-0 flex-col gap-5 lg:order-2"
                     data-role="groups-root"
                 ></section>
 
                 <aside
-                    class="sticky top-[calc(env(safe-area-inset-top)+0.75rem)] order-1 self-start lg:order-2"
+                    class="sticky top-[calc(env(safe-area-inset-top)+0.75rem)] order-1 self-start lg:order-1"
                 >
                     <section
-                        class="border-border/60 bg-surface-1/90 flex min-w-0 flex-col gap-3 rounded-2xl border p-3 shadow"
+                        class="border-border/60 bg-surface-1 flex min-w-0 flex-col gap-3 rounded-2xl border p-3 shadow"
                         data-role="current-semester"
                     >
                         <h2 class="text-sm font-medium">קורסי הסמסטר הנבחר</h2>
