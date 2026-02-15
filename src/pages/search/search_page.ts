@@ -328,13 +328,13 @@ async function runSearch(
             const totalCourses = state.totalCourses ?? 0;
             elements.status.textContent = `מציג 0 מתוך ${String(totalCourses)}`;
 
+            // courses have not been loaded yet
             if (totalCourses === 0) {
-                elements.empty.textContent = 'ממתין לסנכרון נתוני קורסים.';
-            } else {
-                elements.empty.textContent =
-                    'נסו להרחיב את הטווחים או לנקות חלק מהפילטרים.';
+                return;
             }
 
+            elements.empty.textContent =
+                'נסו להרחיב את הטווחים או לנקות חלק מהפילטרים.';
             elements.empty.classList.remove('hidden');
             return;
         }
