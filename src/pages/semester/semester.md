@@ -12,6 +12,9 @@ It separates three course scopes:
 3. All remaining non-catalog courses grouped by faculty under:
    `בחירה חופשית: <פקולטה>`.
 
+The current semester section is sticky in both desktop and mobile views so it
+remains visible while the user scrolls through other course groups.
+
 ## ASCII Layout
 
 ### Desktop (>=1024)
@@ -73,6 +76,7 @@ It separates three course scopes:
 - The right column contains only the selected semester and keeps one course card per row.
 - The left column contains all other groups and may render multiple courses per row.
 - Mobile places the current semester block first, then all other groups.
+- The current semester section is sticky on both desktop and mobile and stays visible while scrolling.
 - Each non-semester group is rendered as a title plus one course row (catalog style),
   without wrapping each group in a card container.
 - The rest of the catalog courses appear right after the current semester section.
