@@ -432,7 +432,6 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
         'border-accent/40 bg-accent/10 text-accent min-h-7 rounded-xl border px-2 py-1 text-xs opacity-0 transition-opacity duration-200 ease-out invisible pointer-events-none';
     moveTarget.textContent = 'העברה';
     moveTarget.dataset.moveTarget = 'true';
-    moveTarget.dataset.moveControl = 'true';
     moveTarget.dataset.rowId = row.id;
 
     const cancelSelectionButton = document.createElement('button');
@@ -441,7 +440,6 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
         'border-border/60 bg-surface-1/70 text-text-muted hover:border-accent/50 hover:text-text min-h-7 rounded-xl border px-2 py-1 text-xs opacity-0 transition-opacity duration-200 ease-out invisible pointer-events-none touch-manipulation';
     cancelSelectionButton.textContent = 'ביטול';
     cancelSelectionButton.dataset.cancelSelection = 'true';
-    cancelSelectionButton.dataset.moveControl = 'true';
     cancelSelectionButton.dataset.rowId = row.id;
 
     headingRow.append(title, moveTarget, cancelSelectionButton);
@@ -765,18 +763,27 @@ function toggleMoveTargets(
     rail: HTMLElement,
     sourceRowId: string | undefined
 ): void {
-    const moveTargets = rail.querySelectorAll<HTMLElement>(
-        '[data-move-control]'
-    );
+    const moveTargets =
+        rail.querySelectorAll<HTMLElement>('[data-move-target]');
     for (const moveTarget of moveTargets) {
         const targetRowId = moveTarget.dataset.rowId;
-        const shouldShow =
+        const shouldShowMove =
             sourceRowId !== undefined &&
             targetRowId !== undefined &&
             targetRowId !== sourceRowId;
-        moveTarget.classList.toggle('invisible', !shouldShow);
-        moveTarget.classList.toggle('opacity-0', !shouldShow);
-        moveTarget.classList.toggle('pointer-events-none', !shouldShow);
+        moveTarget.classList.toggle('invisible', !shouldShowMove);
+        moveTarget.classList.toggle('opacity-0', !shouldShowMove);
+        moveTarget.classList.toggle('pointer-events-none', !shouldShowMove);
+    }
+
+    const cancelButtons = rail.querySelectorAll<HTMLElement>(
+        '[data-cancel-selection]'
+    );
+    for (const cancelButton of cancelButtons) {
+        const shouldShowCancel = sourceRowId !== undefined;
+        cancelButton.classList.toggle('invisible', !shouldShowCancel);
+        cancelButton.classList.toggle('opacity-0', !shouldShowCancel);
+        cancelButton.classList.toggle('pointer-events-none', !shouldShowCancel);
     }
 }
 
