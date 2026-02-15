@@ -561,8 +561,10 @@ function renderResults(results: HTMLDivElement, courses: CourseRecord[]): void {
     const nodes = courses.map((course) => {
         const anchor = document.createElement('a');
         anchor.href = `/course?code=${encodeURIComponent(course.code)}`;
+        const availabilityClass =
+            course.current === true ? '' : 'opacity-45 saturate-40';
         anchor.className =
-            'focus-visible:ring-accent/60 block rounded-2xl focus-visible:ring-2';
+            `focus-visible:ring-accent/60 block rounded-2xl focus-visible:ring-2 ${availabilityClass}`.trim();
         anchor.setAttribute('aria-label', `פתיחת הקורס ${course.code}`);
         anchor.append(CourseCard(course));
         return anchor;

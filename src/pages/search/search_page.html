@@ -6,19 +6,6 @@
             class="mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-4 px-3 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:gap-5 sm:px-5 lg:px-8"
             data-page="search"
         >
-            <header class="flex flex-col gap-2">
-                <p class="text-text-muted text-[11px]">/search</p>
-                <div class="flex flex-col gap-1">
-                    <h1 class="text-xl font-medium sm:text-2xl">
-                        חיפוש קורסים
-                    </h1>
-                    <p class="text-text-muted max-w-3xl text-[11px] sm:text-xs">
-                        חיפוש מהיר מתוך IndexedDB עם סינון לפי זמינות, פקולטה,
-                        נק״ז, חציון ודרישה.
-                    </p>
-                </div>
-            </header>
-
             <section
                 class="border-border/60 bg-surface-1/85 flex flex-col gap-3 rounded-3xl border p-3 shadow-sm sm:p-4"
             >
@@ -32,7 +19,7 @@
                             inputmode="search"
                             autocomplete="off"
                             placeholder="לדוגמה: 234114 או מבוא למדעי המחשב"
-                            class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 min-w-0 rounded-2xl border px-3 text-[11px] transition duration-200 ease-out focus-visible:ring-2 sm:text-xs"
+                            class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 w-full min-w-0 rounded-2xl border px-3 text-[11px] transition duration-200 ease-out focus-visible:ring-2 sm:text-xs"
                             data-search-input
                         />
                         <button
@@ -53,7 +40,7 @@
 
                     <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
                         <label
-                            class="border-border/60 bg-surface-2/50 flex min-h-10 items-center gap-2 rounded-xl border px-3"
+                            class="border-border/60 bg-surface-2/50 flex min-h-10 w-full min-w-0 items-center gap-2 rounded-xl border px-3"
                         >
                             <input
                                 type="checkbox"
@@ -65,31 +52,31 @@
                             >
                         </label>
 
-                        <label class="flex flex-col gap-1">
+                        <label class="flex w-full min-w-0 flex-col gap-1">
                             <span class="text-text-muted text-[11px] sm:text-xs"
                                 >פקולטה</span
                             >
                             <select
-                                class="border-border/70 bg-surface-2/80 text-text focus-visible:ring-accent/60 min-h-10 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
+                                class="border-border/70 bg-surface-2/80 text-text focus-visible:ring-accent/60 min-h-10 w-full min-w-0 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
                                 data-filter-faculty
                             >
                                 <option value="">כל הפקולטות</option>
                             </select>
                         </label>
 
-                        <label class="flex flex-col gap-1">
+                        <label class="flex w-full min-w-0 flex-col gap-1">
                             <span class="text-text-muted text-[11px] sm:text-xs"
                                 >דרישה</span
                             >
                             <select
-                                class="border-border/70 bg-surface-2/80 text-text focus-visible:ring-accent/60 min-h-10 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
+                                class="border-border/70 bg-surface-2/80 text-text focus-visible:ring-accent/60 min-h-10 w-full min-w-0 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
                                 data-filter-requirement
                             >
                                 <option value="">כל הדרישות</option>
                             </select>
                         </label>
 
-                        <label class="flex flex-col gap-1">
+                        <label class="flex w-full min-w-0 flex-col gap-1">
                             <span class="text-text-muted text-[11px] sm:text-xs"
                                 >נק״ז מינימום</span
                             >
@@ -98,13 +85,13 @@
                                 inputmode="decimal"
                                 step="0.5"
                                 min="0"
-                                class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
+                                class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 w-full min-w-0 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
                                 placeholder="ללא"
                                 data-filter-points-min
                             />
                         </label>
 
-                        <label class="flex flex-col gap-1">
+                        <label class="flex w-full min-w-0 flex-col gap-1">
                             <span class="text-text-muted text-[11px] sm:text-xs"
                                 >נק״ז מקסימום</span
                             >
@@ -113,13 +100,13 @@
                                 inputmode="decimal"
                                 step="0.5"
                                 min="0"
-                                class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
+                                class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 w-full min-w-0 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
                                 placeholder="ללא"
                                 data-filter-points-max
                             />
                         </label>
 
-                        <label class="flex flex-col gap-1">
+                        <label class="flex w-full min-w-0 flex-col gap-1">
                             <span class="text-text-muted text-[11px] sm:text-xs"
                                 >חציון מינימום</span
                             >
@@ -128,7 +115,7 @@
                                 inputmode="decimal"
                                 min="0"
                                 max="100"
-                                class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
+                                class="border-border/70 bg-surface-2/80 text-text placeholder:text-text-muted focus-visible:ring-accent/60 min-h-10 w-full min-w-0 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
                                 placeholder="ללא"
                                 data-filter-median-min
                             />

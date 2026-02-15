@@ -81,8 +81,8 @@ describe('SearchPage', () => {
     it('defaults to page size all and renders cards from queried results', async () => {
         queryCoursesMock.mockResolvedValue({
             courses: [
-                { code: '234114', name: 'מבוא למדעי המחשב' },
-                { code: '234124', name: 'מבני נתונים' },
+                { code: '234114', name: 'מבוא למדעי המחשב', current: true },
+                { code: '234124', name: 'מבני נתונים', current: false },
             ],
             total: 2,
         });
@@ -105,5 +105,6 @@ describe('SearchPage', () => {
         expect(pageSizeSelect?.value).toBe('all');
         expect(links).toHaveLength(2);
         expect(links[0]?.getAttribute('href')).toBe('/course?code=234114');
+        expect(links[1]?.className).toContain('opacity-45');
     });
 });
