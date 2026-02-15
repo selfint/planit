@@ -3,9 +3,7 @@
         <main
             class="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 pt-[calc(env(safe-area-inset-top)+1.75rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:px-8"
         >
-            <header
-                class="border-border/60 bg-surface-1/80 flex flex-col gap-4 rounded-3xl border p-5 shadow-sm"
-            >
+            <header class="flex flex-col gap-3">
                 <div class="flex flex-col gap-2">
                     <p class="text-text-muted text-xs">/catalog</p>
                     <h1 class="text-2xl font-medium sm:text-3xl">
@@ -13,7 +11,7 @@
                     </h1>
                     <p class="text-text-muted max-w-3xl text-xs sm:text-sm">
                         בחרו קטלוג, פקולטה ותכנית כדי לראות דרישות. לאחר בחירת
-                        מסלול יוצגו הקורסים בקבוצות דרישה באמצעות כרטיסי קורס.
+                        מסלול יוצגו הקורסים לפי קבוצות דרישה כתצוגה קומפקטית.
                     </p>
                 </div>
                 <p class="text-text-muted text-xs" data-catalog-summary>
@@ -25,11 +23,11 @@
                 <div data-catalog-degree-picker></div>
 
                 <section
-                    class="border-border/60 bg-surface-1/80 flex min-h-[22rem] flex-col gap-4 rounded-3xl border p-5 shadow-sm"
+                    class="flex min-h-[22rem] flex-col gap-4"
                     aria-live="polite"
                 >
                     <div
-                        class="flex flex-wrap items-center justify-between gap-3"
+                        class="border-border/60 flex flex-wrap items-center justify-between gap-3 border-b pb-3"
                     >
                         <h2 class="text-lg font-medium">
                             קבוצות דרישה וקורסים
@@ -39,7 +37,10 @@
                         </p>
                     </div>
 
-                    <div class="flex flex-col gap-4" data-catalog-groups></div>
+                    <div
+                        class="divide-border/45 flex flex-col divide-y"
+                        data-catalog-groups
+                    ></div>
                 </section>
             </section>
         </main>

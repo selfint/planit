@@ -1,18 +1,6 @@
 /* @vitest-environment jsdom */
 import { describe, expect, it, vi } from 'vitest';
 
-vi.mock('$components/CourseCard', () => ({
-    CourseCard: (course?: { code?: string; name?: string }): HTMLElement => {
-        const card = document.createElement('article');
-        card.dataset.component = 'CourseCard';
-        if (course?.code !== undefined) {
-            card.dataset.courseCode = course.code;
-        }
-        card.textContent = course?.name ?? course?.code ?? 'skeleton';
-        return card;
-    },
-}));
-
 vi.mock('$components/DegreePicker', () => ({
     DegreePicker: (): HTMLElement => {
         const root = document.createElement('section');
@@ -56,7 +44,7 @@ describe('CatalogPage', () => {
         expect(state?.textContent).toContain('בחרו תכנית ומסלול');
     });
 
-    it('renders course cards for requirement groups', async () => {
+    it('renders compact course list items for requirement groups', async () => {
         getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
             facultyId: 'computer-science',
@@ -95,15 +83,18 @@ describe('CatalogPage', () => {
         const page = CatalogPage();
         await waitForUiWork();
 
-        const cards = page.querySelectorAll<HTMLElement>(
-            '[data-component="CourseCard"]'
+        const listItems = page.querySelectorAll<HTMLElement>(
+            '[data-catalog-groups] li'
         );
-        expect(cards.length).toBeGreaterThanOrEqual(2);
+        expect(listItems.length).toBeGreaterThanOrEqual(2);
 
         const links = page.querySelectorAll<HTMLAnchorElement>(
             'a[href^="/course?code="]'
         );
         expect(links.length).toBeGreaterThanOrEqual(2);
+
+        const firstLinkText = links.item(0).textContent;
+        expect(firstLinkText).toContain('Course 236501');
     });
 });
 

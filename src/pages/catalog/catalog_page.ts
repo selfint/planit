@@ -1,5 +1,4 @@
 import templateHtml from './catalog_page.html?raw';
-import { CourseCard } from '$components/CourseCard';
 import { DegreePicker } from '$components/DegreePicker';
 import { getCourse, getRequirement } from '$lib/indexeddb';
 import type { CourseRecord } from '$lib/indexeddb';
@@ -17,6 +16,7 @@ const GROUP_WAITING_MESSAGE = 'בחרו תכנית ומסלול כדי להצי�
 const GROUP_LOADING_MESSAGE = 'טוען קורסים מהאחסון המקומי...';
 const GROUP_MISSING_MESSAGE =
     'אין דרישות שמורות לתכנית זו. התחברו לאינטרנט ונסו לטעון שוב.';
+const COURSE_NAME_FALLBACK_PREFIX = 'קורס';
 
 type RequirementGroup = {
     id: string;
@@ -180,8 +180,7 @@ function renderRequirementGroups(
 
     for (const group of groups) {
         const section = document.createElement('section');
-        section.className =
-            'border-border/60 bg-surface-2/70 flex flex-col gap-3 rounded-2xl border p-4';
+        section.className = 'flex flex-col gap-3 py-4';
 
         const heading = document.createElement('div');
         heading.className = 'flex flex-col gap-1';
@@ -198,29 +197,44 @@ function renderRequirementGroups(
         heading.append(subtitle);
         section.append(heading);
 
-        const grid = document.createElement('div');
-        grid.className = 'grid gap-3 sm:grid-cols-2 lg:grid-cols-3';
+        const list = document.createElement('ul');
+        list.className = 'divide-border/40 flex flex-col divide-y';
 
         for (const code of group.courseCodes) {
             const record = recordsByCode.get(code);
-            const card =
-                record === undefined || record === null
-                    ? CourseCard(
-                          { code, name: `קורס ${code}` },
-                          { statusClass: 'bg-warning' }
-                      )
-                    : CourseCard(record);
+            const item = document.createElement('li');
+            item.className = 'py-2';
 
             const anchor = document.createElement('a');
             anchor.href = `/course?code=${encodeURIComponent(code)}`;
             anchor.className =
-                'focus-visible:ring-accent/60 rounded-2xl focus-visible:ring-2';
-            anchor.append(card);
+                'hover:text-text focus-visible:ring-accent/60 flex min-h-11 items-center justify-between gap-3 rounded-lg px-2 text-xs transition duration-200 ease-out focus-visible:ring-2';
 
-            grid.append(anchor);
+            const textBlock = document.createElement('span');
+            textBlock.className = 'flex min-w-0 flex-col gap-1';
+
+            const name = document.createElement('span');
+            name.className = 'text-text truncate text-sm';
+            name.textContent = getCourseTitle(record, code);
+
+            const meta = document.createElement('span');
+            meta.className = 'text-text-muted text-xs';
+            meta.textContent = `קוד ${code}`;
+
+            textBlock.append(name);
+            textBlock.append(meta);
+
+            const points = document.createElement('span');
+            points.className = 'text-text-muted shrink-0 text-xs';
+            points.textContent = formatCoursePoints(record?.points);
+
+            anchor.append(textBlock);
+            anchor.append(points);
+            item.append(anchor);
+            list.append(item);
         }
 
-        section.append(grid);
+        section.append(list);
         root.append(section);
     }
 }
@@ -312,30 +326,46 @@ function toRequirementNode(value: unknown): RequirementNode | undefined {
 
 function renderInfoState(root: HTMLElement, message: string): void {
     root.replaceChildren();
-    const panel = document.createElement('div');
-    panel.className =
-        'border-border/60 bg-surface-2/70 text-text-muted rounded-2xl border px-4 py-3 text-xs';
-    panel.textContent = message;
-    root.append(panel);
+    const text = document.createElement('p');
+    text.className = 'text-text-muted py-3 text-xs';
+    text.textContent = message;
+    root.append(text);
 }
 
 function renderGroupSkeleton(root: HTMLElement, count: number): void {
     root.replaceChildren();
     for (let index = 0; index < count; index += 1) {
         const wrapper = document.createElement('div');
-        wrapper.className =
-            'border-border/60 bg-surface-2/70 flex flex-col gap-3 rounded-2xl border p-4';
+        wrapper.className = 'flex flex-col gap-3 py-4';
 
         const title = document.createElement('span');
         title.className = 'skeleton-shimmer h-4 w-44 rounded-md';
         wrapper.append(title);
 
-        const grid = document.createElement('div');
-        grid.className = 'grid gap-3 sm:grid-cols-2';
-        grid.append(CourseCard());
-        grid.append(CourseCard());
-        wrapper.append(grid);
+        for (let line = 0; line < 2; line += 1) {
+            const row = document.createElement('span');
+            row.className =
+                'skeleton-shimmer h-10 w-full rounded-md sm:max-w-[28rem]';
+            wrapper.append(row);
+        }
 
         root.append(wrapper);
     }
+}
+
+function getCourseTitle(
+    record: CourseRecord | null | undefined,
+    code: string
+): string {
+    if (record?.name !== undefined && record.name.length > 0) {
+        return record.name;
+    }
+    return `${COURSE_NAME_FALLBACK_PREFIX} ${code}`;
+}
+
+function formatCoursePoints(points: number | undefined): string {
+    if (points === undefined || !Number.isFinite(points)) {
+        return "נק'ז —";
+    }
+    return `נק"ז ${String(points)}`;
 }
