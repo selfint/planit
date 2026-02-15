@@ -5,12 +5,14 @@ const {
     queryCoursesMock,
     getMetaMock,
     getCourseFacultiesMock,
+    getCoursesCountMock,
     getRequirementMock,
 } = vi.hoisted(() => {
     return {
         queryCoursesMock: vi.fn(),
         getMetaMock: vi.fn(),
         getCourseFacultiesMock: vi.fn(),
+        getCoursesCountMock: vi.fn(),
         getRequirementMock: vi.fn(),
     };
 });
@@ -19,6 +21,7 @@ vi.mock('$lib/indexeddb', () => ({
     queryCourses: queryCoursesMock,
     getMeta: getMetaMock,
     getCourseFaculties: getCourseFacultiesMock,
+    getCoursesCount: getCoursesCountMock,
     getRequirement: getRequirementMock,
 }));
 
@@ -40,10 +43,12 @@ describe('SearchPage', () => {
         queryCoursesMock.mockReset();
         getMetaMock.mockReset();
         getCourseFacultiesMock.mockReset();
+        getCoursesCountMock.mockReset();
         getRequirementMock.mockReset();
 
         queryCoursesMock.mockResolvedValue({ courses: [], total: 0 });
         getCourseFacultiesMock.mockResolvedValue(['CS', 'Math']);
+        getCoursesCountMock.mockResolvedValue(10);
         getRequirementMock.mockResolvedValue(undefined);
         getMetaMock.mockImplementation(async (key: string) => {
             if (key === 'courseDataLastSync') {

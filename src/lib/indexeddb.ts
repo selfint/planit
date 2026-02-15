@@ -567,6 +567,42 @@ export async function getCourseFaculties(): Promise<string[]> {
     });
 }
 
+export async function getCoursesCount(): Promise<number> {
+    const db = await openDb();
+
+    return new Promise((resolve, reject) => {
+        let count = 0;
+        const tx = db.transaction(STORE_COURSES, 'readonly');
+        const store = tx.objectStore(STORE_COURSES);
+        const request = store.openCursor();
+
+        request.onsuccess = (): void => {
+            const cursor = request.result;
+            if (cursor === null) {
+                return;
+            }
+
+            count += 1;
+            cursor.continue();
+        };
+
+        request.onerror = (): void => {
+            reject(request.error ?? new Error('Failed to count courses'));
+        };
+
+        tx.oncomplete = (): void => {
+            db.close();
+            resolve(count);
+        };
+        tx.onerror = (): void => {
+            reject(tx.error ?? new Error('Course count transaction failed'));
+        };
+        tx.onabort = (): void => {
+            reject(tx.error ?? new Error('Course count transaction aborted'));
+        };
+    });
+}
+
 export async function queryCourses(
     params: CourseQueryParams
 ): Promise<CourseQueryResult> {

@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
     getCourseFaculties,
+    getCoursesCount,
     getCatalogs,
     getCourse,
     getCoursesPage,
@@ -437,6 +438,18 @@ describe('indexeddb lib', () => {
         expect(all.total).toBe(3);
         expect(all.courses).toHaveLength(3);
         expect(faculties).toEqual(['CS', 'Math']);
+    });
+
+    it('returns total number of stored courses', async () => {
+        await putCourses([
+            { code: '1', name: 'א' },
+            { code: '2', name: 'ב' },
+            { code: '3', name: 'ג' },
+        ]);
+
+        const count = await getCoursesCount();
+
+        expect(count).toBe(3);
     });
 
     it('writes catalogs and reads back data', async () => {

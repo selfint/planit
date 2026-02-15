@@ -4,6 +4,7 @@ import { describe, expect, it, vi } from 'vitest';
 vi.mock('$lib/indexeddb', () => ({
     queryCourses: vi.fn().mockResolvedValue({ courses: [], total: 0 }),
     getCourseFaculties: vi.fn().mockResolvedValue(['CS']),
+    getCoursesCount: vi.fn().mockResolvedValue(100),
     getRequirement: vi.fn().mockResolvedValue(undefined),
     getMeta: vi
         .fn()

@@ -1,6 +1,7 @@
 import { CourseCard } from '$components/CourseCard';
 import {
     getCourseFaculties,
+    getCoursesCount,
     getMeta,
     getRequirement,
     queryCourses,
@@ -22,7 +23,6 @@ type SearchPageElements = {
     pointsMax: HTMLInputElement;
     medianMin: HTMLInputElement;
     status: HTMLParagraphElement;
-    count: HTMLParagraphElement;
     sync: HTMLParagraphElement;
     empty: HTMLParagraphElement;
     results: HTMLDivElement;
@@ -39,6 +39,7 @@ type SearchPageState = {
     debounceId: number | undefined;
     requestId: number;
     requirementCodes: Map<string, string[]>;
+    totalCourses: number | undefined;
 };
 
 type RequirementNode = {
@@ -76,6 +77,7 @@ export function SearchPage(): HTMLElement {
 
     void updateSyncLabel(elements.sync);
     void hydrateFilterOptions(elements, state);
+    void hydrateTotalCourses(state, elements);
     void runSearch(elements, state, false);
 
     return root;
@@ -105,9 +107,6 @@ function collectElements(root: HTMLElement): SearchPageElements {
     const status = root.querySelector<HTMLParagraphElement>(
         '[data-search-status]'
     );
-    const count = root.querySelector<HTMLParagraphElement>(
-        '[data-search-count]'
-    );
     const sync = root.querySelector<HTMLParagraphElement>('[data-search-sync]');
     const empty = root.querySelector<HTMLParagraphElement>(
         '[data-search-empty]'
@@ -124,7 +123,6 @@ function collectElements(root: HTMLElement): SearchPageElements {
         pointsMax === null ||
         medianMin === null ||
         status === null ||
-        count === null ||
         sync === null ||
         empty === null ||
         results === null
@@ -142,7 +140,6 @@ function collectElements(root: HTMLElement): SearchPageElements {
         pointsMax,
         medianMin,
         status,
-        count,
         sync,
         empty,
         results,
@@ -163,6 +160,7 @@ function parseStateFromUrl(): SearchPageState {
         debounceId: undefined,
         requestId: 0,
         requirementCodes: new Map(),
+        totalCourses: undefined,
     };
 }
 
@@ -315,7 +313,6 @@ async function runSearch(
     renderLoadingState(elements.results, 6);
     elements.empty.classList.add('hidden');
     elements.status.textContent = 'מחפש...';
-    elements.count.textContent = '...';
 
     const queryParams = buildQueryParams(state);
 
@@ -328,24 +325,22 @@ async function runSearch(
         renderResults(elements.results, result.courses);
 
         if (result.total === 0) {
-            elements.count.textContent = '0 תוצאות';
-            elements.status.textContent = 'לא נמצאו קורסים עבור הסינון הנוכחי.';
+            const totalCourses = state.totalCourses ?? 0;
+            elements.status.textContent = `showing 0 of ${String(totalCourses)}`;
             elements.empty.textContent =
                 'נסו להרחיב את הטווחים או לנקות חלק מהפילטרים.';
             elements.empty.classList.remove('hidden');
             return;
         }
 
-        const visibleCount = result.courses.length;
-        elements.count.textContent = `${String(visibleCount)} / ${String(result.total)} תוצאות`;
-        elements.status.textContent = `מציג את כל ${String(result.total)} הקורסים המתאימים.`;
+        const totalCourses = state.totalCourses ?? result.total;
+        elements.status.textContent = `showing ${String(result.total)} of ${String(totalCourses)}`;
     } catch (_error: unknown) {
         if (requestId !== state.requestId) {
             return;
         }
 
         elements.results.replaceChildren();
-        elements.count.textContent = '0 תוצאות';
         elements.status.textContent = 'טעינת התוצאות נכשלה.';
         elements.empty.textContent = 'אירעה שגיאה בקריאת הנתונים המקומיים.';
         elements.empty.classList.remove('hidden');
@@ -573,4 +568,16 @@ async function updateSyncLabel(target: HTMLParagraphElement): Promise<void> {
     }
 
     target.textContent = `עודכן לאחרונה: ${date.toLocaleString()}`;
+}
+
+async function hydrateTotalCourses(
+    state: SearchPageState,
+    elements: SearchPageElements
+): Promise<void> {
+    try {
+        state.totalCourses = await getCoursesCount();
+        void runSearch(elements, state, false);
+    } catch (_error: unknown) {
+        state.totalCourses = undefined;
+    }
 }
