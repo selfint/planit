@@ -1033,10 +1033,18 @@ function scrollRailBySemester(
         columns.length - 1,
         Math.max(0, currentIndex + step)
     );
-    columns[nextIndex].scrollIntoView({
+
+    const railRect = rail.getBoundingClientRect();
+    const targetRect = columns[nextIndex].getBoundingClientRect();
+    const isRtl = getComputedStyle(rail).direction === 'rtl';
+
+    const horizontalDelta = isRtl
+        ? targetRect.right - railRect.right
+        : targetRect.left - railRect.left;
+
+    rail.scrollBy({
+        left: horizontalDelta,
         behavior: 'smooth',
-        block: 'nearest',
-        inline: 'start',
     });
 }
 
