@@ -31,7 +31,9 @@ test.describe('/plan page route', () => {
         await expect(page.locator('[data-semester-rail]')).toBeVisible();
         await expect(page.locator('[data-rail-prev]')).toHaveCount(0);
         await expect(page.locator('[data-rail-next]')).toHaveCount(0);
+        await expect(page.locator('[data-clear-selection]')).toHaveCount(0);
         await expect(page.locator('[data-plan-row]')).toHaveCount(8);
+        await expect(page.locator('[data-cancel-selection]')).toHaveCount(8);
         await expect(
             page.locator('[data-plan-row][data-row-id="wishlist"]')
         ).toContainText('רשימת משאלות');
@@ -114,7 +116,7 @@ test.describe('/plan page route', () => {
         await page.click(`[data-plan-row][data-row-id="${targetRowId}"]`);
 
         await expect(page.locator('[data-selected-status]')).toHaveCount(0);
-        await expect(page.locator('[data-clear-selection]')).toBeDisabled();
+        await expect(page.locator('[data-clear-selection]')).toHaveCount(0);
         await expect.poll(async () => getVisibleMoveTargetCount(page)).toBe(0);
 
         await expect(

@@ -199,9 +199,6 @@ export function PlanPage(): HTMLElement {
     }
 
     const rail = root.querySelector<HTMLElement>('[data-semester-rail]');
-    const clearButton = root.querySelector<HTMLButtonElement>(
-        '[data-clear-selection]'
-    );
     const warning = root.querySelector<HTMLElement>('[data-plan-warning]');
     const problemsList = root.querySelector<HTMLElement>(
         '[data-schedule-problems]'
@@ -215,7 +212,6 @@ export function PlanPage(): HTMLElement {
 
     if (
         rail === null ||
-        clearButton === null ||
         warning === null ||
         problemsList === null ||
         problemsCount === null ||
@@ -227,25 +223,6 @@ export function PlanPage(): HTMLElement {
     const state = createInitialPlanState();
     semesterCountInput.value = state.semesterCount.toString();
 
-    clearButton.addEventListener('click', () => {
-        if (state.selected === undefined) {
-            return;
-        }
-
-        const selectedCourseButton = getCourseButtonElement(
-            rail,
-            state.selected.rowId,
-            state.selected.courseCode
-        );
-        if (selectedCourseButton !== undefined) {
-            setCourseSelectionState(selectedCourseButton, false);
-        }
-
-        state.selected = undefined;
-        updateSelectionControls(state, clearButton);
-        toggleMoveTargets(rail, undefined);
-    });
-
     semesterCountInput.addEventListener('change', () => {
         const nextCount = parseSemesterCount(semesterCountInput.value);
         semesterCountInput.value = nextCount.toString();
@@ -254,7 +231,6 @@ export function PlanPage(): HTMLElement {
         renderPlan(
             state,
             rail,
-            clearButton,
             warning,
             problemsList,
             problemsCount,
@@ -271,6 +247,14 @@ export function PlanPage(): HTMLElement {
         const courseButton = target.closest<HTMLElement>(
             '[data-course-action]'
         );
+        const cancelButton = target.closest<HTMLElement>(
+            '[data-cancel-selection]'
+        );
+        if (cancelButton !== null) {
+            clearSelection(state, rail);
+            return;
+        }
+
         if (courseButton !== null) {
             const rowId = courseButton.dataset.rowId;
             const courseCode = courseButton.dataset.courseCode;
@@ -278,7 +262,7 @@ export function PlanPage(): HTMLElement {
                 return;
             }
 
-            handleCourseClick(state, rowId, courseCode, rail, clearButton);
+            handleCourseClick(state, rowId, courseCode, rail);
             return;
         }
 
@@ -288,13 +272,12 @@ export function PlanPage(): HTMLElement {
             return;
         }
 
-        void handleRowClick(state, targetRowId, rail, clearButton);
+        void handleRowClick(state, targetRowId, rail);
     });
 
     renderPlan(
         state,
         rail,
-        clearButton,
         warning,
         problemsList,
         problemsCount,
@@ -303,7 +286,6 @@ export function PlanPage(): HTMLElement {
     void hydratePlan(
         state,
         rail,
-        clearButton,
         warning,
         problemsList,
         problemsCount,
@@ -316,7 +298,6 @@ export function PlanPage(): HTMLElement {
 async function hydratePlan(
     state: PlanState,
     rail: HTMLElement,
-    clearButton: HTMLButtonElement,
     warning: HTMLElement,
     problemsList: HTMLElement,
     problemsCount: HTMLElement,
@@ -353,7 +334,6 @@ async function hydratePlan(
     renderPlan(
         state,
         rail,
-        clearButton,
         warning,
         problemsList,
         problemsCount,
@@ -364,13 +344,11 @@ async function hydratePlan(
 function renderPlan(
     state: PlanState,
     rail: HTMLElement,
-    clearButton: HTMLButtonElement,
     warning: HTMLElement,
     problemsList: HTMLElement,
     problemsCount: HTMLElement,
     semesterCountInput: HTMLInputElement
 ): void {
-    updateSelectionControls(state, clearButton);
     semesterCountInput.value = state.semesterCount.toString();
 
     if (state.warning !== undefined && state.warning.length > 0) {
@@ -452,11 +430,21 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
     const moveTarget = document.createElement('p');
     moveTarget.className =
         'border-accent/40 bg-accent/10 text-accent min-h-7 rounded-xl border px-2 py-1 text-xs opacity-0 transition-opacity duration-200 ease-out invisible pointer-events-none';
-    moveTarget.textContent = 'לחצו כאן להעברת הקורס הנבחר';
+    moveTarget.textContent = 'העברה';
     moveTarget.dataset.moveTarget = 'true';
+    moveTarget.dataset.moveControl = 'true';
     moveTarget.dataset.rowId = row.id;
 
-    headingRow.append(title, moveTarget);
+    const cancelSelectionButton = document.createElement('button');
+    cancelSelectionButton.type = 'button';
+    cancelSelectionButton.className =
+        'border-border/60 bg-surface-1/70 text-text-muted hover:border-accent/50 hover:text-text min-h-7 rounded-xl border px-2 py-1 text-xs opacity-0 transition-opacity duration-200 ease-out invisible pointer-events-none touch-manipulation';
+    cancelSelectionButton.textContent = 'ביטול';
+    cancelSelectionButton.dataset.cancelSelection = 'true';
+    cancelSelectionButton.dataset.moveControl = 'true';
+    cancelSelectionButton.dataset.rowId = row.id;
+
+    headingRow.append(title, moveTarget, cancelSelectionButton);
     header.append(headingRow, metrics);
 
     const list = document.createElement('div');
@@ -750,13 +738,6 @@ function getExclusionProblem(
     return `חפיפה לקורסים הדדיים: ${conflicts.join(', ')}`;
 }
 
-function updateSelectionControls(
-    state: PlanState,
-    clearButton: HTMLButtonElement
-): void {
-    clearButton.disabled = state.selected === undefined;
-}
-
 function setCourseSelectionState(
     button: HTMLElement,
     isSelected: boolean
@@ -784,8 +765,9 @@ function toggleMoveTargets(
     rail: HTMLElement,
     sourceRowId: string | undefined
 ): void {
-    const moveTargets =
-        rail.querySelectorAll<HTMLElement>('[data-move-target]');
+    const moveTargets = rail.querySelectorAll<HTMLElement>(
+        '[data-move-control]'
+    );
     for (const moveTarget of moveTargets) {
         const targetRowId = moveTarget.dataset.rowId;
         const shouldShow =
@@ -796,6 +778,24 @@ function toggleMoveTargets(
         moveTarget.classList.toggle('opacity-0', !shouldShow);
         moveTarget.classList.toggle('pointer-events-none', !shouldShow);
     }
+}
+
+function clearSelection(state: PlanState, rail: HTMLElement): void {
+    if (state.selected === undefined) {
+        return;
+    }
+
+    const selectedCourseButton = getCourseButtonElement(
+        rail,
+        state.selected.rowId,
+        state.selected.courseCode
+    );
+    if (selectedCourseButton !== undefined) {
+        setCourseSelectionState(selectedCourseButton, false);
+    }
+
+    state.selected = undefined;
+    toggleMoveTargets(rail, undefined);
 }
 
 function createSemesterEmptyStateElement(): HTMLElement {
@@ -842,8 +842,7 @@ function handleCourseClick(
     state: PlanState,
     rowId: string,
     courseCode: string,
-    rail: HTMLElement,
-    clearButton: HTMLButtonElement
+    rail: HTMLElement
 ): void {
     const isSameSelection =
         state.selected?.rowId === rowId &&
@@ -871,7 +870,6 @@ function handleCourseClick(
         setCourseSelectionState(selectedButton, true);
     }
 
-    updateSelectionControls(state, clearButton);
     toggleMoveTargets(rail, rowId);
 }
 
@@ -882,8 +880,7 @@ function getRowById(state: PlanState, rowId: string): PlanRow | undefined {
 async function handleRowClick(
     state: PlanState,
     targetRowId: string,
-    rail: HTMLElement,
-    clearButton: HTMLButtonElement
+    rail: HTMLElement
 ): Promise<void> {
     if (state.selected === undefined) {
         return;
@@ -935,8 +932,6 @@ async function handleRowClick(
     }
 
     state.selected = undefined;
-
-    updateSelectionControls(state, clearButton);
     toggleMoveTargets(rail, undefined);
 
     await persistPlanState(state);
