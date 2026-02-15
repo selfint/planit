@@ -4,9 +4,7 @@
             class="flex min-h-screen w-full flex-col gap-5 px-4 pt-[calc(env(safe-area-inset-top)+1.25rem)] pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:px-6 lg:px-8"
         >
             <p class="text-text-muted text-xs">/plan</p>
-            <section
-                class="border-border/60 from-surface-1/90 to-surface-2/80 flex w-full flex-col gap-4 rounded-3xl border bg-gradient-to-b p-4 shadow-sm sm:p-5"
-            >
+            <section class="flex w-full flex-col gap-4 py-1">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div class="flex flex-col gap-1">
                         <h1 class="text-2xl font-medium sm:text-3xl">
@@ -25,33 +23,21 @@
                         חזרה לדף הבית
                     </a>
                 </div>
-                <div class="flex flex-wrap items-center gap-2 sm:gap-3">
-                    <p
-                        class="border-border/60 bg-surface-1/70 text-text-muted rounded-full border px-3 py-1.5 text-xs"
-                        data-selected-status
+            </section>
+
+            <section class="flex flex-col gap-2">
+                <div class="flex items-center justify-between gap-2">
+                    <h3 class="text-sm font-medium">בעיות תזמון</h3>
+                    <span class="text-text-muted text-xs" data-problems-count
+                        >0</span
                     >
-                        לא נבחר קורס
-                    </p>
-                    <button
-                        type="button"
-                        class="border-border/60 bg-surface-1/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1.5 text-xs font-medium transition duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-60"
-                        data-clear-selection
-                    >
-                        נקה בחירה
-                    </button>
-                    <label
-                        class="border-border/60 bg-surface-1/70 text-text-muted flex items-center gap-2 rounded-full border px-3 py-1 text-xs"
-                    >
-                        <span>מספר סמסטרים</span>
-                        <input
-                            type="number"
-                            min="3"
-                            step="1"
-                            class="focus-visible:ring-accent/60 bg-surface-2/80 text-text w-16 rounded-lg px-2 py-1 text-xs focus-visible:ring-2"
-                            data-semester-count
-                        />
-                    </label>
                 </div>
+                <ul
+                    class="text-text-muted flex list-disc flex-col gap-1 ps-5 text-xs"
+                    data-schedule-problems
+                >
+                    <li>לא זוהו בעיות כרגע.</li>
+                </ul>
             </section>
 
             <section class="-mx-4 flex flex-col gap-4 sm:-mx-6 lg:-mx-8">
@@ -79,6 +65,36 @@
                     </div>
                 </div>
 
+                <div
+                    class="flex flex-wrap items-center gap-2 px-4 sm:gap-3 sm:px-6 lg:px-8"
+                >
+                    <p
+                        class="border-border/60 bg-surface-1/70 text-text-muted rounded-full border px-3 py-1.5 text-xs"
+                        data-selected-status
+                    >
+                        לא נבחר קורס
+                    </p>
+                    <button
+                        type="button"
+                        class="border-border/60 bg-surface-1/70 text-text-muted hover:border-accent/50 hover:text-text rounded-full border px-3 py-1.5 text-xs font-medium transition duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-60"
+                        data-clear-selection
+                    >
+                        נקה בחירה
+                    </button>
+                    <label
+                        class="border-border/60 bg-surface-1/70 text-text-muted flex items-center gap-2 rounded-full border px-3 py-1 text-xs"
+                    >
+                        <span>מספר סמסטרים</span>
+                        <input
+                            type="number"
+                            min="3"
+                            step="1"
+                            class="focus-visible:ring-accent/60 bg-surface-2/80 text-text w-16 rounded-lg px-2 py-1 text-xs focus-visible:ring-2"
+                            data-semester-count
+                        />
+                    </label>
+                </div>
+
                 <p
                     class="text-warning hidden px-4 text-xs sm:px-6 lg:px-8"
                     role="status"
@@ -91,23 +107,6 @@
                     class="flex w-full snap-x snap-mandatory gap-4 overflow-x-auto pb-2 [scrollbar-width:thin]"
                     data-semester-rail
                 ></div>
-
-                <section class="flex flex-col gap-2 px-4 sm:px-6 lg:px-8">
-                    <div class="flex items-center justify-between gap-2">
-                        <h3 class="text-sm font-medium">בעיות תזמון</h3>
-                        <span
-                            class="text-text-muted text-xs"
-                            data-problems-count
-                            >0</span
-                        >
-                    </div>
-                    <ul
-                        class="text-text-muted flex list-disc flex-col gap-1 ps-5 text-xs"
-                        data-schedule-problems
-                    >
-                        <li>לא זוהו בעיות כרגע.</li>
-                    </ul>
-                </section>
             </section>
         </main>
     </section>
