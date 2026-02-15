@@ -74,6 +74,7 @@ def main() -> int:
     missing: list[str] = []
     invalid_playwright_specs: list[str] = []
     invalid_vitest_tests: list[str] = []
+    invalid_storybook_stories: list[str] = []
 
     for route_dir, base_name in sorted(route_bases, key=lambda item: str(item[0] / item[1])):
         for suffix in REQUIRED_SUFFIXES:
@@ -88,6 +89,14 @@ def main() -> int:
         test_file = route_dir / f'{base_name}.test.ts'
         if test_file.exists() and not reads_framework_import(test_file, 'vitest'):
             invalid_vitest_tests.append(str(test_file.relative_to(repo_root)))
+
+        stories_file = route_dir / f'{base_name}.stories.ts'
+        if stories_file.exists() and not reads_framework_import(
+            stories_file, '@storybook/html'
+        ):
+            invalid_storybook_stories.append(
+                str(stories_file.relative_to(repo_root))
+            )
 
     if missing:
         print('Missing page route files:', file=sys.stderr)
@@ -107,8 +116,17 @@ def main() -> int:
             print(path, file=sys.stderr)
         return 1
 
+    if invalid_storybook_stories:
+        print(
+            'Invalid page route .stories.ts files (must import @storybook/html):',
+            file=sys.stderr,
+        )
+        for path in invalid_storybook_stories:
+            print(path, file=sys.stderr)
+        return 1
+
     print(
-        'All page routes have .html, .ts, .stories.ts, .spec.ts, .test.ts, and .md files, and use Playwright/Vitest in route tests.'
+        'All page routes have .html, .ts, .stories.ts, .spec.ts, .test.ts, and .md files, and use Playwright/Vitest/Storybook imports in route tests and stories.'
     )
     return 0
 

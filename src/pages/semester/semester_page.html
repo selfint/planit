@@ -1,21 +1,42 @@
 <template>
-    <section class="text-text min-h-screen w-full">
+    <section class="text-text min-h-screen w-full" data-page="semester">
         <div class="pt-[env(safe-area-inset-top)]" data-console-nav></div>
         <main
-            class="mx-auto flex min-h-screen w-full max-w-5xl flex-col items-start justify-center gap-6 px-4 pt-8 pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:px-8"
+            class="mx-auto flex w-full max-w-7xl flex-col gap-6 pt-[calc(env(safe-area-inset-top)+1rem)] pb-[calc(env(safe-area-inset-bottom)+1.5rem)]"
         >
-            <p class="text-text-muted text-xs">/semester</p>
-            <h1 class="text-3xl font-medium">עמוד סמסטר</h1>
-            <p class="text-text-muted max-w-2xl text-sm">
-                זהו עמוד Placeholder לנתיב הסמסטר. כאן תופיע תצוגה ממוקדת של
-                סמסטר בודד.
-            </p>
-            <a
-                class="bg-accent text-accent-contrast rounded-full px-5 py-2 text-xs font-medium"
-                href="/"
+            <div
+                class="grid min-w-0 grid-cols-1 gap-4 lg:grid-cols-[minmax(18rem,24rem)_minmax(0,1fr)] lg:items-start"
             >
-                חזרה לעמוד הבית
-            </a>
+                <section
+                    class="order-2 flex min-w-0 flex-col gap-5 lg:order-2"
+                    data-role="groups-root"
+                ></section>
+
+                <aside
+                    class="sticky top-0 order-1 w-full lg:order-1 lg:mx-0 lg:w-auto lg:self-start"
+                    data-role="current-semester-aside"
+                >
+                    <section
+                        class="border-border/60 bg-surface-1 flex w-full min-w-0 flex-col gap-3 border py-3 shadow-sm lg:rounded-2xl"
+                        data-role="current-semester"
+                    >
+                        <h2
+                            class="mx-3 text-sm font-medium"
+                            data-role="current-semester-title"
+                        ></h2>
+                        <div
+                            class="flex min-h-0 snap-x snap-mandatory gap-2 overflow-x-auto overflow-y-hidden pb-1 [scrollbar-width:thin] lg:snap-none lg:flex-col lg:gap-2 lg:overflow-x-hidden lg:overflow-y-visible lg:pb-0"
+                            data-role="current-semester-courses"
+                        ></div>
+                        <p
+                            class="text-text-muted hidden text-xs"
+                            data-role="current-semester-empty"
+                        >
+                            אין קורסים בסמסטר זה.
+                        </p>
+                    </section>
+                </aside>
+            </div>
         </main>
     </section>
 </template>
