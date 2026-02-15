@@ -1,3 +1,4 @@
+import { ConsoleNav } from '$components/ConsoleNav';
 import templateHtml from './login_page.html?raw';
 
 export function LoginPage(): HTMLElement {
@@ -11,6 +12,12 @@ export function LoginPage(): HTMLElement {
     const root = templateElement.content.firstElementChild?.cloneNode(true);
     if (!(root instanceof HTMLElement)) {
         throw new Error('LoginPage template root not found');
+    }
+
+    const consoleNavHost =
+        root.querySelector<HTMLElement>('[data-console-nav]');
+    if (consoleNavHost !== null) {
+        consoleNavHost.replaceWith(ConsoleNav({ activePath: '/login' }));
     }
 
     return root;

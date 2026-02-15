@@ -60,16 +60,12 @@ function applyActiveState(
         const isActive = normalizedPath === ACTIVE_PATHS[linkKey];
         if (isActive) {
             link.classList.add('text-text');
+            link.classList.add('font-medium');
             link.classList.remove('text-text-muted');
-            if (linkKey !== 'catalog' && linkKey !== 'plan') {
-                link.classList.add('border-accent/50');
-            }
             continue;
         }
 
-        if (linkKey !== 'catalog' && linkKey !== 'plan') {
-            link.classList.remove('border-accent/50');
-        }
+        link.classList.remove('font-medium');
     }
 }
 

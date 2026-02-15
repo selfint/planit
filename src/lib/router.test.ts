@@ -29,13 +29,6 @@ vi.mock('../pages/semester/semester_page', () => ({
 vi.mock('../pages/404/not_found_page', () => ({
     NotFoundPage: (): HTMLElement => mockPage(),
 }));
-vi.mock('$components/ConsoleNav', () => ({
-    ConsoleNav: (): HTMLElement => {
-        const nav = document.createElement('nav');
-        nav.dataset.component = 'ConsoleNav';
-        return nav;
-    },
-}));
 
 import {
     REDIRECT_SESSION_KEY,

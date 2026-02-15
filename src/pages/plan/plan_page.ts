@@ -5,6 +5,7 @@ import {
     setMeta,
 } from '$lib/indexeddb';
 import { CourseCard } from '$components/CourseCard';
+import { ConsoleNav } from '$components/ConsoleNav';
 
 import templateHtml from './plan_page.html?raw';
 
@@ -171,6 +172,12 @@ export function PlanPage(): HTMLElement {
     const root = templateElement.content.firstElementChild?.cloneNode(true);
     if (!(root instanceof HTMLElement)) {
         throw new Error('PlanPage template root not found');
+    }
+
+    const consoleNavHost =
+        root.querySelector<HTMLElement>('[data-console-nav]');
+    if (consoleNavHost !== null) {
+        consoleNavHost.replaceWith(ConsoleNav({ activePath: '/plan' }));
     }
 
     const rail = root.querySelector<HTMLElement>('[data-semester-rail]');

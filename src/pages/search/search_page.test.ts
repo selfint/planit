@@ -36,6 +36,14 @@ vi.mock('$components/CourseCard', () => ({
     },
 }));
 
+vi.mock('$components/ConsoleNav', () => ({
+    ConsoleNav: (): HTMLElement => {
+        const nav = document.createElement('nav');
+        nav.dataset.component = 'ConsoleNav';
+        return nav;
+    },
+}));
+
 import { SearchPage } from './search_page';
 
 describe('SearchPage', () => {

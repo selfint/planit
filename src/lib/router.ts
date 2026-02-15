@@ -1,5 +1,4 @@
 import { CatalogPage } from '../pages/catalog/catalog_page';
-import { ConsoleNav } from '$components/ConsoleNav';
 import { CoursePage } from '../pages/course/course_page';
 import { LandingPage } from '../pages/landing/landing_page';
 import { LoginPage } from '../pages/login/login_page';
@@ -103,7 +102,7 @@ function renderRoute(pathname: string, replaceState = false): void {
     if (page === null) {
         app.replaceChildren(NotFoundPage(routePath));
     } else {
-        app.replaceChildren(renderPage(routePath, page));
+        app.replaceChildren(page());
     }
 
     const currentUrl = new URL(window.location.href);
@@ -113,21 +112,6 @@ function renderRoute(pathname: string, replaceState = false): void {
         currentUrl.pathname = normalizedRoutePath;
         window.history.replaceState(null, '', currentUrl);
     }
-}
-
-function renderPage(routePath: string, pageFactory: PageFactory): HTMLElement {
-    const page = pageFactory();
-    if (!shouldUseConsoleNav(routePath)) {
-        return page;
-    }
-
-    const wrapper = document.createElement('div');
-    wrapper.append(ConsoleNav({ activePath: routePath }), page);
-    return wrapper;
-}
-
-function shouldUseConsoleNav(routePath: string): boolean {
-    return routePath !== '/' && routePath !== '/404';
 }
 
 function navigate(url: URL): void {
