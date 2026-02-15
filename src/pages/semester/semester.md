@@ -21,23 +21,21 @@ It separates three course scopes:
 
 2-column page layout
 
-+------------------------------------------+  +------------------------------------------------------+
-| קורסים נוספים מהקטלוג                     |  | קורסי הסמסטר הנבחר                                   |
-| [CourseCard] [CourseCard] [CourseCard]   |  | (עמודה קבועה: כרטיס אחד בכל שורה)                    |
-| [CourseCard] [CourseCard] [CourseCard]   |  | [CourseCard]                                          |
-| [CourseCard] [CourseCard] [CourseCard]   |  | [CourseCard]                                          |
-|                                            |  | [CourseCard]                                          |
-| בחירה חופשית: מדעי המחשב                  |  | [CourseCard]                                          |
-| [CourseCard] [CourseCard] [CourseCard]   |  +------------------------------------------------------+
-| [CourseCard] [CourseCard] [CourseCard]   |
-|                                            |
-| בחירה חופשית: מתמטיקה                     |
-| [CourseCard] [CourseCard] [CourseCard]   |
-| [CourseCard]                               |
-|                                            |
-| בחירה חופשית: פיזיקה                      |
-| [CourseCard] [CourseCard] [CourseCard]    |
-+------------------------------------------+
+קורסים נוספים מהקטלוג                        קורסי הסמסטר הנבחר
+[CourseCard] [CourseCard] [CourseCard]      (עמודה קבועה: כרטיס אחד בכל שורה)
+[CourseCard] [CourseCard] [CourseCard]      [CourseCard]
+[CourseCard] [CourseCard] [CourseCard]      [CourseCard]
+                                             [CourseCard]
+בחירה חופשית: מדעי המחשב                     [CourseCard]
+[CourseCard] [CourseCard] [CourseCard]
+[CourseCard] [CourseCard] [CourseCard]
+
+בחירה חופשית: מתמטיקה
+[CourseCard] [CourseCard] [CourseCard]
+[CourseCard]
+
+בחירה חופשית: פיזיקה
+[CourseCard] [CourseCard] [CourseCard]
 ```
 
 ### Mobile (<1024)
