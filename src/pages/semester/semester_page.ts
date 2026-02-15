@@ -454,6 +454,7 @@ function renderCurrentSemesterCourses(
     courses: CourseRecord[]
 ): void {
     container.replaceChildren();
+    container.append(createLeadingSeparator('lg:hidden'));
     if (courses.length === 0) {
         empty.classList.remove('hidden');
         return;
@@ -474,13 +475,14 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
         section.dataset.groupTitle = group.title;
 
         const title = document.createElement('h2');
-        title.className = 'text-sm font-medium';
+        title.className = 'mx-3 text-sm font-medium';
         title.textContent = group.title;
         section.append(title);
 
         const row = document.createElement('div');
         row.className =
             'flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:thin] md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-3';
+        row.append(createLeadingSeparator('md:hidden'));
 
         if (group.courses.length === 0) {
             const empty = document.createElement('p');
@@ -510,6 +512,13 @@ function createCourseLink(course: CourseRecord): HTMLAnchorElement {
 
     link.append(CourseCard(course));
     return link;
+}
+
+function createLeadingSeparator(hiddenClass: string): HTMLElement {
+    const separator = document.createElement('span');
+    separator.className = `${hiddenClass} w-3 shrink-0`;
+    separator.setAttribute('aria-hidden', 'true');
+    return separator;
 }
 
 function setupStickyExpansion(aside: HTMLElement, section: HTMLElement): void {
