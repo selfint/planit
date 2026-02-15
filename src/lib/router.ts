@@ -66,8 +66,12 @@ function renderRoute(pathname: string, replaceState = false): void {
 function navigate(url: URL): void {
     const normalizedPath = normalizePath(url.pathname);
     const nextUrl = `${normalizedPath}${url.search}${url.hash}`;
-    const currentUrl = `${normalizePath(window.location.pathname)}${window.location.search}${window.location.hash}`;
-    if (nextUrl === currentUrl) {
+    const currentUrl = new URL(window.location.href);
+    const isSameUrl =
+        normalizedPath === normalizePath(currentUrl.pathname) &&
+        url.search === currentUrl.search &&
+        url.hash === currentUrl.hash;
+    if (isSameUrl) {
         return;
     }
 
