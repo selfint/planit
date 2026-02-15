@@ -1,20 +1,200 @@
 <template>
-    <section class="text-text min-h-screen w-full">
+    <section class="text-text min-h-screen w-full" data-page="course">
         <main
-            class="mx-auto flex min-h-screen w-full max-w-5xl flex-col items-start justify-center gap-6 px-4 pt-[calc(env(safe-area-inset-top)+2rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:px-8"
+            class="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 pt-[calc(env(safe-area-inset-top)+1.5rem)] pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:px-8"
+            data-role="course-page-root"
         >
-            <p class="text-text-muted text-xs">/course</p>
-            <h1 class="text-3xl font-medium">עמוד פרטי קורס</h1>
-            <p class="text-text-muted max-w-2xl text-sm">
-                זהו עמוד Placeholder לנתיב הקורס. כאן יוצגו פרטי הקורס, דרישות
-                קדם ופעולות תכנון.
-            </p>
-            <a
-                class="bg-accent text-accent-contrast rounded-full px-5 py-2 text-xs font-medium"
-                href="/"
+            <header class="flex w-full flex-col gap-3">
+                <p class="text-text-muted text-xs" data-role="route-label">
+                    /course
+                </p>
+                <div class="flex w-full flex-col gap-4 py-1">
+                    <div
+                        class="flex flex-wrap items-start justify-between gap-4"
+                    >
+                        <div class="flex flex-col gap-2">
+                            <p
+                                class="text-text-muted text-xs"
+                                data-role="course-code"
+                            >
+                                —
+                            </p>
+                            <h1
+                                class="text-2xl font-medium sm:text-3xl"
+                                data-role="course-name"
+                            >
+                                פרטי קורס
+                            </h1>
+                            <p
+                                class="text-text-muted max-w-3xl text-xs"
+                                data-role="course-about"
+                            >
+                                בחרו קורס כדי לראות תיאור מלא, תנאי קדם וקשרים
+                                לקורסים נוספים.
+                            </p>
+                        </div>
+                        <span
+                            class="bg-surface-2 text-text-muted inline-flex min-h-11 items-center rounded-full px-4 text-xs"
+                            data-role="sync-state"
+                        >
+                            טוען פרטי קורס...
+                        </span>
+                    </div>
+
+                    <dl
+                        class="grid w-full grid-cols-2 gap-3 text-xs sm:grid-cols-4"
+                    >
+                        <div class="bg-surface-2/70 rounded-2xl p-3">
+                            <dt class="text-text-muted">נק"ז</dt>
+                            <dd
+                                class="text-sm font-medium"
+                                data-role="course-points"
+                            >
+                                —
+                            </dd>
+                        </div>
+                        <div class="bg-surface-2/70 rounded-2xl p-3">
+                            <dt class="text-text-muted">חציון</dt>
+                            <dd
+                                class="text-sm font-medium"
+                                data-role="course-median"
+                            >
+                                —
+                            </dd>
+                        </div>
+                        <div class="bg-surface-2/70 rounded-2xl p-3">
+                            <dt class="text-text-muted">פקולטה</dt>
+                            <dd
+                                class="text-sm font-medium"
+                                data-role="course-faculty"
+                            >
+                                —
+                            </dd>
+                        </div>
+                        <div class="bg-surface-2/70 rounded-2xl p-3">
+                            <dt class="text-text-muted">סמסטרים</dt>
+                            <dd
+                                class="text-sm font-medium"
+                                data-role="course-seasons"
+                            >
+                                —
+                            </dd>
+                        </div>
+                    </dl>
+
+                    <div class="flex flex-wrap gap-2 text-xs">
+                        <a
+                            class="bg-accent text-accent-contrast inline-flex min-h-11 items-center rounded-full px-5 font-medium"
+                            data-role="search-link"
+                            href="/search"
+                        >
+                            פתיחה בחיפוש
+                        </a>
+                        <a
+                            class="border-border bg-surface-2 text-text inline-flex min-h-11 items-center rounded-full border px-5 font-medium"
+                            href="/catalog"
+                        >
+                            מעבר לקטלוגים
+                        </a>
+                        <a
+                            class="border-border bg-surface-2 text-text inline-flex min-h-11 items-center rounded-full border px-5 font-medium"
+                            href="/plan"
+                        >
+                            חזרה למתכנן
+                        </a>
+                    </div>
+                </div>
+            </header>
+
+            <section
+                class="flex w-full items-center gap-3 py-4"
+                data-state="loading"
             >
-                חזרה לעמוד הבית
-            </a>
+                <span
+                    class="bg-accent/20 inline-block h-2.5 w-2.5 rounded-full"
+                ></span>
+                <p class="text-text-muted text-sm">
+                    טוען פרטי קורס מהמאגר המקומי...
+                </p>
+            </section>
+
+            <section class="hidden w-full py-4" data-state="not-found">
+                <h2 class="text-lg font-medium">לא נמצא קורס תואם</h2>
+                <p
+                    class="text-text-muted mt-2 text-sm"
+                    data-role="not-found-message"
+                >
+                    לא נמצא קורס מתאים לבקשה הנוכחית.
+                </p>
+            </section>
+
+            <section class="hidden w-full flex-col gap-8" data-state="found">
+                <article class="flex w-full flex-col gap-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="text-lg font-medium">קורסי קדם</h2>
+                        <p
+                            class="text-text-muted text-xs"
+                            data-role="dependencies-count"
+                        >
+                            0 קורסים
+                        </p>
+                    </div>
+                    <div
+                        class="flex flex-col gap-4"
+                        data-role="dependencies-grid"
+                    ></div>
+                    <p
+                        class="text-text-muted text-xs"
+                        data-role="dependencies-empty"
+                    >
+                        אין לקורס קורסי קדם רשומים.
+                    </p>
+                </article>
+
+                <article class="mt-4 flex w-full flex-col gap-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="text-lg font-medium">קורסים צמודים</h2>
+                        <p
+                            class="text-text-muted text-xs"
+                            data-role="adjacent-count"
+                        >
+                            0 קורסים
+                        </p>
+                    </div>
+                    <div
+                        class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                        data-role="adjacent-grid"
+                    ></div>
+                    <p
+                        class="text-text-muted text-xs"
+                        data-role="adjacent-empty"
+                    >
+                        אין קורסים צמודים.
+                    </p>
+                </article>
+
+                <article class="mt-4 flex w-full flex-col gap-3">
+                    <div class="flex items-center justify-between gap-2">
+                        <h2 class="text-lg font-medium">ללא זיכוי נוסף</h2>
+                        <p
+                            class="text-text-muted text-xs"
+                            data-role="exclusive-count"
+                        >
+                            0 קורסים
+                        </p>
+                    </div>
+                    <div
+                        class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                        data-role="exclusive-grid"
+                    ></div>
+                    <p
+                        class="text-text-muted text-xs"
+                        data-role="exclusive-empty"
+                    >
+                        אין קורסים ללא זיכוי נוסף.
+                    </p>
+                </article>
+            </section>
         </main>
     </section>
 </template>
