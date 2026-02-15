@@ -46,6 +46,15 @@ vi.mock('$components/ConsoleNav', () => ({
 
 import { SearchPage } from './search_page';
 
+async function waitForSearchRender(): Promise<void> {
+    await new Promise((resolve) => {
+        window.setTimeout(resolve, 0);
+    });
+    await new Promise((resolve) => {
+        window.setTimeout(resolve, 0);
+    });
+}
+
 describe('SearchPage', () => {
     beforeEach(() => {
         queryCoursesMock.mockReset();
@@ -74,9 +83,7 @@ describe('SearchPage', () => {
 
     it('renders result grid and filter controls', async () => {
         const page = SearchPage();
-        await new Promise((resolve) => {
-            window.setTimeout(resolve, 0);
-        });
+        await waitForSearchRender();
 
         const grid = page.querySelector<HTMLElement>('[data-search-results]');
         const availableFilter = page.querySelector('[data-filter-available]');
@@ -114,9 +121,7 @@ describe('SearchPage', () => {
         });
 
         const page = SearchPage();
-        await new Promise((resolve) => {
-            window.setTimeout(resolve, 0);
-        });
+        await waitForSearchRender();
 
         const links = page.querySelectorAll<HTMLAnchorElement>(
             '[data-search-results] > a'
@@ -139,13 +144,53 @@ describe('SearchPage', () => {
         getCoursesCountMock.mockResolvedValue(0);
 
         const page = SearchPage();
-        await new Promise((resolve) => {
-            window.setTimeout(resolve, 0);
-        });
+        await waitForSearchRender();
 
         const emptyMessage = page.querySelector<HTMLElement>(
             '[data-search-empty]'
         );
         expect(emptyMessage?.classList.contains('hidden')).toBe(true);
+    });
+
+    it('keeps filter interactions reactive while results are pending', async () => {
+        vi.useFakeTimers();
+
+        try {
+            queryCoursesMock.mockImplementation(
+                () => new Promise(() => undefined)
+            );
+            getCoursesCountMock.mockImplementation(
+                () => new Promise(() => undefined)
+            );
+
+            const page = SearchPage();
+            const availableFilter = page.querySelector<HTMLInputElement>(
+                '[data-filter-available]'
+            );
+            const status = page.querySelector<HTMLElement>(
+                '[data-search-status]'
+            );
+
+            expect(availableFilter).toBeInstanceOf(HTMLInputElement);
+            expect(status).toBeInstanceOf(HTMLElement);
+
+            availableFilter!.checked = true;
+            availableFilter!.dispatchEvent(
+                new Event('change', { bubbles: true })
+            );
+
+            expect(status?.textContent).toBe('מחפש...');
+            expect(window.location.search).toContain('available=1');
+            expect(queryCoursesMock).not.toHaveBeenCalled();
+
+            await vi.advanceTimersByTimeAsync(0);
+
+            expect(queryCoursesMock).toHaveBeenCalled();
+            expect(queryCoursesMock).toHaveBeenLastCalledWith(
+                expect.objectContaining({ availableOnly: true })
+            );
+        } finally {
+            vi.useRealTimers();
+        }
     });
 });
