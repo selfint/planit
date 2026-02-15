@@ -15,8 +15,7 @@ const SEARCH_DEBOUNCE_MS = 220;
 type SearchPageElements = {
     form: HTMLFormElement;
     input: HTMLInputElement;
-    clearButton: HTMLButtonElement;
-    available: HTMLSelectElement;
+    available: HTMLInputElement;
     faculty: HTMLSelectElement;
     requirement: HTMLSelectElement;
     pointsMin: HTMLInputElement;
@@ -85,10 +84,7 @@ export function SearchPage(): HTMLElement {
 function collectElements(root: HTMLElement): SearchPageElements {
     const form = root.querySelector<HTMLFormElement>('[data-search-form]');
     const input = root.querySelector<HTMLInputElement>('[data-search-input]');
-    const clearButton = root.querySelector<HTMLButtonElement>(
-        '[data-search-clear]'
-    );
-    const available = root.querySelector<HTMLSelectElement>(
+    const available = root.querySelector<HTMLInputElement>(
         '[data-filter-available]'
     );
     const faculty = root.querySelector<HTMLSelectElement>(
@@ -121,7 +117,6 @@ function collectElements(root: HTMLElement): SearchPageElements {
     if (
         form === null ||
         input === null ||
-        clearButton === null ||
         available === null ||
         faculty === null ||
         requirement === null ||
@@ -140,7 +135,6 @@ function collectElements(root: HTMLElement): SearchPageElements {
     return {
         form,
         input,
-        clearButton,
         available,
         faculty,
         requirement,
@@ -177,7 +171,7 @@ function hydrateFormFromState(
     state: SearchPageState
 ): void {
     elements.input.value = state.query;
-    elements.available.value = state.availableOnly ? '1' : '';
+    elements.available.checked = state.availableOnly;
     elements.faculty.value = state.faculty;
     elements.requirement.value = state.requirement;
     elements.pointsMin.value = state.pointsMin;
@@ -216,16 +210,8 @@ function bindEvents(
         void runSearch(elements, state, true);
     });
 
-    elements.clearButton.addEventListener('click', () => {
-        state.query = '';
-        elements.input.value = '';
-        cancelDebounce(state);
-        elements.input.focus();
-        void runSearch(elements, state, true);
-    });
-
     elements.available.addEventListener('change', () => {
-        state.availableOnly = elements.available.value === '1';
+        state.availableOnly = elements.available.checked;
         void runSearch(elements, state, true);
     });
 

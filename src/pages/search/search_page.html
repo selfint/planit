@@ -10,9 +10,7 @@
                 class="border-border/60 bg-surface-1/85 flex flex-col gap-3 rounded-3xl border p-3 shadow-sm sm:p-4"
             >
                 <form class="flex flex-col gap-3" data-search-form>
-                    <div
-                        class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto_auto]"
-                    >
+                    <div class="grid gap-2 sm:grid-cols-[minmax(0,1fr)_auto]">
                         <input
                             type="search"
                             name="q"
@@ -24,33 +22,50 @@
                         />
                         <button
                             type="submit"
-                            class="bg-accent text-accent-contrast min-h-10 rounded-2xl px-3 text-[11px] font-medium shadow-sm sm:text-xs"
+                            class="bg-accent text-accent-contrast min-h-10 min-w-10 rounded-2xl px-3 shadow-sm"
                             data-search-submit
+                            aria-label="חיפוש"
+                            title="חיפוש"
                         >
-                            חיפוש
-                        </button>
-                        <button
-                            type="button"
-                            class="border-border/70 bg-surface-2/70 text-text-muted hover:border-accent/40 hover:text-text min-h-10 rounded-2xl border px-3 text-[11px] font-medium transition duration-200 ease-out sm:text-xs"
-                            data-search-clear
-                        >
-                            ניקוי
+                            <svg
+                                viewBox="0 0 24 24"
+                                aria-hidden="true"
+                                class="h-4 w-4"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                            >
+                                <circle cx="11" cy="11" r="7"></circle>
+                                <line
+                                    x1="21"
+                                    y1="21"
+                                    x2="16.65"
+                                    y2="16.65"
+                                ></line>
+                            </svg>
                         </button>
                     </div>
 
                     <div class="grid grid-cols-2 gap-2 lg:grid-cols-3">
-                        <label class="flex w-full min-w-0 flex-col gap-1">
+                        <div class="flex w-full min-w-0 flex-col gap-1">
                             <span class="text-text-muted text-[11px] sm:text-xs"
                                 >זמינות</span
                             >
-                            <select
-                                class="border-border/70 bg-surface-2/80 text-text focus-visible:ring-accent/60 min-h-10 w-full min-w-0 rounded-xl border px-3 text-[11px] focus-visible:ring-2 sm:text-xs"
-                                data-filter-available
+                            <label
+                                class="border-border/60 bg-surface-2/50 flex min-h-10 w-full min-w-0 items-center gap-2 rounded-xl border px-3"
                             >
-                                <option value="">כל הקורסים</option>
-                                <option value="1">זמין</option>
-                            </select>
-                        </label>
+                                <input
+                                    type="checkbox"
+                                    class="accent-accent h-4 w-4"
+                                    data-filter-available
+                                />
+                                <span class="text-text text-[11px] sm:text-xs"
+                                    >זמין</span
+                                >
+                            </label>
+                        </div>
 
                         <label class="flex w-full min-w-0 flex-col gap-1">
                             <span class="text-text-muted text-[11px] sm:text-xs"
