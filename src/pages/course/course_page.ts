@@ -86,7 +86,10 @@ export function CoursePage(): HTMLElement {
             void loadAndRenderCourse(elements, requestedCode);
         },
         onError: () => {
-            elements.syncState.textContent = 'שגיאה בסנכרון, מוצג מידע מקומי';
+            setSyncStateText(
+                elements.syncState,
+                'שגיאה בסנכרון, מוצג מידע מקומי'
+            );
         },
     });
 
@@ -253,7 +256,7 @@ function showLoading(elements: CoursePageElements): void {
     elements.loadingState.classList.remove('hidden');
     elements.notFoundState.classList.add('hidden');
     elements.foundState.classList.add('hidden');
-    elements.syncState.textContent = LOADING_LABEL;
+    setSyncStateText(elements.syncState, LOADING_LABEL);
 }
 
 function showNotFound(elements: CoursePageElements, message: string): void {
@@ -261,14 +264,25 @@ function showNotFound(elements: CoursePageElements, message: string): void {
     elements.notFoundState.classList.remove('hidden');
     elements.foundState.classList.add('hidden');
     elements.notFoundMessage.textContent = message;
-    elements.syncState.textContent = NOT_FOUND_LABEL;
+    setSyncStateText(elements.syncState, NOT_FOUND_LABEL);
 }
 
 function showCourseFound(elements: CoursePageElements): void {
     elements.loadingState.classList.add('hidden');
     elements.notFoundState.classList.add('hidden');
     elements.foundState.classList.remove('hidden');
-    elements.syncState.textContent = READY_LABEL;
+    setSyncStateText(elements.syncState, READY_LABEL);
+}
+
+function setSyncStateText(element: HTMLElement, message: string): void {
+    const normalized = message.trim();
+    element.textContent = normalized;
+    if (normalized.length === 0) {
+        element.classList.add('hidden');
+        return;
+    }
+
+    element.classList.remove('hidden');
 }
 
 async function loadAndRenderCourse(
