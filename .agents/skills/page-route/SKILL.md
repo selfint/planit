@@ -23,12 +23,13 @@ Use a `<template>` in HTML, keep logic in TypeScript, and colocate both unit and
 3. Put all markup and Tailwind classes in the HTML `<template>`.
 4. Keep state, event wiring, and composition in the TS factory.
 5. Use data attributes in HTML for TS hooks.
-6. Export a page factory that returns a root element (for example, `LandingPage()`).
-7. Add Storybook stories in `.stories.ts` with `Default` and `Dark` variants.
-8. Add unit tests in `.test.ts` for rendering and page behavior.
-9. Add Playwright integration tests in `.spec.ts` for route-level behavior.
-10. Keep Playwright page specs colocated in `src/pages/<route>/`; reserve `tests/` for broader e2e flows.
-11. Document the page in `.md` using the required documentation structure.
+6. Ensure all page-level interactive controls prevent mobile double-tap zoom by applying `touch-manipulation` (or equivalent `touch-action: manipulation`) to tap targets (`button`, `a`, `[role="button"]`, and clickable wrappers).
+7. Export a page factory that returns a root element (for example, `LandingPage()`).
+8. Add Storybook stories in `.stories.ts` with `Default` and `Dark` variants.
+9. Add unit tests in `.test.ts` for rendering and page behavior.
+10. Add Playwright integration tests in `.spec.ts` for route-level behavior.
+11. Keep Playwright page specs colocated in `src/pages/<route>/`; reserve `tests/` for broader e2e flows.
+12. Document the page in `.md` using the required documentation structure.
 
 ## Page Route Contract
 

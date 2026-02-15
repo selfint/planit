@@ -46,3 +46,14 @@
 @utility skeleton-shimmer {
     @apply animate-shimmer from-surface-2/30 via-surface-1/85 to-surface-2/30 bg-gradient-to-l text-transparent contrast-70;
 }
+
+@layer base {
+    button,
+    a,
+    [role='button'],
+    input[type='button'],
+    input[type='submit'],
+    input[type='reset'] {
+        @apply touch-manipulation;
+    }
+}
