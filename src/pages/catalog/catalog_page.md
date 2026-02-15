@@ -10,7 +10,7 @@ network blocking.
 
 - Intro header with route context and summary line.
 - Degree picker panel (catalog, faculty, program, path) mounted from
-  `DegreePicker`.
+  `src/pages/catalog/components/DegreePicker`.
 - Requirement groups panel that renders `CourseCard` in a single row per
   requirement.
 - Per-requirement paging controls (`next`/`previous`) to render one card page
@@ -31,7 +31,9 @@ network blocking.
    keep rendering fast, and paging controls move between pages.
 7. Cards inside each requirement are sorted by course median (highest first),
    and non-current courses (`current !== true`) are dimmed visually.
-8. Degree picker changes and requirement table mutations trigger a debounced
+8. If picker values are changing and are not yet in sync with persisted
+   selection, the requirements panel stays hidden until picker state is ready.
+9. Degree picker changes and requirement table mutations trigger a debounced
    re-render of the requirement-group panel.
 
 ## Unit Tests

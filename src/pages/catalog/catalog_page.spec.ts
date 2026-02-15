@@ -5,15 +5,16 @@ vi.mock('$components/CourseCard', () => ({
     CourseCard: (): HTMLElement => document.createElement('article'),
 }));
 
-vi.mock('$components/DegreePicker', () => ({
+vi.mock('./components/DegreePicker', () => ({
     DegreePicker: (): HTMLElement => {
         const root = document.createElement('section');
         root.innerHTML = `
-            <select data-degree-catalog><option value=""></option></select>
-            <select data-degree-faculty><option value=""></option></select>
-            <select data-degree-program><option value=""></option></select>
-            <select data-degree-path><option value=""></option></select>
+            <select data-degree-catalog><option value="2025_200" selected></option></select>
+            <select data-degree-faculty><option value="computer-science" selected></option></select>
+            <select data-degree-program><option value="0324" selected></option></select>
+            <select data-degree-path><option value="" selected></option></select>
             <table><tbody data-requirement-rows></tbody></table>
+            <p data-degree-status></p>
         `;
         return root;
     },

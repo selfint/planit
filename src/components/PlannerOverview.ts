@@ -1,5 +1,5 @@
 import { CourseTable } from './CourseTable';
-import { DegreePicker } from './DegreePicker';
+import { DegreePicker } from '../pages/catalog/components/DegreePicker';
 import templateHtml from './PlannerOverview.html?raw';
 
 export function PlannerOverview(): HTMLElement {

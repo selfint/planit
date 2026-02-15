@@ -13,15 +13,16 @@ vi.mock('$components/CourseCard', () => ({
     },
 }));
 
-vi.mock('$components/DegreePicker', () => ({
+vi.mock('./components/DegreePicker', () => ({
     DegreePicker: (): HTMLElement => {
         const root = document.createElement('section');
         root.innerHTML = `
-            <select data-degree-catalog><option value=""></option></select>
-            <select data-degree-faculty><option value=""></option></select>
-            <select data-degree-program><option value=""></option></select>
-            <select data-degree-path><option value=""></option></select>
+            <select data-degree-catalog><option value="2025_200" selected></option></select>
+            <select data-degree-faculty><option value="computer-science" selected></option></select>
+            <select data-degree-program><option value="0324" selected></option></select>
+            <select data-degree-path><option value="software-path" selected></option></select>
             <table><tbody data-requirement-rows></tbody></table>
+            <p data-degree-status></p>
         `;
         return root;
     },
@@ -157,6 +158,64 @@ describe('CatalogPage', () => {
         );
         expect(links.length).toBe(1);
         expect(links.item(0).getAttribute('href')).toContain('236343');
+    });
+
+    it('hides rendered requirements while picker selection is changing', async () => {
+        getActiveRequirementsSelectionMock.mockResolvedValue({
+            catalogId: '2025_200',
+            facultyId: 'computer-science',
+            programId: '0324',
+            path: 'software-path',
+        });
+
+        getRequirementMock.mockResolvedValue({
+            programId: '0324',
+            catalogId: '2025_200',
+            facultyId: 'computer-science',
+            data: {
+                name: 'root',
+                en: 'Root',
+                nested: [
+                    {
+                        name: 'software-path',
+                        en: 'Software Path',
+                        nested: [
+                            {
+                                name: 'core',
+                                courses: ['236501', '236363', '236343'],
+                            },
+                        ],
+                    },
+                ],
+            },
+        });
+
+        getCourseMock.mockImplementation(async (code: string) => ({
+            code,
+            name: `Course ${code}`,
+            median: 80,
+            current: true,
+        }));
+
+        const page = CatalogPage();
+        await waitForUiWork();
+
+        const programSelect = page.querySelector<HTMLSelectElement>(
+            '[data-degree-program]'
+        );
+        if (programSelect === null) {
+            throw new Error('Expected program select in test');
+        }
+
+        programSelect.value = '';
+        programSelect.dispatchEvent(new Event('change'));
+        await waitForUiWork();
+
+        const cards = page.querySelectorAll('[data-component="CourseCard"]');
+        expect(cards.length).toBe(0);
+
+        const state = page.querySelector<HTMLElement>('[data-catalog-state]');
+        expect(state?.textContent).toContain('מעדכן בחירה');
     });
 });
 

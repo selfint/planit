@@ -1,6 +1,6 @@
 import templateHtml from './catalog_page.html?raw';
 import { CourseCard } from '$components/CourseCard';
-import { DegreePicker } from '$components/DegreePicker';
+import { DegreePicker } from './components/DegreePicker';
 import { getCourse, getRequirement } from '$lib/indexeddb';
 import type { CourseRecord } from '$lib/indexeddb';
 import {
@@ -15,6 +15,7 @@ const GROUP_EMPTY_MESSAGE =
     'לא נמצאו קורסים במסלול הזה. אפשר לבחור מסלול אחר לבדיקת דרישות.';
 const GROUP_WAITING_MESSAGE = 'בחרו תכנית ומסלול כדי להציג קורסים.';
 const GROUP_LOADING_MESSAGE = 'טוען קורסים מהאחסון המקומי...';
+const GROUP_PENDING_MESSAGE = 'מעדכן בחירה בתכנית...';
 const GROUP_MISSING_MESSAGE =
     'אין דרישות שמורות לתכנית זו. התחברו לאינטרנט ונסו לטעון שוב.';
 const COURSE_NAME_FALLBACK_PREFIX = 'קורס';
@@ -31,9 +32,18 @@ type GroupRenderingContext = {
     root: HTMLElement;
     state: HTMLParagraphElement;
     summary: HTMLParagraphElement;
+    pickerRoot: HTMLElement;
     courseCache: Map<string, CourseRecord | null>;
+    pickerPending: boolean;
     refreshTimer?: number;
     refreshVersion: number;
+};
+
+type PickerSelection = {
+    catalogId: string;
+    facultyId: string;
+    programId: string;
+    path?: string;
 };
 
 export function CatalogPage(): HTMLElement {
@@ -76,7 +86,9 @@ export function CatalogPage(): HTMLElement {
         root: groupsRoot,
         state: stateElement,
         summary: summaryElement,
+        pickerRoot: degreePicker,
         courseCache: new Map(),
+        pickerPending: false,
         refreshTimer: undefined,
         refreshVersion: 0,
     };
@@ -85,24 +97,24 @@ export function CatalogPage(): HTMLElement {
         '[data-degree-catalog], [data-degree-faculty], [data-degree-program], [data-degree-path]'
     );
     for (const input of selectionInputs) {
-        input.addEventListener('change', () =>
-            scheduleCatalogGroupsRefresh(context)
-        );
-    }
-
-    const requirementRows = degreePicker.querySelector<HTMLElement>(
-        '[data-requirement-rows]'
-    );
-    if (requirementRows !== null) {
-        const observer = new MutationObserver(() => {
+        input.addEventListener('change', () => {
+            context.pickerPending = true;
+            context.state.textContent = GROUP_PENDING_MESSAGE;
+            renderInfoState(context.root, GROUP_PENDING_MESSAGE);
             scheduleCatalogGroupsRefresh(context);
         });
-        observer.observe(requirementRows, {
-            childList: true,
-            subtree: true,
-            characterData: true,
-        });
     }
+
+    const pickerObserver = new MutationObserver(() => {
+        scheduleCatalogGroupsRefresh(context);
+    });
+    pickerObserver.observe(degreePicker, {
+        childList: true,
+        subtree: true,
+        characterData: true,
+        attributes: true,
+        attributeFilter: ['disabled'],
+    });
 
     renderGroupSkeleton(context.root, 4);
     void refreshCatalogGroups(context);
@@ -132,6 +144,24 @@ async function refreshCatalogGroups(
     if (context.refreshVersion !== nextVersion) {
         return;
     }
+    if (!isPickerSelectionComplete(context.pickerRoot)) {
+        context.pickerPending = false;
+        context.summary.textContent = GROUP_WAITING_MESSAGE;
+        context.state.textContent = GROUP_WAITING_MESSAGE;
+        renderInfoState(context.root, GROUP_WAITING_MESSAGE);
+        return;
+    }
+    if (
+        context.pickerPending &&
+        !isPickerReadyForSelection(context.pickerRoot, selection)
+    ) {
+        context.summary.textContent = GROUP_PENDING_MESSAGE;
+        context.state.textContent = GROUP_PENDING_MESSAGE;
+        renderInfoState(context.root, GROUP_PENDING_MESSAGE);
+        return;
+    }
+    context.pickerPending = false;
+
     if (selection === undefined) {
         context.summary.textContent = GROUP_WAITING_MESSAGE;
         context.state.textContent = GROUP_WAITING_MESSAGE;
@@ -165,6 +195,67 @@ async function refreshCatalogGroups(
     const totalCourses = collectUniqueCodes(groups).length;
     context.summary.textContent = `נטענו ${String(totalCourses)} קורסים מתוך ${String(groups.length)} קבוצות דרישה.`;
     context.state.textContent = `עודכן מנתונים שמורים אופליין עבור ${selection.programId}.`;
+}
+
+function isPickerReadyForSelection(
+    pickerRoot: HTMLElement,
+    selection: PickerSelection | undefined
+): boolean {
+    const statusText =
+        pickerRoot.querySelector<HTMLElement>('[data-degree-status]')
+            ?.textContent ?? '';
+    if (statusText.includes('טוען דרישות')) {
+        return false;
+    }
+
+    const pickerCatalog = getPickerSelectValue(
+        pickerRoot,
+        '[data-degree-catalog]'
+    );
+    const pickerFaculty = getPickerSelectValue(
+        pickerRoot,
+        '[data-degree-faculty]'
+    );
+    const pickerProgram = getPickerSelectValue(
+        pickerRoot,
+        '[data-degree-program]'
+    );
+    const pickerPath = getPickerSelectValue(pickerRoot, '[data-degree-path]');
+
+    const selectedCatalog = selection?.catalogId ?? '';
+    const selectedFaculty = selection?.facultyId ?? '';
+    const selectedProgram = selection?.programId ?? '';
+    const selectedPath = selection?.path ?? '';
+
+    return (
+        pickerCatalog === selectedCatalog &&
+        pickerFaculty === selectedFaculty &&
+        pickerProgram === selectedProgram &&
+        pickerPath === selectedPath
+    );
+}
+
+function getPickerSelectValue(root: HTMLElement, selector: string): string {
+    const select = root.querySelector<HTMLSelectElement>(selector);
+    return select?.value ?? '';
+}
+
+function isPickerSelectionComplete(pickerRoot: HTMLElement): boolean {
+    const programValue = getPickerSelectValue(
+        pickerRoot,
+        '[data-degree-program]'
+    );
+    if (programValue.length === 0) {
+        return false;
+    }
+
+    const pathSelect =
+        pickerRoot.querySelector<HTMLSelectElement>('[data-degree-path]');
+    if (pathSelect?.required === true && pathSelect.value.length === 0) {
+        return false;
+    }
+
+    return true;
 }
 
 function renderRequirementGroups(
