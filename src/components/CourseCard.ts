@@ -7,14 +7,7 @@ export type CourseCardOptions = {
     emptyValue?: string;
 };
 
-const DEFAULT_STATUS_CLASS = 'bg-success';
-const STATUS_CLASSES = [
-    'bg-success',
-    'bg-warning',
-    'bg-info',
-    'bg-danger',
-    'bg-accent',
-];
+const DEFAULT_STATUS_COLOR = 'hsl(168 56% 46%)';
 const DEFAULT_EMPTY_VALUE = '—';
 const DEFAULT_TITLE = 'קורס ללא שם';
 
@@ -41,10 +34,11 @@ export function CourseCard(
     root.removeAttribute('data-skeleton');
     root.removeAttribute('aria-busy');
 
-    const statusClass =
-        options?.statusClass ??
-        getStatusClassFromCode(course.code) ??
-        DEFAULT_STATUS_CLASS;
+    const statusClass = options?.statusClass;
+    const statusColor =
+        statusClass === undefined
+            ? (getStatusColorFromCode(course.code) ?? DEFAULT_STATUS_COLOR)
+            : undefined;
     const emptyValue = options?.emptyValue ?? DEFAULT_EMPTY_VALUE;
     const titleText = course.name ?? DEFAULT_TITLE;
     const hasTests = Array.isArray(course.tests)
@@ -56,7 +50,15 @@ export function CourseCard(
         "[data-role='status-dot']"
     );
     if (statusDot !== null) {
-        statusDot.className = `me-[10px] h-3 w-3 min-h-3 min-w-3 shrink-0 ${shapeClass} ${statusClass}`;
+        statusDot.className =
+            statusClass === undefined
+                ? `me-[10px] h-3 w-3 min-h-3 min-w-3 shrink-0 ${shapeClass}`
+                : `me-[10px] h-3 w-3 min-h-3 min-w-3 shrink-0 ${shapeClass} ${statusClass}`;
+        if (statusColor !== undefined) {
+            statusDot.style.backgroundColor = statusColor;
+        } else {
+            statusDot.style.removeProperty('background-color');
+        }
     }
 
     const points = root.querySelector<HTMLSpanElement>(
@@ -113,15 +115,21 @@ function formatCourseNumber(
     return value.toString();
 }
 
-function getStatusClassFromCode(code: string): string | undefined {
+function getStatusColorFromCode(code: string): string | undefined {
     const normalized = code.trim();
     if (normalized.length === 0) {
         return undefined;
     }
-    let hash = 0;
+
+    let hash = 0x811c9dc5;
     for (let index = 0; index < normalized.length; index += 1) {
-        hash =
-            (hash * 31 + normalized.charCodeAt(index)) % STATUS_CLASSES.length;
+        hash ^= normalized.charCodeAt(index);
+        hash = Math.imul(hash, 0x01000193);
     }
-    return STATUS_CLASSES[hash];
+    hash >>>= 0;
+
+    const hue = hash % 360;
+    const saturation = 58 + ((hash >>> 9) % 18);
+    const lightness = 42 + ((hash >>> 17) % 16);
+    return `hsl(${hue} ${saturation}% ${lightness}%)`;
 }

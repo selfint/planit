@@ -6,7 +6,7 @@ CourseCard renders a compact course tile matching the course card layout in
 `src/assets/course-pic.webp`. It accepts a `CourseRecord` from
 `src/lib/indexeddb.ts` and shows a status dot, two numeric meta values, the
 course title, and the course code. The status dot color is derived from the
-course code using a small hash and a fixed palette.
+course code using an FNV-1a hash mapped into an HSL color.
 
 ## Template Structure
 
@@ -25,7 +25,7 @@ course code using a small hash and a fixed palette.
 3. When data is present, `data-skeleton` and `aria-busy` are removed, then the
    title, code, points, and median are populated. Missing values fall back to
    `—` and a default title.
-4. The status dot color is derived from the course code hash unless
+4. The status dot color is derived from the course code hash into HSL unless
    `statusClass` is provided in `options`.
 
 ## Dependencies
