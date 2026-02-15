@@ -18,26 +18,32 @@ type SemesterState = {
 
 type PlanState = {
     semesters: SemesterState[];
+    semesterCount: number;
     selected?: { semesterId: string; courseCode: string };
     warning?: string;
+    problems: string[];
 };
 
 type PersistedPlan = {
     version: number;
+    semesterCount?: number;
     semesters: { id: string; courseCodes: string[] }[];
 };
 
 const PLAN_META_KEY = 'planPageState';
 const PLAN_META_VERSION = 1;
+const MIN_SEMESTERS = 3;
+const DEFAULT_SEMESTER_COUNT = 6;
 
-const DEFAULT_SEMESTERS: Omit<SemesterState, 'courses'>[] = [
-    { id: 'spring-2026', title: 'אביב 2026', season: 'אביב', year: 2026 },
-    { id: 'summer-2026', title: 'קיץ 2026', season: 'קיץ', year: 2026 },
-    { id: 'winter-2027', title: 'חורף 2027', season: 'חורף', year: 2027 },
-    { id: 'spring-2027', title: 'אביב 2027', season: 'אביב', year: 2027 },
-    { id: 'summer-2027', title: 'קיץ 2027', season: 'קיץ', year: 2027 },
-    { id: 'winter-2028', title: 'חורף 2028', season: 'חורף', year: 2028 },
-];
+type SemesterBlueprint = Omit<SemesterState, 'courses'>;
+
+const SEMESTER_SEASONS = ['אביב', 'קיץ', 'חורף'] as const;
+const SEMESTER_SEASON_LABEL: Record<(typeof SEMESTER_SEASONS)[number], string> =
+    {
+        אביב: 'אביב',
+        קיץ: 'קיץ',
+        חורף: 'חורף',
+    };
 
 const FALLBACK_COURSES: CourseRecord[] = [
     {
@@ -123,12 +129,35 @@ const FALLBACK_COURSES: CourseRecord[] = [
 ];
 
 function createInitialPlanState(): PlanState {
+    const semesterCount = DEFAULT_SEMESTER_COUNT;
     return {
-        semesters: DEFAULT_SEMESTERS.map((semester) => ({
+        semesterCount,
+        semesters: buildSemesterBlueprints(semesterCount).map((semester) => ({
             ...semester,
             courses: [],
         })),
+        problems: [],
     };
+}
+
+function buildSemesterBlueprints(count: number): SemesterBlueprint[] {
+    const safeCount = Math.max(MIN_SEMESTERS, Math.floor(count));
+    const startYear = 2026;
+
+    const semesters: SemesterBlueprint[] = [];
+    for (let index = 0; index < safeCount; index += 1) {
+        const season = SEMESTER_SEASONS[index % SEMESTER_SEASONS.length];
+        const yearOffset = Math.floor((index + 1) / SEMESTER_SEASONS.length);
+        const year = startYear + yearOffset;
+        semesters.push({
+            id: `${season}-${year}-${index}`,
+            title: `${SEMESTER_SEASON_LABEL[season]} ${year}`,
+            season,
+            year,
+        });
+    }
+
+    return semesters;
 }
 
 export function PlanPage(): HTMLElement {
@@ -152,6 +181,15 @@ export function PlanPage(): HTMLElement {
         '[data-clear-selection]'
     );
     const warning = root.querySelector<HTMLElement>('[data-plan-warning]');
+    const problemsList = root.querySelector<HTMLElement>(
+        '[data-schedule-problems]'
+    );
+    const problemsCount = root.querySelector<HTMLElement>(
+        '[data-problems-count]'
+    );
+    const semesterCountInput = root.querySelector<HTMLInputElement>(
+        '[data-semester-count]'
+    );
     const prevButton =
         root.querySelector<HTMLButtonElement>('[data-rail-prev]');
     const nextButton =
@@ -162,6 +200,9 @@ export function PlanPage(): HTMLElement {
         selectedStatus === null ||
         clearButton === null ||
         warning === null ||
+        problemsList === null ||
+        problemsCount === null ||
+        semesterCountInput === null ||
         prevButton === null ||
         nextButton === null
     ) {
@@ -169,10 +210,37 @@ export function PlanPage(): HTMLElement {
     }
 
     const state = createInitialPlanState();
+    semesterCountInput.value = state.semesterCount.toString();
 
     clearButton.addEventListener('click', () => {
         state.selected = undefined;
-        renderPlan(state, rail, selectedStatus, clearButton, warning);
+        renderPlan(
+            state,
+            rail,
+            selectedStatus,
+            clearButton,
+            warning,
+            problemsList,
+            problemsCount,
+            semesterCountInput
+        );
+    });
+
+    semesterCountInput.addEventListener('change', () => {
+        const nextCount = parseSemesterCount(semesterCountInput.value);
+        semesterCountInput.value = nextCount.toString();
+        resizeSemesters(state, nextCount);
+        void persistPlanState(state);
+        renderPlan(
+            state,
+            rail,
+            selectedStatus,
+            clearButton,
+            warning,
+            problemsList,
+            problemsCount,
+            semesterCountInput
+        );
     });
 
     rail.addEventListener('click', (event) => {
@@ -198,7 +266,10 @@ export function PlanPage(): HTMLElement {
                 rail,
                 selectedStatus,
                 clearButton,
-                warning
+                warning,
+                problemsList,
+                problemsCount,
+                semesterCountInput
             );
             return;
         }
@@ -217,13 +288,34 @@ export function PlanPage(): HTMLElement {
             rail,
             selectedStatus,
             clearButton,
-            warning
+            warning,
+            problemsList,
+            problemsCount,
+            semesterCountInput
         );
     });
 
     setupRailNavigation(rail, prevButton, nextButton);
-    renderPlan(state, rail, selectedStatus, clearButton, warning);
-    void hydratePlan(state, rail, selectedStatus, clearButton, warning);
+    renderPlan(
+        state,
+        rail,
+        selectedStatus,
+        clearButton,
+        warning,
+        problemsList,
+        problemsCount,
+        semesterCountInput
+    );
+    void hydratePlan(
+        state,
+        rail,
+        selectedStatus,
+        clearButton,
+        warning,
+        problemsList,
+        problemsCount,
+        semesterCountInput
+    );
 
     return root;
 }
@@ -233,7 +325,10 @@ async function hydratePlan(
     rail: HTMLElement,
     selectedStatus: HTMLElement,
     clearButton: HTMLButtonElement,
-    warning: HTMLElement
+    warning: HTMLElement,
+    problemsList: HTMLElement,
+    problemsCount: HTMLElement,
+    semesterCountInput: HTMLInputElement
 ): Promise<void> {
     const [meta, courses] = await Promise.all([
         getMeta(PLAN_META_KEY).catch(() => undefined),
@@ -247,9 +342,13 @@ async function hydratePlan(
 
     const restored = restoreSemestersFromMeta(meta?.value, map);
     if (restored !== undefined) {
+        state.semesterCount = restored.length;
         state.semesters = restored;
     } else {
-        state.semesters = distributeCoursesAcrossSemesters(usableCourses);
+        state.semesters = distributeCoursesAcrossSemesters(
+            usableCourses,
+            state.semesterCount
+        );
     }
 
     const dedupeWarning = normalizeDuplicateCourses(state.semesters);
@@ -257,7 +356,16 @@ async function hydratePlan(
         state.warning = dedupeWarning;
     }
 
-    renderPlan(state, rail, selectedStatus, clearButton, warning);
+    renderPlan(
+        state,
+        rail,
+        selectedStatus,
+        clearButton,
+        warning,
+        problemsList,
+        problemsCount,
+        semesterCountInput
+    );
 }
 
 function renderPlan(
@@ -265,10 +373,14 @@ function renderPlan(
     rail: HTMLElement,
     selectedStatus: HTMLElement,
     clearButton: HTMLButtonElement,
-    warning: HTMLElement
+    warning: HTMLElement,
+    problemsList: HTMLElement,
+    problemsCount: HTMLElement,
+    semesterCountInput: HTMLInputElement
 ): void {
     selectedStatus.textContent = getSelectedStatusText(state);
     clearButton.disabled = state.selected === undefined;
+    semesterCountInput.value = state.semesterCount.toString();
 
     if (state.warning !== undefined && state.warning.length > 0) {
         warning.textContent = state.warning;
@@ -277,6 +389,9 @@ function renderPlan(
         warning.textContent = '';
         warning.classList.add('hidden');
     }
+
+    state.problems = collectScheduleProblems(state);
+    renderProblems(state.problems, problemsList, problemsCount);
 
     rail.replaceChildren();
 
@@ -294,7 +409,7 @@ function createSemesterColumn(
 ): HTMLElement {
     const column = document.createElement('section');
     column.className =
-        'flex h-[100svh] w-[85vw] shrink-0 snap-start flex-col gap-3 px-1 sm:w-[22rem] lg:w-[20rem]';
+        'flex h-[100svh] w-[min(90vw,28rem)] shrink-0 snap-start flex-col gap-3 px-1 md:w-[calc((100vw-6rem)/2)] lg:w-[calc((100vw-9rem)/3)]';
     column.dataset.semesterColumn = 'true';
     column.dataset.semesterId = semester.id;
 
@@ -376,21 +491,12 @@ function createSemesterCourse(
     }
     holder.append(card);
 
-    const warning = getAvailabilityWarning(course, semester.season);
-    if (warning !== undefined) {
-        const message = document.createElement('p');
-        message.className = 'text-warning px-1 pt-1 text-xs';
-        message.textContent = warning;
-        holder.append(message);
-    }
-
     return holder;
 }
 
 function createMetricChip(label: string, value: string): HTMLElement {
     const chip = document.createElement('p');
-    chip.className =
-        'border-border/50 bg-surface-1/70 rounded-xl border px-2 py-1';
+    chip.className = 'text-text-muted rounded-xl px-1 py-1';
     chip.textContent = `${label}: ${value}`;
     return chip;
 }
@@ -462,6 +568,172 @@ function getAvailabilityWarning(
     return 'הקורס לרוב לא נפתח בעונה זו';
 }
 
+function parseSemesterCount(value: string): number {
+    const parsed = Number.parseInt(value, 10);
+    if (Number.isNaN(parsed)) {
+        return MIN_SEMESTERS;
+    }
+    return Math.max(MIN_SEMESTERS, parsed);
+}
+
+function resizeSemesters(state: PlanState, semesterCount: number): void {
+    const safeCount = Math.max(MIN_SEMESTERS, Math.floor(semesterCount));
+    if (safeCount === state.semesterCount) {
+        return;
+    }
+
+    const blueprints = buildSemesterBlueprints(safeCount);
+    const nextSemesters: SemesterState[] = blueprints.map((semester) => ({
+        ...semester,
+        courses: [],
+    }));
+
+    state.semesters.forEach((semester, index) => {
+        const targetIndex = Math.min(index, nextSemesters.length - 1);
+        nextSemesters[targetIndex].courses.push(...semester.courses);
+    });
+
+    const selectedCode = state.selected?.courseCode;
+    state.semesterCount = safeCount;
+    state.semesters = nextSemesters;
+
+    if (selectedCode !== undefined) {
+        const selectedSemester = nextSemesters.find((semester) =>
+            semester.courses.some((course) => course.code === selectedCode)
+        );
+        if (selectedSemester !== undefined) {
+            state.selected = {
+                semesterId: selectedSemester.id,
+                courseCode: selectedCode,
+            };
+        } else {
+            state.selected = undefined;
+        }
+    }
+}
+
+function renderProblems(
+    problems: string[],
+    container: HTMLElement,
+    countElement: HTMLElement
+): void {
+    countElement.textContent = problems.length.toString();
+    container.replaceChildren();
+
+    if (problems.length === 0) {
+        const empty = document.createElement('li');
+        empty.textContent = 'לא זוהו בעיות כרגע.';
+        container.append(empty);
+        return;
+    }
+
+    for (const problem of problems) {
+        const item = document.createElement('li');
+        item.className = 'text-warning';
+        item.textContent = problem;
+        container.append(item);
+    }
+}
+
+function collectScheduleProblems(state: PlanState): string[] {
+    const problems: string[] = [];
+    const allCourses = new Set<string>();
+    const priorCourses = new Set<string>();
+
+    for (const semester of state.semesters) {
+        for (const course of semester.courses) {
+            allCourses.add(course.code);
+        }
+    }
+
+    for (const semester of state.semesters) {
+        for (const course of semester.courses) {
+            const availability = getAvailabilityWarning(
+                course,
+                semester.season
+            );
+            if (availability !== undefined) {
+                problems.push(
+                    `${course.code}: ${availability} (${semester.title})`
+                );
+            }
+
+            const prerequisiteIssue = getPrerequisiteProblem(
+                course,
+                priorCourses
+            );
+            if (prerequisiteIssue !== undefined) {
+                problems.push(
+                    `${course.code}: ${prerequisiteIssue} (${semester.title})`
+                );
+            }
+
+            const exclusionIssue = getExclusionProblem(course, allCourses);
+            if (exclusionIssue !== undefined) {
+                problems.push(
+                    `${course.code}: ${exclusionIssue} (${semester.title})`
+                );
+            }
+        }
+
+        for (const course of semester.courses) {
+            priorCourses.add(course.code);
+        }
+    }
+
+    return Array.from(new Set(problems));
+}
+
+function getPrerequisiteProblem(
+    course: CourseRecord,
+    priorCourses: Set<string>
+): string | undefined {
+    const dependencies = course.connections?.dependencies;
+    if (!Array.isArray(dependencies) || dependencies.length === 0) {
+        return undefined;
+    }
+
+    const normalized = dependencies
+        .filter(
+            (group): group is string[] =>
+                Array.isArray(group) && group.length > 0
+        )
+        .map((group) => group.filter((code) => typeof code === 'string'));
+    if (normalized.length === 0) {
+        return undefined;
+    }
+
+    const satisfied = normalized.some((group) =>
+        group.every((code) => priorCourses.has(code))
+    );
+    if (satisfied) {
+        return undefined;
+    }
+
+    const unmet = normalized[0].filter((code) => !priorCourses.has(code));
+    if (unmet.length === 0) {
+        return 'דרישות קדם אינן מסופקות';
+    }
+    return `דרישות קדם חסרות: ${unmet.join(', ')}`;
+}
+
+function getExclusionProblem(
+    course: CourseRecord,
+    allCourses: Set<string>
+): string | undefined {
+    const exclusive = course.connections?.exclusive;
+    if (!Array.isArray(exclusive) || exclusive.length === 0) {
+        return undefined;
+    }
+
+    const conflicts = exclusive.filter((code) => allCourses.has(code));
+    if (conflicts.length === 0) {
+        return undefined;
+    }
+
+    return `חפיפה לקורסים הדדיים: ${conflicts.join(', ')}`;
+}
+
 function getSelectedStatusText(state: PlanState): string {
     if (state.selected === undefined) {
         return 'לא נבחר קורס';
@@ -488,7 +760,10 @@ function handleCourseClick(
     rail: HTMLElement,
     selectedStatus: HTMLElement,
     clearButton: HTMLButtonElement,
-    warning: HTMLElement
+    warning: HTMLElement,
+    problemsList: HTMLElement,
+    problemsCount: HTMLElement,
+    semesterCountInput: HTMLInputElement
 ): void {
     const isSameSelection =
         state.selected?.semesterId === semesterId &&
@@ -499,7 +774,16 @@ function handleCourseClick(
     }
 
     state.selected = { semesterId, courseCode };
-    renderPlan(state, rail, selectedStatus, clearButton, warning);
+    renderPlan(
+        state,
+        rail,
+        selectedStatus,
+        clearButton,
+        warning,
+        problemsList,
+        problemsCount,
+        semesterCountInput
+    );
 }
 
 async function handleSemesterClick(
@@ -508,7 +792,10 @@ async function handleSemesterClick(
     rail: HTMLElement,
     selectedStatus: HTMLElement,
     clearButton: HTMLButtonElement,
-    warning: HTMLElement
+    warning: HTMLElement,
+    problemsList: HTMLElement,
+    problemsCount: HTMLElement,
+    semesterCountInput: HTMLInputElement
 ): Promise<void> {
     if (state.selected === undefined) {
         return;
@@ -538,9 +825,18 @@ async function handleSemesterClick(
     const [course] = sourceSemester.courses.splice(courseIndex, 1);
     targetSemester.courses.push(course);
     state.selected = undefined;
-    state.warning = getAvailabilityWarning(course, targetSemester.season);
+    state.warning = undefined;
     await persistPlanState(state);
-    renderPlan(state, rail, selectedStatus, clearButton, warning);
+    renderPlan(
+        state,
+        rail,
+        selectedStatus,
+        clearButton,
+        warning,
+        problemsList,
+        problemsCount,
+        semesterCountInput
+    );
 }
 
 function navigateToCoursePage(courseCode: string): void {
@@ -551,9 +847,15 @@ function navigateToCoursePage(courseCode: string): void {
 }
 
 function distributeCoursesAcrossSemesters(
-    courses: CourseRecord[]
+    courses: CourseRecord[],
+    semesterCount: number
 ): SemesterState[] {
-    const semesters = createInitialPlanState().semesters;
+    const semesters = buildSemesterBlueprints(semesterCount).map(
+        (semester) => ({
+            ...semester,
+            courses: [] as CourseRecord[],
+        })
+    );
     courses.forEach((course, index) => {
         const semesterIndex = index % semesters.length;
         semesters[semesterIndex].courses.push(course);
@@ -598,11 +900,21 @@ function restoreSemestersFromMeta(
         return undefined;
     }
 
-    const semesters = createInitialPlanState().semesters;
-    for (const entry of record.semesters) {
-        const semester = semesters.find((item) => item.id === entry.id);
+    const restoredCount = parseSemesterCount(
+        String(record.semesterCount ?? record.semesters.length)
+    );
+    const semesters = buildSemesterBlueprints(restoredCount).map(
+        (semester) => ({
+            ...semester,
+            courses: [] as CourseRecord[],
+        })
+    );
+
+    record.semesters.forEach((entry, index) => {
+        const semester =
+            semesters.find((item) => item.id === entry.id) ?? semesters[index];
         if (semester === undefined) {
-            continue;
+            return;
         }
 
         const codes = Array.isArray(entry.courseCodes) ? entry.courseCodes : [];
@@ -612,7 +924,7 @@ function restoreSemestersFromMeta(
                 semester.courses.push(course);
             }
         }
-    }
+    });
 
     return semesters;
 }
@@ -644,6 +956,7 @@ function normalizeDuplicateCourses(
 async function persistPlanState(state: PlanState): Promise<void> {
     const payload: PersistedPlan = {
         version: PLAN_META_VERSION,
+        semesterCount: state.semesterCount,
         semesters: state.semesters.map((semester) => ({
             id: semester.id,
             courseCodes: semester.courses.map((course) => course.code),
