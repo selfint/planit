@@ -30,6 +30,7 @@ Use a `<template>` in HTML, keep logic in TypeScript, and colocate both unit and
 10. Add Playwright integration tests in `.spec.ts` for route-level behavior.
 11. Keep Playwright page specs colocated in `src/pages/<route>/`; reserve `tests/` for broader e2e flows.
 12. Document the page in `.md` using the required documentation structure.
+13. Before completing the task, run `python3 .agents/skills/page-route/scripts/verify_pages.py` and treat any missing `.stories.ts` as a blocking failure.
 
 ## Page Route Contract
 
@@ -48,6 +49,9 @@ Use a `<template>` in HTML, keep logic in TypeScript, and colocate both unit and
     - Validate template cloning, key render output, and local behavior.
 - Integration test (`.spec.ts`):
     - Validate route availability and key user flows with Playwright.
+- Storybook (`.stories.ts`):
+    - Must import `@storybook/html`.
+    - Must include both `Default` and `Dark` stories.
 - Docs (`.md`):
     - Must explain page contents, data flows, unit tests, and integration tests.
 
