@@ -14,6 +14,7 @@
 
                 <aside
                     class="sticky top-[calc(env(safe-area-inset-top)+4.25rem)] order-1 self-start lg:order-1"
+                    data-role="current-semester-aside"
                 >
                     <section
                         class="border-border/60 bg-surface-1 flex min-w-0 flex-col gap-3 rounded-2xl border p-3 shadow"
@@ -23,12 +24,8 @@
                             class="text-sm font-medium"
                             data-role="current-semester-title"
                         ></h2>
-                        <p
-                            class="text-text-muted text-xs"
-                            data-role="current-semester-count"
-                        ></p>
                         <div
-                            class="flex max-h-[44svh] min-h-0 flex-col gap-2 overflow-y-auto pe-1 lg:max-h-[72svh]"
+                            class="flex min-h-0 snap-x snap-mandatory gap-2 overflow-x-auto overflow-y-hidden pb-1 [scrollbar-width:thin] lg:max-h-[72svh] lg:snap-none lg:flex-col lg:gap-2 lg:overflow-x-hidden lg:overflow-y-auto lg:pe-1 lg:pb-0"
                             data-role="current-semester-courses"
                         ></div>
                         <p

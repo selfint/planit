@@ -20,6 +20,7 @@ const PLAN_META_KEY = 'planPageState';
 const FALLBACK_COURSE_NAME_PREFIX = 'קורס';
 const FALLBACK_FACULTY = 'ללא פקולטה';
 const DEFAULT_SEMESTER_NUMBER = 1;
+const DESKTOP_MIN_WIDTH = 1024;
 const SEASONS = ['אביב', 'קיץ', 'חורף'] as const;
 
 type PersistedPlan = {
@@ -28,8 +29,9 @@ type PersistedPlan = {
 
 type SemesterPageElements = {
     groupsRoot: HTMLElement;
+    currentAside: HTMLElement;
+    currentSection: HTMLElement;
     currentTitle: HTMLElement;
-    currentCount: HTMLElement;
     currentCourses: HTMLElement;
     currentEmpty: HTMLElement;
 };
@@ -67,6 +69,7 @@ export function SemesterPage(): HTMLElement {
 
     const elements = queryElements(root);
     const semesterNumber = getSemesterNumberFromUrl(window.location.search);
+    setupStickyExpansion(elements.currentAside, elements.currentSection);
 
     void hydratePage(elements, semesterNumber);
 
@@ -77,11 +80,14 @@ function queryElements(root: HTMLElement): SemesterPageElements {
     const groupsRoot = root.querySelector<HTMLElement>(
         '[data-role="groups-root"]'
     );
+    const currentAside = root.querySelector<HTMLElement>(
+        '[data-role="current-semester-aside"]'
+    );
+    const currentSection = root.querySelector<HTMLElement>(
+        '[data-role="current-semester"]'
+    );
     const currentTitle = root.querySelector<HTMLElement>(
         '[data-role="current-semester-title"]'
-    );
-    const currentCount = root.querySelector<HTMLElement>(
-        '[data-role="current-semester-count"]'
     );
     const currentCourses = root.querySelector<HTMLElement>(
         '[data-role="current-semester-courses"]'
@@ -92,8 +98,9 @@ function queryElements(root: HTMLElement): SemesterPageElements {
 
     if (
         groupsRoot === null ||
+        currentAside === null ||
+        currentSection === null ||
         currentTitle === null ||
-        currentCount === null ||
         currentCourses === null ||
         currentEmpty === null
     ) {
@@ -102,8 +109,9 @@ function queryElements(root: HTMLElement): SemesterPageElements {
 
     return {
         groupsRoot,
+        currentAside,
+        currentSection,
         currentTitle,
-        currentCount,
         currentCourses,
         currentEmpty,
     };
@@ -165,7 +173,6 @@ async function hydratePage(
 
         const semesterInfo = getSemesterInfo(semesterNumber, semesterEntry?.id);
         elements.currentTitle.textContent = `סמסטר ${String(semesterInfo.number)} • ${semesterInfo.season} ${String(semesterInfo.year)}`;
-        elements.currentCount.textContent = `${String(semesterCourses.length)} קורסים`;
 
         renderCurrentSemesterCourses(
             elements.currentCourses,
@@ -501,4 +508,49 @@ function createCourseLink(course: CourseRecord): HTMLAnchorElement {
 
     link.append(CourseCard(course));
     return link;
+}
+
+function setupStickyExpansion(aside: HTMLElement, section: HTMLElement): void {
+    let expanded = false;
+
+    function update(): void {
+        if (window.innerWidth >= DESKTOP_MIN_WIDTH) {
+            if (expanded) {
+                setExpanded(false);
+            }
+            return;
+        }
+
+        const topOffset = getStickyTopOffset(aside);
+        const shouldExpand = aside.getBoundingClientRect().top <= topOffset + 1;
+        if (shouldExpand === expanded) {
+            return;
+        }
+        setExpanded(shouldExpand);
+    }
+
+    function setExpanded(nextExpanded: boolean): void {
+        expanded = nextExpanded;
+        aside.classList.toggle('-mx-4', nextExpanded);
+        section.classList.toggle('rounded-none', nextExpanded);
+        section.classList.toggle('border-s-0', nextExpanded);
+        section.classList.toggle('border-e-0', nextExpanded);
+    }
+
+    window.addEventListener('scroll', update, { passive: true });
+    window.addEventListener('resize', update);
+    update();
+}
+
+function getStickyTopOffset(element: HTMLElement): number {
+    const topValue = window.getComputedStyle(element).top;
+    if (topValue === '' || topValue === 'auto') {
+        return 0;
+    }
+
+    const parsed = Number.parseFloat(topValue);
+    if (!Number.isFinite(parsed)) {
+        return 0;
+    }
+    return parsed;
 }
