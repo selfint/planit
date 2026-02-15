@@ -1,10 +1,10 @@
-import { CourseCard } from '$components/CourseCard';
 import {
     type CourseRecord,
     getCoursesPage,
     getMeta,
     setMeta,
 } from '$lib/indexeddb';
+import { CourseCard } from '$components/CourseCard';
 
 import templateHtml from './plan_page.html?raw';
 
@@ -923,7 +923,8 @@ function restoreSemestersFromMeta(
 
     record.semesters.forEach((entry, index) => {
         const semester =
-            semesters.find((item) => item.id === entry.id) ?? semesters[index];
+            semesters.find((item) => item.id === entry.id) ??
+            semesters.at(index);
         if (semester === undefined) {
             return;
         }
