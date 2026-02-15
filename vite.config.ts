@@ -18,8 +18,8 @@ function resolveBuildSha(): string {
 const buildSha = resolveBuildSha();
 
 // https://vitejs.dev/config/
-export default defineConfig({
-    base: './',
+export default defineConfig(({ command }) => ({
+    base: command === 'build' ? '/planit/' : '/',
     define: {
         __BUILD_SHA__: JSON.stringify(buildSha),
     },
@@ -46,6 +46,8 @@ export default defineConfig({
                 name: 'planit',
                 short_name: 'planit',
                 description: 'Technion degree planner',
+                start_url: '/planit/',
+                scope: '/planit/',
                 theme_color: '#4ca9a1',
             },
 
@@ -64,4 +66,4 @@ export default defineConfig({
             },
         }),
     ],
-});
+}));

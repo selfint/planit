@@ -11,6 +11,8 @@ type PageFactory = () => HTMLElement;
 
 export const REDIRECT_SESSION_KEY = 'planit:redirect-path';
 
+const APP_BASE_PATH = normalizeBasePath(import.meta.env.BASE_URL);
+
 const routes: Partial<Record<string, PageFactory>> = {
     '/': LandingPage,
     '/plan': PlanPage,
@@ -22,11 +24,60 @@ const routes: Partial<Record<string, PageFactory>> = {
 };
 
 export function normalizePath(pathname: string): string {
+    if (pathname === '') {
+        return '/';
+    }
+
     if (pathname === '/') {
         return pathname;
     }
 
     return pathname.replace(/\/+$/, '');
+}
+
+export function normalizeBasePath(basePath: string): string {
+    const normalizedBasePath = normalizePath(basePath);
+    if (normalizedBasePath === '' || normalizedBasePath === '.') {
+        return '/';
+    }
+
+    if (!normalizedBasePath.startsWith('/')) {
+        return normalizePath(`/${normalizedBasePath}`);
+    }
+
+    return normalizedBasePath;
+}
+
+export function stripBasePath(pathname: string, basePath: string): string {
+    const normalizedPath = normalizePath(pathname);
+    const normalizedBasePath = normalizeBasePath(basePath);
+    if (normalizedBasePath === '/') {
+        return normalizedPath;
+    }
+
+    if (normalizedPath === normalizedBasePath) {
+        return '/';
+    }
+
+    if (!normalizedPath.startsWith(`${normalizedBasePath}/`)) {
+        return normalizedPath;
+    }
+
+    return normalizePath(normalizedPath.slice(normalizedBasePath.length));
+}
+
+export function addBasePath(pathname: string, basePath: string): string {
+    const normalizedPath = normalizePath(pathname);
+    const normalizedBasePath = normalizeBasePath(basePath);
+    if (normalizedBasePath === '/') {
+        return normalizedPath;
+    }
+
+    if (normalizedPath === '/') {
+        return normalizedBasePath;
+    }
+
+    return `${normalizedBasePath}${normalizedPath}`;
 }
 
 function resolvePage(pathname: string): PageFactory | null {
@@ -45,26 +96,28 @@ function renderRoute(pathname: string, replaceState = false): void {
         throw new Error('Missing #app element');
     }
 
-    const normalizedPath = normalizePath(pathname);
-    const page = resolvePage(normalizedPath);
+    const routePath = stripBasePath(pathname, APP_BASE_PATH);
+    const page = resolvePage(routePath);
 
     if (page === null) {
-        app.replaceChildren(NotFoundPage(normalizedPath));
+        app.replaceChildren(NotFoundPage(routePath));
     } else {
         app.replaceChildren(page());
     }
 
     const currentUrl = new URL(window.location.href);
     const normalizedCurrentPath = normalizePath(currentUrl.pathname);
-    if (replaceState && normalizedPath !== normalizedCurrentPath) {
-        currentUrl.pathname = normalizedPath;
+    const normalizedRoutePath = addBasePath(routePath, APP_BASE_PATH);
+    if (replaceState && normalizedRoutePath !== normalizedCurrentPath) {
+        currentUrl.pathname = normalizedRoutePath;
         window.history.replaceState(null, '', currentUrl);
     }
 }
 
 function navigate(url: URL): void {
     const nextUrl = new URL(url.href);
-    nextUrl.pathname = normalizePath(nextUrl.pathname);
+    const nextRoutePath = stripBasePath(nextUrl.pathname, APP_BASE_PATH);
+    nextUrl.pathname = addBasePath(nextRoutePath, APP_BASE_PATH);
     const currentUrl = new URL(window.location.href);
     const isSameUrl =
         nextUrl.pathname === normalizePath(currentUrl.pathname) &&
@@ -123,8 +176,8 @@ function isSamePageHashNavigation(url: URL): boolean {
     }
 
     return (
-        normalizePath(url.pathname) ===
-            normalizePath(window.location.pathname) &&
+        stripBasePath(url.pathname, APP_BASE_PATH) ===
+            stripBasePath(window.location.pathname, APP_BASE_PATH) &&
         url.search === window.location.search
     );
 }
@@ -141,7 +194,8 @@ function restoreRedirectFromSession(): void {
         return;
     }
 
-    redirectUrl.pathname = normalizePath(redirectUrl.pathname);
+    const routePath = stripBasePath(redirectUrl.pathname, APP_BASE_PATH);
+    redirectUrl.pathname = addBasePath(routePath, APP_BASE_PATH);
     window.history.replaceState(null, '', redirectUrl);
 }
 
