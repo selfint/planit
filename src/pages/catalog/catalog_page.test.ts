@@ -32,16 +32,17 @@ const getRequirementMock = vi.fn();
 const getCourseMock = vi.fn();
 
 vi.mock('$lib/indexeddb', () => ({
-    getRequirement: (...args: unknown[]) =>
-        getRequirementMock(...(args as [string])),
-    getCourse: (...args: unknown[]) => getCourseMock(...(args as [string])),
+    getRequirement: (programId: string): Promise<unknown> =>
+        getRequirementMock(programId) as Promise<unknown>,
+    getCourse: (courseCode: string): Promise<unknown> =>
+        getCourseMock(courseCode) as Promise<unknown>,
 }));
 
 const getActiveRequirementsSelectionMock = vi.fn();
 
 vi.mock('$lib/requirementsSync', () => ({
-    getActiveRequirementsSelection: (...args: unknown[]) =>
-        getActiveRequirementsSelectionMock(...args),
+    getActiveRequirementsSelection: (): Promise<unknown> =>
+        getActiveRequirementsSelectionMock() as Promise<unknown>,
 }));
 
 import { CatalogPage } from './catalog_page';
@@ -95,36 +96,36 @@ describe('CatalogPage', () => {
             },
         });
 
-        getCourseMock.mockImplementation(async (code: string) => {
+        getCourseMock.mockImplementation((code: string) => {
             if (code === '236363') {
-                return {
+                return Promise.resolve({
                     code,
                     name: `Course ${code}`,
                     median: 92,
                     current: true,
-                };
+                });
             }
             if (code === '236501') {
-                return {
+                return Promise.resolve({
                     code,
                     name: `Course ${code}`,
                     median: 85,
                     current: false,
-                };
+                });
             }
             if (code === '234123') {
-                return {
+                return Promise.resolve({
                     code,
                     name: `Course ${code}`,
                     median: 75,
                     current: true,
-                };
+                });
             }
-            return {
+            return Promise.resolve({
                 code,
                 name: `Course ${code}`,
                 current: true,
-            };
+            });
         });
 
         const page = CatalogPage();
@@ -193,12 +194,14 @@ describe('CatalogPage', () => {
             },
         });
 
-        getCourseMock.mockImplementation(async (code: string) => ({
-            code,
-            name: `Course ${code}`,
-            median: 80,
-            current: true,
-        }));
+        getCourseMock.mockImplementation((code: string) =>
+            Promise.resolve({
+                code,
+                name: `Course ${code}`,
+                median: 80,
+                current: true,
+            })
+        );
 
         const page = CatalogPage();
         await waitForUiWork();
@@ -256,12 +259,14 @@ describe('CatalogPage', () => {
             },
         });
 
-        getCourseMock.mockImplementation(async (code: string) => ({
-            code,
-            name: `Course ${code}`,
-            median: 70,
-            current: true,
-        }));
+        getCourseMock.mockImplementation((code: string) =>
+            Promise.resolve({
+                code,
+                name: `Course ${code}`,
+                median: 70,
+                current: true,
+            })
+        );
 
         const page = CatalogPage();
         await waitForUiWork();
@@ -316,12 +321,14 @@ describe('CatalogPage', () => {
             },
         });
 
-        getCourseMock.mockImplementation(async (code: string) => ({
-            code,
-            name: `Course ${code}`,
-            median: 70,
-            current: true,
-        }));
+        getCourseMock.mockImplementation((code: string) =>
+            Promise.resolve({
+                code,
+                name: `Course ${code}`,
+                median: 70,
+                current: true,
+            })
+        );
 
         const page = CatalogPage();
         await waitForUiWork();

@@ -21,24 +21,26 @@ vi.mock('./components/DegreePicker', () => ({
 }));
 
 const getRequirementMock = vi.fn();
+const getCourseMock = vi.fn<() => Promise<{ code: string; name: string }>>();
 
 vi.mock('$lib/indexeddb', () => ({
-    getRequirement: (...args: unknown[]) =>
-        getRequirementMock(...(args as [string])),
-    getCourse: async () => ({ code: '236501', name: 'Intro' }),
+    getRequirement: (programId: string): Promise<unknown> =>
+        getRequirementMock(programId) as Promise<unknown>,
+    getCourse: (): Promise<{ code: string; name: string }> => getCourseMock(),
 }));
 
 const getActiveRequirementsSelectionMock = vi.fn();
 
 vi.mock('$lib/requirementsSync', () => ({
-    getActiveRequirementsSelection: (...args: unknown[]) =>
-        getActiveRequirementsSelectionMock(...args),
+    getActiveRequirementsSelection: (): Promise<unknown> =>
+        getActiveRequirementsSelectionMock() as Promise<unknown>,
 }));
 
 import { CatalogPage } from './catalog_page';
 
 describe('catalog page route integration', () => {
     it('updates state text for missing requirements payload', async () => {
+        getCourseMock.mockResolvedValue({ code: '236501', name: 'Intro' });
         getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
             facultyId: 'computer-science',

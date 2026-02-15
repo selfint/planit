@@ -8,20 +8,25 @@ const setActiveRequirementsSelectionMock = vi.fn();
 const syncRequirementsMock = vi.fn();
 
 vi.mock('$lib/indexeddb', () => ({
-    getCatalogs: (...args: unknown[]) => getCatalogsMock(...args),
-    getRequirement: (...args: unknown[]) => getRequirementMock(...args),
+    getCatalogs: (): Promise<unknown> => getCatalogsMock() as Promise<unknown>,
+    getRequirement: (programId: string): Promise<unknown> =>
+        getRequirementMock(programId) as Promise<unknown>,
 }));
 
 vi.mock('$lib/catalogSync', () => ({
-    initCatalogSync: () => undefined,
+    initCatalogSync: (): void => undefined,
 }));
 
 vi.mock('$lib/requirementsSync', () => ({
-    getActiveRequirementsSelection: (...args: unknown[]) =>
-        getActiveRequirementsSelectionMock(...args),
-    setActiveRequirementsSelection: (...args: unknown[]) =>
-        setActiveRequirementsSelectionMock(...args),
-    syncRequirements: (...args: unknown[]) => syncRequirementsMock(...args),
+    getActiveRequirementsSelection: (): Promise<unknown> =>
+        getActiveRequirementsSelectionMock() as Promise<unknown>,
+    setActiveRequirementsSelection: (selection: unknown): Promise<void> =>
+        setActiveRequirementsSelectionMock(selection) as Promise<void>,
+    syncRequirements: (
+        selection: unknown,
+        options?: unknown
+    ): Promise<unknown> =>
+        syncRequirementsMock(selection, options) as Promise<unknown>,
 }));
 
 import { DegreePicker } from './DegreePicker';

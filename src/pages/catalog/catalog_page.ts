@@ -1,15 +1,15 @@
-import templateHtml from './catalog_page.html?raw';
-import { CourseCard } from '$components/CourseCard';
-import { DegreePicker } from './components/DegreePicker';
-import { getCourse, getRequirement } from '$lib/indexeddb';
-import type { CourseRecord } from '$lib/indexeddb';
+import { type CourseRecord, getCourse, getRequirement } from '$lib/indexeddb';
 import {
+    type RequirementNode,
     filterRequirementsByPath,
     getRequirementId,
     getRequirementLabel,
 } from '$lib/requirementsUtils';
-import type { RequirementNode } from '$lib/requirementsUtils';
+import { CourseCard } from '$components/CourseCard';
 import { getActiveRequirementsSelection } from '$lib/requirementsSync';
+import templateHtml from './catalog_page.html?raw';
+
+import { DegreePicker } from './components/DegreePicker';
 
 const GROUP_EMPTY_MESSAGE =
     'לא נמצאו קורסים במסלול הזה. אפשר לבחור מסלול אחר לבדיקת דרישות.';
