@@ -781,28 +781,31 @@ function isCourseMatchingFilters(
     }
 
     if (pointsMin !== undefined) {
-        if (course.points === undefined || !Number.isFinite(course.points)) {
+        const points = toFiniteNumber(course.points);
+        if (points === undefined) {
             return false;
         }
-        if (course.points < pointsMin) {
+        if (points < pointsMin) {
             return false;
         }
     }
 
     if (pointsMax !== undefined) {
-        if (course.points === undefined || !Number.isFinite(course.points)) {
+        const points = toFiniteNumber(course.points);
+        if (points === undefined) {
             return false;
         }
-        if (course.points > pointsMax) {
+        if (points > pointsMax) {
             return false;
         }
     }
 
     if (medianMin !== undefined) {
-        if (course.median === undefined || !Number.isFinite(course.median)) {
+        const median = toFiniteNumber(course.median);
+        if (median === undefined) {
             return false;
         }
-        if (course.median < medianMin) {
+        if (median < medianMin) {
             return false;
         }
     }
@@ -812,6 +815,19 @@ function isCourseMatchingFilters(
     }
 
     return true;
+}
+
+function toFiniteNumber(value: unknown): number | undefined {
+    if (typeof value === 'number') {
+        return Number.isFinite(value) ? value : undefined;
+    }
+
+    if (typeof value === 'string') {
+        const parsed = Number.parseFloat(value);
+        return Number.isFinite(parsed) ? parsed : undefined;
+    }
+
+    return undefined;
 }
 
 function getCourseSortSource(

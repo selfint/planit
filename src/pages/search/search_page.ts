@@ -326,7 +326,7 @@ async function runSearch(
 
         if (result.total === 0) {
             const totalCourses = state.totalCourses ?? 0;
-            elements.status.textContent = `showing 0 of ${String(totalCourses)}`;
+            elements.status.textContent = `מציג 0 מתוך ${String(totalCourses)}`;
             elements.empty.textContent =
                 'נסו להרחיב את הטווחים או לנקות חלק מהפילטרים.';
             elements.empty.classList.remove('hidden');
@@ -334,7 +334,7 @@ async function runSearch(
         }
 
         const totalCourses = state.totalCourses ?? result.total;
-        elements.status.textContent = `showing ${String(result.total)} of ${String(totalCourses)}`;
+        elements.status.textContent = `מציג ${String(result.total)} מתוך ${String(totalCourses)}`;
     } catch (_error: unknown) {
         if (requestId !== state.requestId) {
             return;

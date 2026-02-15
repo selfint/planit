@@ -452,6 +452,21 @@ describe('indexeddb lib', () => {
         expect(count).toBe(3);
     });
 
+    it('applies median minimum filter when median is stored as a string', async () => {
+        await putCourses([
+            { code: 'A1', name: 'Alpha', median: '85' as unknown as number },
+            { code: 'B1', name: 'Beta', median: '70' as unknown as number },
+        ]);
+
+        const filtered = await queryCourses({
+            medianMin: 80,
+            page: 1,
+            pageSize: 'all',
+        });
+
+        expect(filtered.courses.map((course) => course.code)).toEqual(['A1']);
+    });
+
     it('writes catalogs and reads back data', async () => {
         await putCatalogs({
             '2025_200': { en: '2025 Summer', he: '2025 קיץ' },
