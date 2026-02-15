@@ -8,9 +8,9 @@ const videoMode = (process.env.PW_VIDEO ?? 'retain-on-failure') as
     | 'on-first-retry';
 
 export default defineConfig({
-    testDir: 'tests',
-    testMatch: ['**/*.spec.ts'],
-    testIgnore: ['**/unit/**'],
+    testDir: '.',
+    testMatch: ['tests/**/*.spec.ts', 'src/pages/**/*.spec.ts'],
+    testIgnore: ['**/unit/**', '**/node_modules/**'],
     outputDir: 'test-results',
     use: {
         baseURL,
