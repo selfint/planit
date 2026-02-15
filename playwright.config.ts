@@ -8,7 +8,7 @@ const videoMode = (process.env.PW_VIDEO ?? 'retain-on-failure') as
 export default {
     testDir: '.',
     testMatch: ['tests/**/*.spec.ts', 'src/pages/**/*.spec.ts'],
-    testIgnore: ['**/unit/**', '**/node_modules/**'],
+    testIgnore: ['**/unit/**', '**/node_modules/**', '**/.*/**'],
     outputDir: 'test-results',
     use: {
         baseURL,
