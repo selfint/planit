@@ -395,10 +395,20 @@ function renderPlan(
 
     rail.replaceChildren();
 
+    const leadingSpacer = document.createElement('div');
+    leadingSpacer.className = 'w-4 shrink-0 md:w-6';
+    leadingSpacer.setAttribute('aria-hidden', 'true');
+    rail.append(leadingSpacer);
+
     for (const semester of state.semesters) {
         const column = createSemesterColumn(state, semester);
         rail.append(column);
     }
+
+    const trailingSpacer = document.createElement('div');
+    trailingSpacer.className = 'w-4 shrink-0 md:w-6';
+    trailingSpacer.setAttribute('aria-hidden', 'true');
+    rail.append(trailingSpacer);
 
     updateRailButtonState(rail);
 }
@@ -409,7 +419,7 @@ function createSemesterColumn(
 ): HTMLElement {
     const column = document.createElement('section');
     column.className =
-        'first:ms-4 last:me-4 flex h-[100svh] w-[min(92vw,28rem)] shrink-0 snap-start flex-col gap-3 px-1 md:w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-3rem)/3)]';
+        'flex h-[100svh] w-[min(92vw,28rem)] shrink-0 snap-start flex-col gap-3 px-1 md:w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-3rem)/3)]';
     column.dataset.semesterColumn = 'true';
     column.dataset.semesterId = semester.id;
 
