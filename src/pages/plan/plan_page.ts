@@ -213,17 +213,22 @@ export function PlanPage(): HTMLElement {
     semesterCountInput.value = state.semesterCount.toString();
 
     clearButton.addEventListener('click', () => {
-        state.selected = undefined;
-        renderPlan(
-            state,
+        if (state.selected === undefined) {
+            return;
+        }
+
+        const selectedCourseButton = getCourseButtonElement(
             rail,
-            selectedStatus,
-            clearButton,
-            warning,
-            problemsList,
-            problemsCount,
-            semesterCountInput
+            state.selected.semesterId,
+            state.selected.courseCode
         );
+        if (selectedCourseButton !== undefined) {
+            setCourseSelectionState(selectedCourseButton, false);
+        }
+
+        state.selected = undefined;
+        updateSelectionControls(state, selectedStatus, clearButton);
+        toggleMoveTargets(rail, undefined);
     });
 
     semesterCountInput.addEventListener('change', () => {
@@ -265,11 +270,7 @@ export function PlanPage(): HTMLElement {
                 courseCode,
                 rail,
                 selectedStatus,
-                clearButton,
-                warning,
-                problemsList,
-                problemsCount,
-                semesterCountInput
+                clearButton
             );
             return;
         }
@@ -287,11 +288,7 @@ export function PlanPage(): HTMLElement {
             targetSemesterId,
             rail,
             selectedStatus,
-            clearButton,
-            warning,
-            problemsList,
-            problemsCount,
-            semesterCountInput
+            clearButton
         );
     });
 
@@ -378,8 +375,19 @@ function renderPlan(
     problemsCount: HTMLElement,
     semesterCountInput: HTMLInputElement
 ): void {
-    selectedStatus.textContent = getSelectedStatusText(state);
-    clearButton.disabled = state.selected === undefined;
+    const previousColumns = Array.from(
+        rail.querySelectorAll<HTMLElement>('[data-semester-column]')
+    );
+    const currentVisibleColumnIndex =
+        previousColumns.length > 0
+            ? getCurrentVisibleColumnIndex(rail, previousColumns)
+            : -1;
+    const anchorSemesterId =
+        currentVisibleColumnIndex >= 0
+            ? previousColumns[currentVisibleColumnIndex].dataset.semesterId
+            : undefined;
+
+    updateSelectionControls(state, selectedStatus, clearButton);
     semesterCountInput.value = state.semesterCount.toString();
 
     if (state.warning !== undefined && state.warning.length > 0) {
@@ -396,7 +404,8 @@ function renderPlan(
     rail.replaceChildren();
 
     const leadingSpacer = document.createElement('div');
-    leadingSpacer.className = 'w-4 shrink-0 md:w-6';
+    leadingSpacer.className =
+        'w-4 min-w-4 shrink-0 sm:w-6 sm:min-w-6 lg:w-8 lg:min-w-8';
     leadingSpacer.setAttribute('aria-hidden', 'true');
     rail.append(leadingSpacer);
 
@@ -406,11 +415,55 @@ function renderPlan(
     }
 
     const trailingSpacer = document.createElement('div');
-    trailingSpacer.className = 'w-4 shrink-0 md:w-6';
+    trailingSpacer.className =
+        'w-4 min-w-4 shrink-0 sm:w-6 sm:min-w-6 lg:w-8 lg:min-w-8';
     trailingSpacer.setAttribute('aria-hidden', 'true');
     rail.append(trailingSpacer);
 
+    toggleMoveTargets(rail, state.selected?.semesterId);
+
+    if (anchorSemesterId !== undefined) {
+        const nextColumns = Array.from(
+            rail.querySelectorAll<HTMLElement>('[data-semester-column]')
+        );
+        if (nextColumns.length > 0) {
+            const anchorColumn =
+                nextColumns.find(
+                    (column) => column.dataset.semesterId === anchorSemesterId
+                ) ??
+                nextColumns[
+                    Math.max(
+                        0,
+                        Math.min(
+                            currentVisibleColumnIndex,
+                            nextColumns.length - 1
+                        )
+                    )
+                ];
+            alignColumnWithRailStart(rail, anchorColumn);
+        }
+    }
+
     updateRailButtonState(rail);
+}
+
+function alignColumnWithRailStart(
+    rail: HTMLElement,
+    column: HTMLElement
+): void {
+    const railRect = rail.getBoundingClientRect();
+    const columnRect = column.getBoundingClientRect();
+    const isRtl = getComputedStyle(rail).direction === 'rtl';
+
+    const horizontalDelta = isRtl
+        ? columnRect.right - railRect.right
+        : columnRect.left - railRect.left;
+
+    if (Math.abs(horizontalDelta) <= 1) {
+        return;
+    }
+
+    rail.scrollBy({ left: horizontalDelta });
 }
 
 function createSemesterColumn(
@@ -438,34 +491,26 @@ function createSemesterColumn(
     metrics.append(createMetricChip('חציון', semesterMetrics.avgMedian));
     metrics.append(createMetricChip('מבחנים', semesterMetrics.testsCount));
 
-    header.append(title, metrics);
+    const moveTarget = document.createElement('p');
+    moveTarget.className =
+        'border-accent/40 bg-accent/10 text-accent hidden rounded-xl border px-2 py-1 text-xs';
+    moveTarget.textContent = 'לחצו כאן להעברת הקורס הנבחר';
+    moveTarget.dataset.moveTarget = 'true';
+    moveTarget.dataset.semesterId = semester.id;
 
-    const canReceiveMove =
-        state.selected !== undefined &&
-        state.selected.semesterId !== semester.id;
-    if (canReceiveMove) {
-        const moveTarget = document.createElement('p');
-        moveTarget.className =
-            'border-accent/40 bg-accent/10 text-accent rounded-xl border px-2 py-1 text-xs';
-        moveTarget.textContent = 'לחצו כאן להעברת הקורס הנבחר';
-        header.append(moveTarget);
-    }
+    header.append(title, metrics, moveTarget);
 
     const list = document.createElement('div');
     list.className = 'flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pe-1';
+    list.dataset.semesterCourseList = 'true';
 
     if (semester.courses.length === 0) {
-        const empty = document.createElement('p');
-        empty.className =
-            'border-border/50 bg-surface-1/60 text-text-muted rounded-xl border border-dashed px-3 py-4 text-xs';
-        empty.textContent = 'אין קורסים בסמסטר זה. אפשר ללחוץ כדי להעביר לכאן.';
-        list.append(empty);
+        list.append(createSemesterEmptyStateElement());
     }
 
     for (const course of semester.courses) {
         list.append(createSemesterCourse(state, semester, course));
     }
-
     column.append(header, list);
     return column;
 }
@@ -486,9 +531,7 @@ function createSemesterCourse(
     const isSelected =
         state.selected?.courseCode === course.code &&
         state.selected.semesterId === semester.id;
-    if (isSelected) {
-        holder.classList.add('ring-accent/50', 'ring-2');
-    }
+    setCourseSelectionState(holder, isSelected);
 
     const card = CourseCard(course, {
         statusClass: getStatusClassForSeason(semester.season),
@@ -764,17 +807,103 @@ function getSelectedStatusText(state: PlanState): string {
     return `נבחר: ${label} (${semester.title})`;
 }
 
+function updateSelectionControls(
+    state: PlanState,
+    selectedStatus: HTMLElement,
+    clearButton: HTMLButtonElement
+): void {
+    selectedStatus.textContent = getSelectedStatusText(state);
+    clearButton.disabled = state.selected === undefined;
+}
+
+function setCourseSelectionState(
+    button: HTMLElement,
+    isSelected: boolean
+): void {
+    if (isSelected) {
+        button.classList.add('ring-accent/50', 'ring-2');
+        return;
+    }
+
+    button.classList.remove('ring-accent/50', 'ring-2');
+}
+
+function getCourseButtonElement(
+    rail: HTMLElement,
+    semesterId: string,
+    courseCode: string
+): HTMLElement | undefined {
+    const candidate = rail.querySelector<HTMLElement>(
+        `[data-course-action][data-semester-id="${CSS.escape(semesterId)}"][data-course-code="${CSS.escape(courseCode)}"]`
+    );
+    return candidate ?? undefined;
+}
+
+function toggleMoveTargets(
+    rail: HTMLElement,
+    sourceSemesterId: string | undefined
+): void {
+    const moveTargets =
+        rail.querySelectorAll<HTMLElement>('[data-move-target]');
+    for (const moveTarget of moveTargets) {
+        const targetSemesterId = moveTarget.dataset.semesterId;
+        const shouldShow =
+            sourceSemesterId !== undefined &&
+            targetSemesterId !== undefined &&
+            targetSemesterId !== sourceSemesterId;
+        moveTarget.classList.toggle('hidden', !shouldShow);
+    }
+}
+
+function createSemesterEmptyStateElement(): HTMLElement {
+    const empty = document.createElement('p');
+    empty.className =
+        'border-border/50 bg-surface-1/60 text-text-muted rounded-xl border border-dashed px-3 py-4 text-xs';
+    empty.textContent = 'אין קורסים בסמסטר זה. אפשר ללחוץ כדי להעביר לכאן.';
+    empty.dataset.semesterEmpty = 'true';
+    return empty;
+}
+
+function getSemesterCourseListElement(
+    rail: HTMLElement,
+    semesterId: string
+): HTMLElement | undefined {
+    const column = rail.querySelector<HTMLElement>(
+        `[data-semester-column][data-semester-id="${CSS.escape(semesterId)}"]`
+    );
+    const list = column?.querySelector<HTMLElement>(
+        '[data-semester-course-list]'
+    );
+    return list ?? undefined;
+}
+
+function removeSemesterEmptyStateElement(list: HTMLElement): void {
+    const emptyState = list.querySelector('[data-semester-empty]');
+    if (emptyState !== null) {
+        emptyState.remove();
+    }
+}
+
+function ensureSemesterEmptyStateElement(list: HTMLElement): void {
+    const hasCourses = list.querySelector('[data-course-action]') !== null;
+    if (hasCourses) {
+        removeSemesterEmptyStateElement(list);
+        return;
+    }
+
+    const hasEmptyState = list.querySelector('[data-semester-empty]') !== null;
+    if (!hasEmptyState) {
+        list.append(createSemesterEmptyStateElement());
+    }
+}
+
 function handleCourseClick(
     state: PlanState,
     semesterId: string,
     courseCode: string,
     rail: HTMLElement,
     selectedStatus: HTMLElement,
-    clearButton: HTMLButtonElement,
-    warning: HTMLElement,
-    problemsList: HTMLElement,
-    problemsCount: HTMLElement,
-    semesterCountInput: HTMLInputElement
+    clearButton: HTMLButtonElement
 ): void {
     const isSameSelection =
         state.selected?.semesterId === semesterId &&
@@ -784,17 +913,26 @@ function handleCourseClick(
         return;
     }
 
+    const previousSelected = state.selected;
+    if (previousSelected !== undefined) {
+        const previousButton = getCourseButtonElement(
+            rail,
+            previousSelected.semesterId,
+            previousSelected.courseCode
+        );
+        if (previousButton !== undefined) {
+            setCourseSelectionState(previousButton, false);
+        }
+    }
+
     state.selected = { semesterId, courseCode };
-    renderPlan(
-        state,
-        rail,
-        selectedStatus,
-        clearButton,
-        warning,
-        problemsList,
-        problemsCount,
-        semesterCountInput
-    );
+    const selectedButton = getCourseButtonElement(rail, semesterId, courseCode);
+    if (selectedButton !== undefined) {
+        setCourseSelectionState(selectedButton, true);
+    }
+
+    updateSelectionControls(state, selectedStatus, clearButton);
+    toggleMoveTargets(rail, semesterId);
 }
 
 async function handleSemesterClick(
@@ -802,18 +940,17 @@ async function handleSemesterClick(
     targetSemesterId: string,
     rail: HTMLElement,
     selectedStatus: HTMLElement,
-    clearButton: HTMLButtonElement,
-    warning: HTMLElement,
-    problemsList: HTMLElement,
-    problemsCount: HTMLElement,
-    semesterCountInput: HTMLInputElement
+    clearButton: HTMLButtonElement
 ): Promise<void> {
     if (state.selected === undefined) {
         return;
     }
 
+    const selectedCourseCode = state.selected.courseCode;
+    const sourceSemesterId = state.selected.semesterId;
+
     const sourceSemester = state.semesters.find(
-        (semester) => semester.id === state.selected?.semesterId
+        (semester) => semester.id === sourceSemesterId
     );
     const targetSemester = state.semesters.find(
         (semester) => semester.id === targetSemesterId
@@ -827,7 +964,7 @@ async function handleSemesterClick(
     }
 
     const courseIndex = sourceSemester.courses.findIndex(
-        (course) => course.code === state.selected?.courseCode
+        (course) => course.code === selectedCourseCode
     );
     if (courseIndex < 0) {
         return;
@@ -835,19 +972,35 @@ async function handleSemesterClick(
 
     const [course] = sourceSemester.courses.splice(courseIndex, 1);
     targetSemester.courses.push(course);
-    state.selected = undefined;
-    state.warning = undefined;
-    await persistPlanState(state);
-    renderPlan(
-        state,
+
+    const movedButton = getCourseButtonElement(
         rail,
-        selectedStatus,
-        clearButton,
-        warning,
-        problemsList,
-        problemsCount,
-        semesterCountInput
+        sourceSemesterId,
+        selectedCourseCode
     );
+    const sourceList = getSemesterCourseListElement(rail, sourceSemesterId);
+    const targetList = getSemesterCourseListElement(rail, targetSemesterId);
+
+    if (movedButton !== undefined && targetList !== undefined) {
+        removeSemesterEmptyStateElement(targetList);
+        movedButton.dataset.semesterId = targetSemesterId;
+        setCourseSelectionState(movedButton, false);
+        targetList.append(movedButton);
+    }
+
+    if (sourceList !== undefined) {
+        ensureSemesterEmptyStateElement(sourceList);
+    }
+    if (targetList !== undefined) {
+        ensureSemesterEmptyStateElement(targetList);
+    }
+
+    state.selected = undefined;
+
+    updateSelectionControls(state, selectedStatus, clearButton);
+    toggleMoveTargets(rail, undefined);
+
+    await persistPlanState(state);
 }
 
 function navigateToCoursePage(courseCode: string): void {
