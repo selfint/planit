@@ -451,7 +451,10 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
     rowElement.dataset.rowId = row.id;
 
     const header = document.createElement('header');
-    header.className = 'flex flex-wrap items-center gap-x-3 gap-y-2';
+    header.className = 'flex flex-col gap-2';
+
+    const headingRow = document.createElement('div');
+    headingRow.className = 'flex flex-wrap items-center gap-2';
 
     const title = document.createElement('p');
     title.className = 'text-sm font-medium whitespace-nowrap';
@@ -476,7 +479,8 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
     moveTarget.dataset.moveTarget = 'true';
     moveTarget.dataset.rowId = row.id;
 
-    header.append(title, metrics, moveTarget);
+    headingRow.append(title, moveTarget);
+    header.append(headingRow, metrics);
 
     const list = document.createElement('div');
     list.className = 'flex flex-wrap gap-2';
