@@ -1,34 +1,37 @@
 # /plan
 
-High-level design for the degree planning view. This is a client-side route in the single-page application.
+Interactive semester planning board for the degree plan route.
 
 ## Purpose
 
-Provide a Trello-like overview of the full degree plan, organized by semester, with a fast click-to-move interaction and no drag-and-drop.
+Provide a semester board where users select a course card and move it by clicking a target semester.
 
 ## Core UI
 
-- Responsive columns: mobile shows one full-width column, tablet shows two columns, desktop shows three or more based on available width.
-- Course cards inside each semester column.
-- Click-to-move interaction: click a course to select it, then click the target semester column to move it.
-- When a course is selected, other semesters show a clear "move here" indicator.
-- Clear selected state for the active course; clicking the selected course again navigates to the course page.
+- Horizontally scrollable semester rail in all breakpoints.
+- Mobile keeps touch-based horizontal scrolling with snap alignment.
+- Desktop keeps scroll support and adds previous/next arrow navigation when overflow exists.
+- Every planned course is rendered with `CourseCard`.
+- Click-select then click-semester move interaction, with explicit move target hint.
+- Clicking the selected card again routes to `/course`.
 
 ## Key Behaviors
 
-- No drag-and-drop. Only click-select then click-target to move.
-- Moving a course updates the plan state immediately in IndexedDB.
-- Semester columns show credit totals.
+- No drag-and-drop.
+- Move operation updates the in-memory board immediately and persists semester placement.
+- Semester columns show derived metrics: total points, average median, and count of courses with tests.
+- If a course is placed in a season that is not listed in `course.seasons`, the card shows a non-blocking warning.
 
 ## Data
 
-- Source: user plan from IndexedDB.
-- Derived: semester ordering and per-semester metrics.
+- Source courses are loaded from IndexedDB (`courses` store). If empty, a fallback sample set is used.
+- Semester placement is persisted in `meta` under `planPageState`.
+- Derived metrics per semester:
     - Total points
-    - Average median of courses
-    - Total courses with tests
+    - Average median
+    - Courses with at least one test
 
 ## Edge Cases
 
-- If a move violates prerequisites or semester availability, show a non-blocking warning on the moved card.
-- If the same course exists in multiple semesters, resolve to a single location and surface a warning.
+- Duplicate courses in persisted state are normalized to a single location and surfaced as a warning.
+- Unknown persisted codes are ignored safely during restore.

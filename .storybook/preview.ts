@@ -7,9 +7,12 @@ type ThemeMode = 'light' | 'dark';
 const themeDecorator: Decorator = (Story, context) => {
     const wrapper = document.createElement('div');
     const theme = (context.globals.theme as ThemeMode) ?? 'light';
+    const isFullscreen = context.parameters.layout === 'fullscreen';
 
     wrapper.dataset.theme = theme;
-    wrapper.className = 'min-h-screen text-text md:p-6';
+    wrapper.className = isFullscreen
+        ? 'min-h-screen text-text'
+        : 'min-h-screen text-text md:p-6';
     wrapper.dir = 'rtl';
 
     const story = Story();

@@ -14,6 +14,7 @@ export default defineConfig(
             'node_modules/',
             'vite.config.ts',
             'prettier.config.ts',
+            'storybook-static/',
         ],
     },
     {
