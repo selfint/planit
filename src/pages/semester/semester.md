@@ -17,79 +17,62 @@ It separates three course scopes:
 ### Desktop (>=1024)
 
 ```text
-+--------------------------------------------------------------------------------------------------+
-| /semester?number=3                                                                               |
-| סמסטר 3 • תצוגת סמסטר                                                                            |
-| קורסים מהסמסטר מודגשים בנפרד, מתחתיהם קורסים נוספים מהקטלוג והרחבות לפי פקולטה                 |
-+--------------------------------------------------------------------------------------------------+
+סמסטר 3 • חורף תשפ"ז
 
-+--------------------------------------------------+  +-------------------------------------------+
-| קורסי הסמסטר הנבחר (סמסטר 3)                     |  | קורסים נוספים מהקטלוג                    |
-| [CourseCard] [CourseCard] [CourseCard]           |  | [CourseCard] [CourseCard] [CourseCard]   |
-| [CourseCard] [CourseCard] [CourseCard]           |  | [CourseCard] [CourseCard] [CourseCard]   |
-+--------------------------------------------------+  +-------------------------------------------+
++------------------------------------------+  +------------------------------------------------------+
+| קורסי הסמסטר הנבחר                       |  | קורסים נוספים מהקטלוג                                |
+| [CourseCard]                             |  | [CourseCard] [CourseCard] [CourseCard] [CourseCard] |
+| [CourseCard]                             |  | [CourseCard] [CourseCard] [CourseCard] [CourseCard] |
+| [CourseCard]                             |  +------------------------------------------------------+
+| [CourseCard]                             |
++------------------------------------------+
 
-+--------------------------------------------------------------------------------------------------+
-| בחירה חופשית: מדעי המחשב                                                                        |
-| [CourseCard] [CourseCard] [CourseCard] [CourseCard] [CourseCard] [CourseCard]                  |
-+--------------------------------------------------------------------------------------------------+
+בחירה חופשית: מדעי המחשב
+[CourseCard] [CourseCard] [CourseCard] [CourseCard] [CourseCard] [CourseCard]
 
-+--------------------------------------------------------------------------------------------------+
-| בחירה חופשית: מתמטיקה                                                                           |
-| [CourseCard] [CourseCard] [CourseCard] [CourseCard]                                             |
-+--------------------------------------------------------------------------------------------------+
+בחירה חופשית: מתמטיקה
+[CourseCard] [CourseCard] [CourseCard] [CourseCard]
 
-+--------------------------------------------------------------------------------------------------+
-| בחירה חופשית: פיזיקה                                                                            |
-| [CourseCard] [CourseCard] [CourseCard]                                                          |
-+--------------------------------------------------------------------------------------------------+
+בחירה חופשית: פיזיקה
+[CourseCard] [CourseCard] [CourseCard]
 ```
 
 ### Mobile (<1024)
 
 ```text
-+----------------------------------------------+
-| /semester?number=3                           |
-| סמסטר 3 • תצוגת סמסטר                        |
-+----------------------------------------------+
+סמסטר 3 • חורף תשפ"ז
 
-+----------------------------------------------+
-| קורסי הסמסטר הנבחר (סמסטר 3)                 |
-| [CourseCard]                                 |
-| [CourseCard]                                 |
-| [CourseCard]                                 |
-+----------------------------------------------+
+קורסי הסמסטר הנבחר
+[CourseCard]
+[CourseCard]
+[CourseCard]
 
-+----------------------------------------------+
-| קורסים נוספים מהקטלוג                        |
-| [CourseCard]                                 |
-| [CourseCard]                                 |
-| [CourseCard]                                 |
-+----------------------------------------------+
+קורסים נוספים מהקטלוג
+[CourseCard]
+[CourseCard]
+[CourseCard]
 
-+----------------------------------------------+
-| בחירה חופשית: מדעי המחשב                     |
-| [CourseCard]                                 |
-| [CourseCard]                                 |
-| [CourseCard]                                 |
-+----------------------------------------------+
+בחירה חופשית: מדעי המחשב
+[CourseCard]
+[CourseCard]
+[CourseCard]
 
-+----------------------------------------------+
-| בחירה חופשית: מתמטיקה                        |
-| [CourseCard]                                 |
-| [CourseCard]                                 |
-+----------------------------------------------+
+בחירה חופשית: מתמטיקה
+[CourseCard]
+[CourseCard]
 
-+----------------------------------------------+
-| בחירה חופשית: פיזיקה                         |
-| [CourseCard]                                 |
-+----------------------------------------------+
+בחירה חופשית: פיזיקה
+[CourseCard]
 ```
 
 ## Layout Notes
 
-- The selected semester courses are visually separated in a dedicated top block.
-- The rest of the catalog courses appear right after the semester block.
+- The main title only shows semester number, year, and season.
+- Desktop places the current semester as a side column.
+- Mobile places the current semester block first, then all other groups.
+- Each non-semester group is rendered as a title plus one course row (catalog style),
+  without wrapping each group in a card container.
+- The rest of the catalog courses appear right after the current semester section.
 - Non-catalog courses are grouped by faculty with titles in the format
   `בחירה חופשית: <פקולטה>`.
-- Desktop uses denser multi-column grids; mobile collapses to a single column.
+- Desktop uses denser multi-column rows; mobile collapses to a single column.
