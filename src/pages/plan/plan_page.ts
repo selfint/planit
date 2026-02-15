@@ -419,7 +419,7 @@ function createSemesterColumn(
 ): HTMLElement {
     const column = document.createElement('section');
     column.className =
-        'flex h-[100svh] w-[min(92vw,28rem)] shrink-0 snap-start flex-col gap-3 px-1 md:w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-3rem)/3)]';
+        'touch-manipulation flex h-[100svh] w-[min(92vw,28rem)] shrink-0 snap-start flex-col gap-3 px-1 md:w-[calc((100vw-2rem)/2)] lg:w-[calc((100vw-3rem)/3)]';
     column.dataset.semesterColumn = 'true';
     column.dataset.semesterId = semester.id;
 

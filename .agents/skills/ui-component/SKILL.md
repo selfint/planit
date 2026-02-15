@@ -16,13 +16,14 @@ Build UI components as four files (.html, .ts, .stories.ts, .md). Use <template>
 3. Keep logic, state, and event wiring in the TS file; do not embed scripts in HTML.
 4. In the .html file, put all text in Hebrew; except for PlanIt and other english-only phrases.
 5. Use data attributes in the HTML to target elements from TS.
-6. Export a component factory (e.g., `AppHeader()`) that returns a root element.
-7. Add a concise Markdown doc in `src/components/<Component>.md` following the structure below. Component `.md` docs are always written in English.
-8. Create `src/components/<Component>.stories.ts` alongside the component.
-9. Define `Default` and `Dark` stories, setting `globals: { theme: 'dark' }` for dark.
-10. Rely on `.storybook/preview.ts` for the wrapper; do not create custom preview shells.
-11. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
-12. For async or data-driven components, add skeleton placeholders in the
+6. Ensure all interactive controls prevent mobile double-tap zoom by applying `touch-manipulation` (or equivalent `touch-action: manipulation`) to tap targets (`button`, `a`, `[role="button"]`, and other clickable wrappers).
+7. Export a component factory (e.g., `AppHeader()`) that returns a root element.
+8. Add a concise Markdown doc in `src/components/<Component>.md` following the structure below. Component `.md` docs are always written in English.
+9. Create `src/components/<Component>.stories.ts` alongside the component.
+10. Define `Default` and `Dark` stories, setting `globals: { theme: 'dark' }` for dark.
+11. Rely on `.storybook/preview.ts` for the wrapper; do not create custom preview shells.
+12. Mount by `replaceWith()` or `appendChild()` in the caller (avoid `outerHTML`).
+13. For async or data-driven components, add skeleton placeholders in the
     template using the shared `skeleton-shimmer` utility and a `data-skeleton`
     attribute that the TS layer toggles off once data is populated.
 
