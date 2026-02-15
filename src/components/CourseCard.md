@@ -10,7 +10,8 @@ course code using a small hash and a fixed palette.
 
 ## Template Structure
 
-- Root `article` with rounded border and surface styling.
+- Root `article` with rounded border, `text-xs`, and a minimum width of
+  `6.5rem` so three cards can share a row in course grids.
 - Top row contains the status dot and meta numbers.
 - Bottom block shows the title and the code.
 

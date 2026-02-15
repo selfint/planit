@@ -479,8 +479,7 @@ function renderDependencyGroups(
         groupSection.className = 'flex flex-col gap-3';
 
         const groupGrid = document.createElement('div');
-        groupGrid.className =
-            'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3';
+        groupGrid.className = 'grid grid-cols-3 gap-3';
 
         for (const course of groupCourses) {
             const link = createCourseCardLink(course);

@@ -20,7 +20,7 @@ const sampleCourse: CourseRecord = {
 
 function renderCards(): HTMLElement {
     const grid = document.createElement('div');
-    grid.className = 'grid gap-3 sm:grid-cols-2';
+    grid.className = 'grid grid-cols-3 gap-3';
     grid.append(
         CourseCard(sampleCourse, { statusClass: 'bg-success' }),
         CourseCard()
