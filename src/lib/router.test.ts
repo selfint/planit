@@ -31,13 +31,13 @@ vi.mock('../pages/404/not_found_page', () => ({
 }));
 
 import {
-    addBasePath,
     REDIRECT_SESSION_KEY,
+    addBasePath,
     initRouter,
     normalizeBasePath,
     normalizePath,
-    stripBasePath,
     shouldHandleClickNavigation,
+    stripBasePath,
 } from '$lib/router';
 
 describe('router lib', () => {
