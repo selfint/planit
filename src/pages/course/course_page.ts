@@ -472,11 +472,6 @@ function renderDependencyGroups(
         const groupSection = document.createElement('section');
         groupSection.className = 'flex flex-col gap-3';
 
-        const groupTitle = document.createElement('p');
-        groupTitle.className = 'text-text-muted text-xs';
-        groupTitle.textContent = `חלופה ${String(groupIndex + 1)} - כל הקורסים יחד`;
-        groupSection.append(groupTitle);
-
         const groupGrid = document.createElement('div');
         groupGrid.className =
             'grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3';
