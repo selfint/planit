@@ -66,6 +66,13 @@ function createCardRow(course: CourseRecord): HTMLElement {
     return CourseCard(course);
 }
 
+function createRailItem(card: HTMLElement): HTMLDivElement {
+    const item = document.createElement('div');
+    item.className = 'min-w-[6.5rem] shrink-0 basis-[calc((100%-1.5rem)/3)]';
+    item.append(card);
+    return item;
+}
+
 function renderDefaultCards(): HTMLElement {
     const grid = createStoryHost('grid grid-cols-3 gap-3');
     grid.append(createCardRow(sampleCourses[0]), CourseCard());
@@ -77,17 +84,15 @@ function renderManyHorizontalCards(): HTMLElement {
         'flex max-w-full gap-3 overflow-x-auto pb-2 [scrollbar-width:thin]'
     );
     for (const course of sampleCourses) {
-        const card = createCardRow(course);
-        card.classList.add('shrink-0');
-        rail.append(card);
+        rail.append(createRailItem(createCardRow(course)));
     }
-    rail.append(CourseCard());
+    rail.append(createRailItem(CourseCard()));
     return rail;
 }
 
 function renderDenseGrid(): HTMLElement {
     const grid = createStoryHost(
-        'grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-5'
+        'grid grid-cols-3 gap-4 sm:grid-cols-4 lg:grid-cols-5'
     );
     for (const course of sampleCourses) {
         grid.append(createCardRow(course));
