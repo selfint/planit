@@ -126,7 +126,7 @@ describe('SearchPage', () => {
         expect(secondLink.className).toContain('opacity-45');
     });
 
-    it('shows sync-waiting empty message before courses are available', async () => {
+    it('hides empty filter message before courses are available', async () => {
         queryCoursesMock.mockResolvedValue({ courses: [], total: 0 });
         getCoursesCountMock.mockResolvedValue(0);
 
@@ -138,9 +138,6 @@ describe('SearchPage', () => {
         const emptyMessage = page.querySelector<HTMLElement>(
             '[data-search-empty]'
         );
-        expect(emptyMessage?.textContent).toContain('ממתין לסנכרון');
-        expect(emptyMessage?.textContent).not.toContain(
-            'נסו להרחיב את הטווחים'
-        );
+        expect(emptyMessage?.classList.contains('hidden')).toBe(true);
     });
 });
