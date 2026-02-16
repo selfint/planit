@@ -457,7 +457,6 @@ function renderCurrentSemesterCourses(
     const row = document.createElement('div');
     row.className =
         'mx-2 flex min-h-0 snap-x snap-mandatory gap-2 lg:mx-0 lg:snap-none lg:flex-col lg:gap-2';
-    row.append(createLeadingSeparator('current'));
     container.append(row);
 
     if (courses.length === 0) {
@@ -522,17 +521,6 @@ function createCourseLink(course: CourseRecord): HTMLAnchorElement {
 
     link.append(CourseCard(course));
     return link;
-}
-
-function createLeadingSeparator(kind: 'current' | 'group'): HTMLElement {
-    const separator = document.createElement('div');
-    if (kind === 'current') {
-        separator.className = 'w-2 min-w-2 shrink-0 lg:hidden';
-    } else {
-        separator.className = 'w-3 min-w-3 shrink-0 md:hidden';
-    }
-    separator.setAttribute('aria-hidden', 'true');
-    return separator;
 }
 
 function setupStickyExpansion(aside: HTMLElement, section: HTMLElement): void {
