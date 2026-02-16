@@ -470,7 +470,8 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
     root.replaceChildren();
     for (const group of groups) {
         const section = document.createElement('section');
-        section.className = 'flex min-w-0 flex-col gap-3';
+        section.className =
+            'flex min-w-0 flex-col gap-3 [content-visibility:auto] [contain-intrinsic-size:24rem]';
         section.dataset.groupKind = group.kind;
         section.dataset.groupTitle = group.title;
 
