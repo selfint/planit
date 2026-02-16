@@ -105,5 +105,45 @@ export function LandingPage(): HTMLElement {
         container.dataset.videoReady = 'false';
     });
 
+    setupLandingDemoVideo(root);
+
     return root;
+}
+
+function setupLandingDemoVideo(root: HTMLElement): void {
+    const placeholder = root.querySelector<HTMLElement>(
+        '[data-video-placeholder]'
+    );
+    const video = root.querySelector<HTMLVideoElement>(
+        '[data-landing-demo-video]'
+    );
+    const skeletonLayer = root.querySelector<HTMLElement>(
+        '[data-skeleton-layer]'
+    );
+    if (placeholder === null || video === null || skeletonLayer === null) {
+        return;
+    }
+
+    const resolvedPlaceholder = placeholder;
+    const resolvedVideo = video;
+    const resolvedSkeletonLayer = skeletonLayer;
+
+    function revealVideo(): void {
+        resolvedVideo.classList.remove('opacity-0');
+        resolvedPlaceholder.dataset.skeleton = 'false';
+        resolvedSkeletonLayer.classList.add('hidden');
+    }
+
+    function handleVideoFailure(): void {
+        resolvedSkeletonLayer.classList.remove('skeleton-shimmer');
+        resolvedSkeletonLayer.classList.add('bg-surface-2/70');
+    }
+
+    if (resolvedVideo.readyState >= 2) {
+        revealVideo();
+        return;
+    }
+
+    resolvedVideo.addEventListener('loadeddata', revealVideo, { once: true });
+    resolvedVideo.addEventListener('error', handleVideoFailure, { once: true });
 }
