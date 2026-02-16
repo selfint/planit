@@ -15,6 +15,8 @@
         "build-storybook": "storybook build",
         "unittest": "vitest run --passWithNoTests",
         "integtest": "playwright test",
+        "integtest:desktop": "playwright test --project=desktop-chrome",
+        "integtest:mobile": "playwright test --project=mobile-chrome",
         "integtest:video": "PW_VIDEO=on playwright test",
         "pw:codegen": "playwright codegen http://localhost:5173",
         "optimize:videos": "node scripts/optimize-playwright-videos.mjs",

@@ -30,5 +30,21 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run unit tests
+        run: pnpm unittest
+
+      - name: Run desktop integration tests
+        run: pnpm integtest:desktop
+
+      - name: Run mobile smoke integration tests
+        run: pnpm integtest:mobile
+
+      - name: Upload Playwright artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            test-results
+            playwright-report
+          if-no-files-found: ignore
