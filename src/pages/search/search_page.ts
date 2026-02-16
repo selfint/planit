@@ -518,6 +518,7 @@ function createSearchRenderState(
             renderVirtualRows(state);
         },
     });
+    state.virtualizer._willUpdate();
 
     if (typeof ResizeObserver === 'function') {
         const observer = new ResizeObserver(() => {
@@ -536,6 +537,7 @@ function renderLoadingState(state: SearchRenderState, amount: number): void {
         'grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5';
     state.results.style.removeProperty('height');
     state.viewport.scrollTop = 0;
+    state.virtualizer._willUpdate();
     state.virtualizer.setOptions({ ...state.virtualizer.options, count: 0 });
 
     const placeholders: HTMLElement[] = [];
@@ -549,6 +551,7 @@ function renderResults(
     state: SearchRenderState,
     courses: CourseRecord[]
 ): void {
+    state.virtualizer._willUpdate();
     state.courses = courses;
     updateRenderMetrics(state);
     state.rows = buildRows(courses, state.columnCount);
