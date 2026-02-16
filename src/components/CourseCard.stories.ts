@@ -99,16 +99,13 @@ function renderDenseGrid(): HTMLElement {
     }
     grid.append(CourseCard());
     grid.append(
-        CourseCard(
-            {
-                code: '999999',
-                name: 'קורס עם שם ארוך במיוחד כדי לבדוק חיתוך טקסט בכרטיס',
-                points: 2,
-                median: 68,
-                tests: [null],
-            },
-            { statusClass: 'bg-warning' }
-        )
+        CourseCard({
+            code: '999999',
+            name: 'קורס עם שם ארוך במיוחד כדי לבדוק חיתוך טקסט בכרטיס',
+            points: 2,
+            median: 68,
+            tests: [null],
+        })
     );
     return grid;
 }
@@ -120,28 +117,6 @@ function renderWrappedCards(): HTMLElement {
     }
     wrap.append(CourseCard());
     return wrap;
-}
-
-function renderStatusPalette(): HTMLElement {
-    const classes = [
-        'bg-success',
-        'bg-warning',
-        'bg-info',
-        'bg-danger',
-        'bg-accent',
-    ];
-    const container = createStoryHost('grid grid-cols-3 gap-3 sm:grid-cols-5');
-
-    classes.forEach((statusClass, index) => {
-        const course = sampleCourses[index % sampleCourses.length];
-        container.append(
-            CourseCard(course, {
-                statusClass,
-            })
-        );
-    });
-
-    return container;
 }
 
 export const Default: Story = {
@@ -167,13 +142,6 @@ export const DenseGrid: Story = {
 
 export const WrappedFlow: Story = {
     render: () => renderWrappedCards(),
-    globals: {
-        theme: 'light',
-    },
-};
-
-export const StatusPalette: Story = {
-    render: () => renderStatusPalette(),
     globals: {
         theme: 'light',
     },

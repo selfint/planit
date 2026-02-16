@@ -25,8 +25,7 @@ course code using an FNV-1a hash mapped into an HSL color.
 3. When data is present, `data-skeleton` and `aria-busy` are removed, then the
    title, code, points, and median are populated. Missing values fall back to
    `—` and a default title.
-4. The status dot color is derived from the course code hash into HSL unless
-   `statusClass` is provided in `options`.
+4. The status dot color is derived from the course code hash.
 
 ## Dependencies
 

@@ -644,10 +644,7 @@ function renderRelatedCourseCards(
 }
 
 function createCourseCardLink(course: CourseRecord): HTMLAnchorElement {
-    const card = CourseCard(course, {
-        statusClass:
-            course.name === UNKNOWN_COURSE_LABEL ? 'bg-border' : undefined,
-    });
+    const card = CourseCard(course);
     const link = document.createElement('a');
     link.href = `/course?code=${encodeURIComponent(course.code)}`;
     link.className = 'block';
