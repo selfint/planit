@@ -80,10 +80,11 @@ describe('pwa lib', () => {
         expect(update).toHaveBeenCalledTimes(2);
     });
 
-    it('auto-updates on initial load when refresh is needed', () => {
+    it('does not auto-update on initial load when refresh is needed', () => {
         const updateSW = vi.fn<() => Promise<void>>(
             (): Promise<void> => Promise.resolve()
         );
+        const dispatchEventSpy = vi.spyOn(window, 'dispatchEvent');
         registerSW.mockImplementation((opts): (() => Promise<void>) => {
             opts?.onNeedRefresh?.();
             return updateSW;
@@ -96,7 +97,11 @@ describe('pwa lib', () => {
         initPWA();
         fireLoad();
 
-        expect(updateSW).toHaveBeenCalledWith(true);
+        expect(updateSW).not.toHaveBeenCalled();
+        const event = dispatchEventSpy.mock.calls
+            .map((call) => call[0])
+            .find((candidate) => candidate.type === PWA_UPDATE_EVENT);
+        expect(event?.type).toBe(PWA_UPDATE_EVENT);
     });
 
     it('dispatches update event when refresh is needed mid-session', () => {

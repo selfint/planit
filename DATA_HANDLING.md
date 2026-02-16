@@ -132,6 +132,8 @@ Relevant files:
 - [`vite.config.ts`](vite.config.ts)
 - [`src/main.ts`](src/main.ts)
 - [`src/lib/pwa.ts`](src/lib/pwa.ts)
+- [`src/components/PwaUpdateBanner.ts`](src/components/PwaUpdateBanner.ts)
+- [`src/components/PwaUpdateBanner.html`](src/components/PwaUpdateBanner.html)
 
 ```mermaid
 sequenceDiagram
@@ -149,16 +151,12 @@ sequenceDiagram
     SW-->>PWA: registration + lifecycle callbacks
     PWA->>PWA: periodic checks (~10 min), plus online/visibility triggers
     PWA->>Net: fetch swUrl (no-store)
-    alt new app version available
+        alt new app version available
         SW-->>PWA: onNeedRefresh()
-        alt initial load and online
-            PWA->>SW: updateSW(true) (reload to new version)
-        else mid-session
-            PWA-->>UI: dispatch planit:pwa-update event
-            UI->>User: optional in-app update prompt
-            User->>UI: accept update
-            UI->>SW: updateSW(true)
-        end
+        PWA-->>UI: dispatch planit:pwa-update event
+        UI->>User: show in-app update banner
+        User->>UI: click "update"
+        UI->>SW: updateSW(true)
     else no update
         PWA-->>PWA: keep current worker + cache
     end
@@ -167,7 +165,7 @@ sequenceDiagram
 Notes:
 
 - Workbox is configured with `clientsClaim` and `skipWaiting` for fast activation.
-- Update UX remains event-driven via `planit:pwa-update`; UI listeners can decide how to present the prompt.
+- Update UX is event-driven via `planit:pwa-update` and is applied only after explicit user confirmation from the banner.
 
 ## 4) User state management (local-first)
 
