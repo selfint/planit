@@ -131,6 +131,14 @@ describe('SearchPage', () => {
         const secondLink = links[1];
 
         expect(firstLink.getAttribute('href')).toBe('/course?code=234114');
+        expect(firstLink.className).toContain('h-[7.5rem]');
+        expect(firstLink.className).toContain('sm:h-[6.5rem]');
+        expect(firstLink.className).toContain(
+            '[contain-intrinsic-size:7.5rem]'
+        );
+        expect(firstLink.className).toContain(
+            'sm:[contain-intrinsic-size:6.5rem]'
+        );
         expect(secondLink.className).toContain('opacity-45');
     });
 
