@@ -1,36 +1,32 @@
-<template>
-    <article
-        class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
-        data-component="CourseCard"
-        data-skeleton="true"
-    >
-        <div
-            class="text-text-muted flex items-center justify-between text-xs/4"
-        >
+<article
+    class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+    data-component="CourseCard"
+    data-skeleton="true"
+>
+    <div class="text-text-muted flex items-center justify-between text-xs/4">
+        <span
+            class="group-data-[skeleton=true]:skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+            data-role="status-dot"
+        ></span>
+        <span class="shrink-0 leading-none whitespace-nowrap tabular-nums">
             <span
-                class="group-data-[skeleton=true]:skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
-                data-role="status-dot"
+                class="text-text group-data-[skeleton=true]:skeleton-shimmer inline-block shrink-0 align-middle group-data-[skeleton=true]:h-3 group-data-[skeleton=true]:w-[2.5ch] group-data-[skeleton=true]:rounded-md"
+                data-role="course-points"
             ></span>
-            <span class="shrink-0 leading-none whitespace-nowrap tabular-nums">
-                <span
-                    class="text-text group-data-[skeleton=true]:skeleton-shimmer inline-block shrink-0 align-middle group-data-[skeleton=true]:h-3 group-data-[skeleton=true]:w-[2.5ch] group-data-[skeleton=true]:rounded-md"
-                    data-role="course-points"
-                ></span>
-                <span
-                    class="text-text group-data-[skeleton=true]:skeleton-shimmer inline-block shrink-0 align-middle group-data-[skeleton=true]:h-3 group-data-[skeleton=true]:w-[3.5ch] group-data-[skeleton=true]:rounded-md"
-                    data-role="course-median"
-                ></span>
-            </span>
-        </div>
-        <div class="flex flex-col gap-1">
-            <p
-                class="group-data-[skeleton=true]:skeleton-shimmer [display:-webkit-box] overflow-hidden text-xs/4 font-medium [-webkit-box-orient:vertical] [-webkit-line-clamp:3] group-data-[skeleton=true]:block group-data-[skeleton=true]:h-12 group-data-[skeleton=true]:w-full group-data-[skeleton=true]:max-w-full group-data-[skeleton=true]:rounded-md"
-                data-role="course-title"
-            ></p>
-            <p
-                class="text-text-muted group-data-[skeleton=true]:skeleton-shimmer h-4 truncate text-xs/4 group-data-[skeleton=true]:block group-data-[skeleton=true]:h-3 group-data-[skeleton=true]:w-[70%] group-data-[skeleton=true]:max-w-full group-data-[skeleton=true]:rounded-md"
-                data-role="course-code"
-            ></p>
-        </div>
-    </article>
-</template>
+            <span
+                class="text-text group-data-[skeleton=true]:skeleton-shimmer inline-block shrink-0 align-middle group-data-[skeleton=true]:h-3 group-data-[skeleton=true]:w-[3.5ch] group-data-[skeleton=true]:rounded-md"
+                data-role="course-median"
+            ></span>
+        </span>
+    </div>
+    <div class="flex flex-col gap-1">
+        <p
+            class="group-data-[skeleton=true]:skeleton-shimmer [display:-webkit-box] overflow-hidden text-xs/4 font-medium [-webkit-box-orient:vertical] [-webkit-line-clamp:3] group-data-[skeleton=true]:block group-data-[skeleton=true]:h-12 group-data-[skeleton=true]:w-full group-data-[skeleton=true]:max-w-full group-data-[skeleton=true]:rounded-md"
+            data-role="course-title"
+        ></p>
+        <p
+            class="text-text-muted group-data-[skeleton=true]:skeleton-shimmer h-4 truncate text-xs/4 group-data-[skeleton=true]:block group-data-[skeleton=true]:h-3 group-data-[skeleton=true]:w-[70%] group-data-[skeleton=true]:max-w-full group-data-[skeleton=true]:rounded-md"
+            data-role="course-code"
+        ></p>
+    </div>
+</article>

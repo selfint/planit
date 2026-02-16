@@ -10,7 +10,7 @@ export type CourseCardOptions = {
 const DEFAULT_STATUS_COLOR = 'hsl(168 56% 46%)';
 const DEFAULT_EMPTY_VALUE = '—';
 const DEFAULT_TITLE = 'קורס ללא שם';
-let cachedTemplateElement: HTMLTemplateElement | undefined;
+let cachedTemplateElement: HTMLElement | undefined;
 
 type CourseCardElements = {
     statusDot: HTMLSpanElement | undefined;
@@ -24,7 +24,7 @@ export function CourseCard(
     course?: CourseRecord,
     options?: CourseCardOptions
 ): HTMLElement {
-    const root = createCourseCardRoot();
+    const root = getTemplate();
     const elements = collectCourseCardElements(root);
 
     if (course === undefined) {
@@ -87,30 +87,21 @@ export function CourseCard(
     return root;
 }
 
-function getTemplateElement(): HTMLTemplateElement {
+function getTemplate(): HTMLElement {
     if (cachedTemplateElement !== undefined) {
-        return cachedTemplateElement;
+        return cachedTemplateElement.cloneNode(true) as HTMLElement;
     }
 
     const wrapper = document.createElement('template');
     wrapper.innerHTML = templateHtml;
     const templateElement = wrapper.content.firstElementChild;
-    if (!(templateElement instanceof HTMLTemplateElement)) {
-        throw new Error('CourseCard template element not found');
+    if (!(templateElement instanceof HTMLElement)) {
+        throw new Error('CourseCard element not found');
     }
 
     cachedTemplateElement = templateElement;
-    return templateElement;
-}
 
-function createCourseCardRoot(): HTMLElement {
-    const templateElement = getTemplateElement();
-    const root = templateElement.content.firstElementChild?.cloneNode(true);
-    if (!(root instanceof HTMLElement)) {
-        throw new Error('CourseCard template root not found');
-    }
-
-    return root;
+    return templateElement.cloneNode(true) as HTMLElement;
 }
 
 function collectCourseCardElements(root: HTMLElement): CourseCardElements {
