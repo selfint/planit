@@ -1,7 +1,7 @@
 import { LandingFeatureCard } from './components/LandingFeatureCard';
 import { LandingHero } from './components/LandingHero';
 import { LandingNav } from './components/LandingNav';
-import landingDemoVideoUrl from '$assets/first-time-planning-flow-demo.webm?url';
+import landingDemoVideoUrl from '$assets/first-time-planning-flow-demo.webm';
 import templateHtml from './landing_page.html?raw';
 
 export function LandingPage(): HTMLElement {
