@@ -33,6 +33,10 @@ their courses from local IndexedDB data.
 
 ## Unit Tests
 
+These are Vitest/jsdom tests focused on logic implemented in
+`catalog_page.ts` (state transitions, paging rules, and render decisions) with
+mocked data dependencies.
+
 ### `renders waiting state when no active selection exists`
 
 WHAT: Verifies the page renders a waiting prompt when no selection is stored.
@@ -106,6 +110,9 @@ assert count('a[href^="/course?code="]') == 9
 ```
 
 ## Integration Tests
+
+These are Playwright route tests that validate browser navigation and visible
+page regions end-to-end.
 
 ### `renders catalog route and picker section`
 

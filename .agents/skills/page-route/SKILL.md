@@ -26,8 +26,11 @@ Use a `<template>` in HTML, keep logic in TypeScript, and colocate both unit and
 6. Ensure all page-level interactive controls prevent mobile double-tap zoom by applying `touch-manipulation` (or equivalent `touch-action: manipulation`) to tap targets (`button`, `a`, `[role="button"]`, and clickable wrappers).
 7. Export a page factory that returns a root element (for example, `LandingPage()`).
 8. Add Storybook stories in `.stories.ts` with `Default` and `Dark` variants.
-9. Add unit tests in `.test.ts` for rendering and page behavior.
-10. Add Playwright integration tests in `.spec.ts` for route-level behavior.
+9. Add unit tests in `.test.ts` for logic implemented in `<route>_page.ts`
+   (state, branching, DOM updates, and local handlers) using Vitest/jsdom and
+   mocks for external modules.
+10. Add Playwright integration tests in `.spec.ts` for browser route behavior
+    (navigation, route rendering, and user-visible flows).
 11. Keep Playwright page specs colocated in `src/pages/<route>/`; reserve `tests/` for broader e2e flows.
 12. Document the page in `.md` using the required documentation structure.
 13. Before completing the task, run `python3 .agents/skills/page-route/scripts/verify_pages.py` and treat any missing `.stories.ts` as a blocking failure.
@@ -46,9 +49,13 @@ Use a `<template>` in HTML, keep logic in TypeScript, and colocate both unit and
     - Import HTML with `?raw`, clone template content, and return one root element.
     - Compose page-level components and route actions here.
 - Unit test (`.test.ts`):
-    - Validate template cloning, key render output, and local behavior.
+    - Validate logic in `<route>_page.ts`: template cloning, local state,
+      branch behavior, and DOM updates.
+    - Prefer mocked dependencies; avoid turning `.test.ts` into full route/e2e
+      coverage.
 - Integration test (`.spec.ts`):
-    - Validate route availability and key user flows with Playwright.
+    - Validate route availability and key user flows with Playwright in a real
+      browser context.
 - Storybook (`.stories.ts`):
     - Must import `@storybook/html`.
     - Must include both `Default` and `Dark` stories.
@@ -78,11 +85,14 @@ What this page is for and where it sits in navigation.
 
 ## Unit Tests
 
-- Bullet for each test in `<route>_page.test.ts` and what it validates.
+- Bullet for each test in `<route>_page.test.ts`.
+- Emphasize WHAT logic in `<route>_page.ts` is validated and HOW it is tested
+  (inputs/mocks/actions/assertions).
 
 ## Integration Tests
 
-- Bullet for each scenario in `<route>_page.spec.ts` and expected behavior.
+- Bullet for each scenario in `<route>_page.spec.ts`.
+- Emphasize WHAT browser flow is validated and HOW Playwright asserts it.
 ```
 
 ## Minimal File Pattern
