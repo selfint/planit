@@ -3,7 +3,6 @@ import type { CourseRecord } from '$lib/indexeddb';
 import templateHtml from './CourseCard.html?raw';
 
 export type CourseCardOptions = {
-    statusClass?: string;
     emptyValue?: string;
 };
 
@@ -34,11 +33,8 @@ export function CourseCard(
     root.removeAttribute('data-skeleton');
     root.removeAttribute('aria-busy');
 
-    const statusClass = options?.statusClass;
     const statusColor =
-        statusClass === undefined
-            ? (getStatusColorFromCode(course.code) ?? DEFAULT_STATUS_COLOR)
-            : undefined;
+        getStatusColorFromCode(course.code) ?? DEFAULT_STATUS_COLOR;
     const emptyValue = options?.emptyValue ?? DEFAULT_EMPTY_VALUE;
     const titleText = course.name ?? DEFAULT_TITLE;
     const hasTests = Array.isArray(course.tests)
@@ -50,15 +46,8 @@ export function CourseCard(
         "[data-role='status-dot']"
     );
     if (statusDot !== null) {
-        statusDot.className =
-            statusClass === undefined
-                ? `me-[10px] h-3 w-3 min-h-3 min-w-3 shrink-0 ${shapeClass}`
-                : `me-[10px] h-3 w-3 min-h-3 min-w-3 shrink-0 ${shapeClass} ${statusClass}`;
-        if (statusColor !== undefined) {
-            statusDot.style.backgroundColor = statusColor;
-        } else {
-            statusDot.style.removeProperty('background-color');
-        }
+        statusDot.className = `me-[10px] h-3 w-3 min-h-3 min-w-3 shrink-0 ${shapeClass}`;
+        statusDot.style.backgroundColor = statusColor;
     }
 
     const points = root.querySelector<HTMLSpanElement>(

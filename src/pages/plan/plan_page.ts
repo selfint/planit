@@ -495,12 +495,7 @@ function createSemesterCourse(
         state.selected.rowId === row.id;
     setCourseSelectionState(holder, isSelected);
 
-    const card = CourseCard(course, {
-        statusClass:
-            row.kind === 'semester' && row.season !== undefined
-                ? getStatusClassForSeason(row.season)
-                : 'bg-accent',
-    });
+    const card = CourseCard(course);
 
     const cardRoot = card.querySelector<HTMLElement>(
         '[data-component="CourseCard"]'
@@ -607,16 +602,6 @@ function summarizeSemester(courses: CourseRecord[]): {
             mediansCount > 0 ? (mediansTotal / mediansCount).toFixed(1) : '—',
         testsCount: testsCount.toString(),
     };
-}
-
-function getStatusClassForSeason(season: string): string {
-    if (season === 'חורף') {
-        return 'bg-info';
-    }
-    if (season === 'אביב') {
-        return 'bg-success';
-    }
-    return 'bg-warning';
 }
 
 function getAvailabilityWarning(
