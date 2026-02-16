@@ -10,11 +10,19 @@ const videoMode = (process.env.PW_VIDEO ?? 'retain-on-failure') as
     | 'on-first-retry';
 const demoMode = process.env.PW_DEMO === 'on';
 const slowMoMs = Number.parseInt(
-    process.env.PW_SLOWMO ?? (demoMode ? '220' : '0'),
+    process.env.PW_SLOWMO ?? (demoMode ? '450' : '0'),
+    10
+);
+const demoVideoWidth = Number.parseInt(
+    process.env.PW_VIDEO_WIDTH ?? '1920',
+    10
+);
+const demoVideoHeight = Number.parseInt(
+    process.env.PW_VIDEO_HEIGHT ?? '1080',
     10
 );
 const traceMode = (process.env.PW_TRACE ??
-    (demoMode ? 'on' : 'retain-on-failure')) as
+    (demoMode ? 'off' : 'retain-on-failure')) as
     | 'off'
     | 'on'
     | 'retain-on-failure'
@@ -28,9 +36,31 @@ export default defineConfig({
     workers: demoMode ? 1 : undefined,
     use: {
         baseURL,
-        video: demoMode ? 'on' : videoMode,
+        video: demoMode
+            ? {
+                  mode: 'on',
+                  size: {
+                      width: Number.isNaN(demoVideoWidth)
+                          ? 1920
+                          : Math.max(640, demoVideoWidth),
+                      height: Number.isNaN(demoVideoHeight)
+                          ? 1080
+                          : Math.max(360, demoVideoHeight),
+                  },
+              }
+            : videoMode,
         trace: traceMode,
         screenshot: 'only-on-failure',
+        viewport: demoMode
+            ? {
+                  width: Number.isNaN(demoVideoWidth)
+                      ? 1920
+                      : Math.max(640, demoVideoWidth),
+                  height: Number.isNaN(demoVideoHeight)
+                      ? 1080
+                      : Math.max(360, demoVideoHeight),
+              }
+            : undefined,
         launchOptions: {
             slowMo: Number.isNaN(slowMoMs) ? 0 : Math.max(0, slowMoMs),
         },

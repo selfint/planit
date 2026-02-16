@@ -2,6 +2,10 @@ import { type Page, expect, test } from '@playwright/test';
 import { installDemoCursor, isDemoModeEnabled } from '../helpers/demoCursor';
 
 const HARD_CODED_COURSE = '03240033';
+const DEMO_STEP_PAUSE_MS = Number.parseInt(
+    process.env.PW_DEMO_STEP_PAUSE_MS ?? '700',
+    10
+);
 
 test.describe('first-time planning flow', () => {
     test('completes landing to semester journey with hardcoded course', async ({
@@ -12,6 +16,7 @@ test.describe('first-time planning flow', () => {
         }
 
         await page.goto('');
+        await demoPause(page);
         await expect(
             page.locator('[data-component="LandingHero"]')
         ).toBeVisible();
@@ -21,23 +26,30 @@ test.describe('first-time planning flow', () => {
                 '[data-component="LandingHero"] a[data-action="primary"][href="/catalog"]'
             )
             .click();
+        await demoPause(page);
         await expect(page).toHaveURL(/\/catalog$/);
         await expect(page.locator('[data-page="catalog"]')).toBeVisible();
 
         await selectFirstNonEmptyOption(page, '[data-degree-catalog]');
+        await demoPause(page);
         await selectFirstNonEmptyOption(page, '[data-degree-faculty]');
+        await demoPause(page);
         await selectFirstNonEmptyOption(page, '[data-degree-program]');
+        await demoPause(page);
         await selectPathIfRequired(page);
+        await demoPause(page);
 
         await expect(page.locator('[data-catalog-groups]')).toBeVisible();
 
         await page.goto(`course?code=${HARD_CODED_COURSE}`);
+        await demoPause(page);
         await expect(page).toHaveURL(
             new RegExp(`/course\\?code=${HARD_CODED_COURSE}$`)
         );
         await expect(page.locator('[data-page="course"]')).toBeVisible();
 
         await page.locator('[data-role="wishlist-add"]').click();
+        await demoPause(page);
         await expect(
             page.locator('[data-role="wishlist-status"]')
         ).toContainText(/נוסף|כבר/);
@@ -46,6 +58,7 @@ test.describe('first-time planning flow', () => {
             .locator('[data-page="course"] a[href="/plan"]')
             .first()
             .click();
+        await demoPause(page);
         await expect(page).toHaveURL(/\/plan$/);
         await expect(page.locator('[data-page="plan"]')).toBeVisible();
 
@@ -54,11 +67,13 @@ test.describe('first-time planning flow', () => {
         );
         await expect(wishlistCourse).toBeVisible();
         await wishlistCourse.click();
+        await demoPause(page);
 
         const firstSemesterRow = page
             .locator('[data-plan-row][data-row-kind="semester"]')
             .first();
         await firstSemesterRow.locator('header').click();
+        await demoPause(page);
 
         await expect(
             firstSemesterRow.locator(
@@ -68,6 +83,7 @@ test.describe('first-time planning flow', () => {
         await expect(wishlistCourse).toHaveCount(0);
 
         await firstSemesterRow.locator('header').click();
+        await demoPause(page);
         await expect(page).toHaveURL(/\/semester\?number=1$/);
         await expect(
             page.locator(
@@ -129,4 +145,16 @@ async function selectPathIfRequired(page: Page): Promise<void> {
     }
 
     await selectFirstNonEmptyOption(page, '[data-degree-path]');
+}
+
+async function demoPause(page: Page): Promise<void> {
+    if (!isDemoModeEnabled()) {
+        return;
+    }
+
+    await page.waitForTimeout(
+        Number.isNaN(DEMO_STEP_PAUSE_MS)
+            ? 700
+            : Math.max(100, DEMO_STEP_PAUSE_MS)
+    );
 }

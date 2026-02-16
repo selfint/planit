@@ -18,7 +18,7 @@
         "integtest:desktop": "playwright test --project=desktop-chrome",
         "integtest:mobile": "playwright test --project=mobile-chrome",
         "integtest:video": "PW_VIDEO=on playwright test",
-        "integtest:demo": "PW_DEMO=on PW_VIDEO=on PW_TRACE=on playwright test tests/user-flows/first-time-planning-flow.spec.ts",
+        "integtest:demo": "PW_DEMO=on PW_VIDEO=on playwright test tests/user-flows/first-time-planning-flow.spec.ts",
         "pw:codegen": "playwright codegen http://localhost:5173",
         "optimize:videos": "node scripts/optimize-playwright-videos.mjs",
         "test": "pnpm run unittest && pnpm run integtest",
