@@ -1,16 +1,15 @@
 import { registerSW } from 'virtual:pwa-register';
 
 export const PWA_UPDATE_EVENT = 'planit:pwa-update';
+
 export type UpdateSW = (reloadPage?: boolean) => Promise<void>;
 
 export function initPWA(): void {
-    let swActivated = false;
     let pendingUpdate = false;
-    let pendingInitialUpdate = false;
+    let pendingNeedRefresh = false;
     let bannerShown = false;
     let updateSW: UpdateSW | null = null;
     let checkForUpdate: (() => Promise<void>) | null = null;
-    let isInitialLoad = true;
     // check for updates every 10 minutes
     const period = 10 * 60 * 1000;
 
@@ -32,16 +31,8 @@ export function initPWA(): void {
     };
 
     const handleUpdateAvailable = (): void => {
-        if (isInitialLoad) {
-            if ('onLine' in navigator && !navigator.onLine) {
-                pendingUpdate = true;
-                return;
-            }
-            if (updateSW !== null) {
-                void updateSW(true);
-                return;
-            }
-            pendingInitialUpdate = true;
+        if (updateSW === null) {
+            pendingNeedRefresh = true;
             return;
         }
 
@@ -54,13 +45,14 @@ export function initPWA(): void {
     };
 
     window.addEventListener('online', () => {
-        if (!pendingUpdate) {
+        if (!pendingUpdate && !pendingNeedRefresh) {
             if (checkForUpdate !== null) {
                 void checkForUpdate();
             }
             return;
         }
         pendingUpdate = false;
+        pendingNeedRefresh = false;
         dispatchUpdateAvailable();
         if (checkForUpdate !== null) {
             void checkForUpdate();
@@ -92,7 +84,6 @@ export function initPWA(): void {
                 }
 
                 if (r.active?.state === 'activated') {
-                    swActivated = true;
                     checkForUpdate = registerPeriodicSync(period, swUrl, r);
                     void checkForUpdate();
                 } else {
@@ -102,8 +93,7 @@ export function initPWA(): void {
                     }
                     installing.addEventListener('statechange', (e) => {
                         const sw = e.target as ServiceWorker;
-                        swActivated = sw.state === 'activated';
-                        if (swActivated) {
+                        if (sw.state === 'activated') {
                             checkForUpdate = registerPeriodicSync(
                                 period,
                                 swUrl,
@@ -115,11 +105,10 @@ export function initPWA(): void {
                 }
             },
         });
-        if (pendingInitialUpdate) {
-            pendingInitialUpdate = false;
-            void updateSW(true);
+        if (pendingNeedRefresh) {
+            pendingNeedRefresh = false;
+            handleUpdateAvailable();
         }
-        isInitialLoad = false;
     });
 }
 

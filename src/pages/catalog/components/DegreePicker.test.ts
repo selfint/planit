@@ -14,7 +14,7 @@ vi.mock('$lib/indexeddb', () => ({
 }));
 
 vi.mock('$lib/catalogSync', () => ({
-    initCatalogSync: (): void => undefined,
+    CATALOG_SYNC_EVENT: 'planit:catalog-sync',
 }));
 
 vi.mock('$lib/requirementsSync', () => ({

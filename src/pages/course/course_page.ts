@@ -4,9 +4,9 @@ import {
     getCoursesCount,
     getCoursesPage,
 } from '$lib/indexeddb';
+import { COURSE_SYNC_EVENT } from '$lib/courseSync';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
-import { initCourseSync } from '$lib/courseSync';
 
 import templateHtml from './course_page.html?raw';
 
@@ -80,16 +80,11 @@ export function CoursePage(): HTMLElement {
     showLoading(elements);
     void loadAndRenderCourse(elements, requestedCode);
 
-    initCourseSync({
-        onSync: () => {
-            void loadAndRenderCourse(elements, requestedCode);
-        },
-        onError: () => {
-            setSyncStateText(
-                elements.syncState,
-                'שגיאה בסנכרון, מוצג מידע מקומי'
-            );
-        },
+    window.addEventListener(COURSE_SYNC_EVENT, () => {
+        if (!root.isConnected) {
+            return;
+        }
+        void loadAndRenderCourse(elements, requestedCode);
     });
 
     return root;

@@ -6,7 +6,6 @@ const mocks = vi.hoisted(() => {
         getCourseMock: vi.fn(),
         getCoursesCountMock: vi.fn(),
         getCoursesPageMock: vi.fn(),
-        initCourseSyncMock: vi.fn(),
     };
 });
 
@@ -17,7 +16,7 @@ vi.mock('$lib/indexeddb', () => ({
 }));
 
 vi.mock('$lib/courseSync', () => ({
-    initCourseSync: mocks.initCourseSyncMock,
+    COURSE_SYNC_EVENT: 'planit:course-sync',
 }));
 
 vi.mock('$components/ConsoleNav', () => ({
@@ -35,7 +34,6 @@ describe('course page', () => {
         mocks.getCourseMock.mockReset();
         mocks.getCoursesCountMock.mockReset();
         mocks.getCoursesPageMock.mockReset();
-        mocks.initCourseSyncMock.mockReset();
         mocks.getCoursesCountMock.mockResolvedValue(0);
         mocks.getCoursesPageMock.mockResolvedValue([]);
         window.history.replaceState(null, '', '/course');
@@ -175,7 +173,6 @@ describe('course page', () => {
         expect(dependantCards).toHaveLength(2);
         expect(adjacentCards).toHaveLength(1);
         expect(exclusiveCards).toHaveLength(1);
-        expect(mocks.initCourseSyncMock).toHaveBeenCalledTimes(1);
     });
 });
 
