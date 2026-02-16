@@ -1,30 +1,33 @@
-# /landing
+# Landing Page
 
-High-level design for the landing page. This is a client-side route in the single-page application.
+## Overview
 
-## Purpose
+The landing page is the `/` route. It introduces Planit and routes users into
+core planner flows.
 
-Introduce Planit, highlight the value quickly, and guide users into the planner experience.
+## Page Contents
 
-## Core UI
+- `LandingNav` header component with desktop links and mobile menu toggle.
+- `LandingHero` section with headline, summary, and primary/secondary CTAs.
+- Hero video placeholder block with skeleton state.
+- Feature grid composed from five `LandingFeatureCard` instances.
+- Final CTA section linking to `/plan` and `/catalog`.
 
-- Hero section with product name, short value statement, and primary CTA (start planning).
-- Secondary CTA (view demo or explore features).
-- Feature overview section with video previews and short text descriptions.
-- Trust or context strip (offline-first, sync, Technion degree focus).
+## Data Flow
 
-## Key Behaviors
+1. `LandingPage()` clones the template and mounts `LandingNav` and `LandingHero`.
+2. Feature hosts (`data-landing-feature-card`) are replaced with
+   `LandingFeatureCard(...)` instances using local static feature data.
+3. Media containers are marked with `data-video-ready="false"` for future lazy
+   media loading behavior.
 
-- Hero CTAs route into the main app flow without full reload.
-- Video previews are lightweight, poster-first, and play on user action.
-- Feature cards link to the relevant routes (/plan, /catalog, /search, /semester, /course).
+## Unit Tests
 
-## Data
+- `landing_page.test.ts`: verifies page root renders and key mounted regions are present.
+- `landing_page.test.ts`: verifies feature hosts are replaced with five rendered
+  feature cards and expected route links.
 
-- Static content; no IndexedDB dependency.
-- Video preview assets loaded lazily to keep the initial paint fast.
+## Integration Tests
 
-## Edge Cases
-
-- If video previews fail to load, show a poster image and keep text visible.
-- On small screens, features stack vertically with the video above text.
+- `landing_page.spec.ts`: verifies `/` renders hero/navigation sections and key
+  CTA links.

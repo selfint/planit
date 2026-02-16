@@ -2,15 +2,17 @@
 
 ## Overview
 
-The search page is the `/search` route and provides fast, local course lookup over IndexedDB without waiting for network responses.
+The search page is the `/search` route and provides fast local course lookup
+from IndexedDB without network blocking.
 
 ## Page Contents
 
-- A search form with text input, submit button, clear button, and advanced filters.
-- Filters for `available`, `faculty`, `points` min/max, `median` min, and `requirement`.
-- Live status text for search progress, result count, and latest sync metadata.
-- A responsive results grid that renders linked `CourseCard` items (minimum 3 cards per row) and always shows all filtered matches.
-- An empty/error panel for no-query, no-results, and failure states.
+- Search form with query input and submit action.
+- Filter controls for `available`, `faculty`, `requirement`, `points` min/max,
+  and `median` min.
+- Status row and sync metadata text.
+- Responsive results grid that renders linked `CourseCard` nodes.
+- Empty/error panel that appears for no-results and local-read failures.
 
 ## Data Flow
 
@@ -19,13 +21,17 @@ The search page is the `/search` route and provides fast, local course lookup ov
 3. Requirement filter options are derived from the active requirements record (`requirementsActiveProgramId` + `getRequirement`).
 4. Matching `CourseRecord` items are rendered into linked `CourseCard` nodes in the results grid.
 5. Current query/filter state is written back to the URL with `history.replaceState`, and sync metadata is read from `getMeta('courseDataLastSync')`.
+6. Pressing `Escape` in the search input clears the query and reruns the search.
 
 ## Unit Tests
 
-- Validates the results container keeps a 3+ columns grid contract (`grid-cols-3`, `sm:grid-cols-4`).
-- Validates filter controls are rendered and suggestion pills are not present.
-- Validates default page size is `all` and linked course cards render from queried results.
+- `renders result grid and filter controls`: validates search form structure,
+  filter controls, and sync link behavior.
+- `renders all queried cards from results`: validates `queryCourses` call shape,
+  result links, and non-current styling.
+- `hides empty filter message before courses are available`: validates empty
+  panel stays hidden when total local course count is zero.
 
 ## Integration Tests
 
-- Validates `/search` route renders filter controls and results container.
+- `search_page.spec.ts` validates route rendering and deep-link query handling.

@@ -2,20 +2,16 @@
 
 ## Overview
 
-The catalog page is the route for browsing degree requirements and the courses
-inside each requirement group. It uses offline IndexedDB data and works without
-network blocking.
+The catalog page is the `/catalog` route for browsing requirement groups and
+their courses from local IndexedDB data.
 
 ## Page Contents
 
-- Intro header with route context and summary line.
-- Degree picker panel (catalog, faculty, program, path) mounted from
-  `src/pages/catalog/components/DegreePicker`.
-- Requirement groups panel that renders `CourseCard` in a single row per
-  requirement.
-- Per-requirement paging controls (`next`/`previous`) to render one card page
-  at a time for faster UI updates.
-- Empty, loading, and missing-data states for offline-first behavior.
+- Console navigation mounted with `/catalog` active state.
+- Degree selection panel mounted from `src/pages/catalog/components/DegreePicker.ts`.
+- Requirement-group sections with title, subtitle, page label, and next/previous controls.
+- Course cards rendered as links to `/course?code=<code>`.
+- Info states for waiting, loading, pending picker sync, empty path, and missing requirements.
 
 ## Data Flow
 
@@ -27,23 +23,28 @@ network blocking.
    flattened into course-bearing requirement groups.
 4. Each course code resolves to optional course details using `getCourse(code)`.
 5. Courses render as linked `CourseCard` entries (`/course?code=<code>`).
-6. Each requirement renders only one page of cards (up to 3 cards per page) to
-   keep rendering fast, and paging controls move between pages.
+6. Cards per page are viewport-aware: 3 on mobile widths and 9 on tablet and wider widths.
 7. Cards inside each requirement are sorted by course median (highest first),
    and non-current courses (`current !== true`) are dimmed visually.
 8. If picker values are changing and are not yet in sync with persisted
    selection, the requirements panel stays hidden until picker state is ready.
-9. Degree picker changes and requirement table mutations trigger a debounced
-   re-render of the requirement-group panel.
+9. Degree picker changes, requirement table mutations, and window resize trigger
+   a debounced re-render of the requirement-group panel.
 
 ## Unit Tests
 
-- `catalog_page.test.ts`: verifies waiting state when no active selection is
-  stored.
-- `catalog_page.test.ts`: verifies requirement groups render one 3-card page
-  and support paging to later courses.
+- `renders waiting state when no active selection exists`: validates waiting
+  message when no persisted selection is available.
+- `renders one page of three course cards and supports paging`: validates
+  median ordering, paging controls, and non-current course dimming.
+- `hides rendered requirements while picker selection is changing`: validates
+  pending state while picker values are transient.
+- `renders three cards per page on narrow mobile width`: validates mobile
+  cards-per-page behavior.
+- `renders nine cards per page on tablet and wider view`: validates
+  tablet/desktop cards-per-page behavior.
 
 ## Integration Tests
 
-- `catalog_page.spec.ts`: verifies route-level missing-requirements state text
-  when the active selection exists but no requirement record is available.
+- `catalog_page.spec.ts` verifies route-level rendering and missing-requirements
+  fallback when a selection exists but no requirement payload is stored.

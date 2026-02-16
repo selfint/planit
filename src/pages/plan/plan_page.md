@@ -46,6 +46,8 @@ It is designed as a row-based board that avoids horizontal scrolling and keeps m
 
 - `renders vertical rows with wishlist and exemptions`
     - Validates route load, row-based layout, and removed horizontal rail controls.
+- `navigates to semester page from semester row link`
+    - Validates semester row navigation to `/semester?number=<n>`.
 - `moves selected course to wishlist row`
     - Validates select-then-move flow, row highlighting, and updated course placement.
 - `keeps semester count minimum at last populated semester`
