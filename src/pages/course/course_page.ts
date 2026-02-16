@@ -4,9 +4,9 @@ import {
     getCoursesCount,
     getCoursesPage,
 } from '$lib/indexeddb';
+import { COURSE_SYNC_EVENT } from '$lib/courseSync';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
-import { COURSE_SYNC_EVENT } from '$lib/courseSync';
 
 import templateHtml from './course_page.html?raw';
 

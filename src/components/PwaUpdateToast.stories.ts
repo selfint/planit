@@ -1,8 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/html';
 
-import { PWA_UPDATE_EVENT } from '$lib/pwaEvents';
+import { PWA_UPDATE_EVENT } from '$lib/pwa';
 
-import { PwaUpdateBanner } from './PwaUpdateBanner';
+import { PwaUpdateToast } from './PwaUpdateToast';
 
 const meta: Meta = {
     title: 'Components/PwaUpdateToast',
@@ -13,7 +13,7 @@ export default meta;
 export type Story = StoryObj;
 
 export const Hidden: Story = {
-    render: () => PwaUpdateBanner(),
+    render: () => PwaUpdateToast(),
     globals: {
         theme: 'light',
     },
@@ -21,7 +21,7 @@ export const Hidden: Story = {
 
 export const UpdateAvailable: Story = {
     render: () => {
-        const banner = PwaUpdateBanner();
+        const banner = PwaUpdateToast();
         const updateSW = (): Promise<void> => Promise.resolve();
 
         window.dispatchEvent(
@@ -39,7 +39,7 @@ export const UpdateAvailable: Story = {
 
 export const Dark: Story = {
     render: () => {
-        const banner = PwaUpdateBanner();
+        const banner = PwaUpdateToast();
         const updateSW = (): Promise<void> => Promise.resolve();
 
         window.dispatchEvent(

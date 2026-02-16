@@ -132,8 +132,8 @@ Relevant files:
 - [`vite.config.ts`](vite.config.ts)
 - [`src/main.ts`](src/main.ts)
 - [`src/lib/pwa.ts`](src/lib/pwa.ts)
-- [`src/components/PwaUpdateBanner.ts`](src/components/PwaUpdateBanner.ts)
-- [`src/components/PwaUpdateBanner.html`](src/components/PwaUpdateBanner.html)
+- [`src/components/PwaUpdateToast.ts`](src/components/PwaUpdateToast.ts)
+- [`src/components/PwaUpdateToast.html`](src/components/PwaUpdateToast.html)
 
 ```mermaid
 sequenceDiagram

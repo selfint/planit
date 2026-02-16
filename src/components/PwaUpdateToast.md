@@ -16,7 +16,7 @@ explicitly apply the service worker update.
 
 ## Files
 
-- `src/components/PwaUpdateBanner.ts`
-- `src/components/PwaUpdateBanner.html`
-- `src/components/PwaUpdateBanner.stories.ts`
-- `src/components/PwaUpdateBanner.test.ts`
+- `src/components/PwaUpdateToast.ts`
+- `src/components/PwaUpdateToast.html`
+- `src/components/PwaUpdateToast.stories.ts`
+- `src/components/PwaUpdateToast.test.ts`

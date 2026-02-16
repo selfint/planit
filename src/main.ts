@@ -1,6 +1,6 @@
 import './style.css';
 
-import { PwaUpdateBanner } from '$components/PwaUpdateBanner';
+import { PwaUpdateToast } from '$components/PwaUpdateToast';
 import { initCatalogSync } from '$lib/catalogSync';
 import { initCourseSync } from '$lib/courseSync';
 import { initPWA } from '$lib/pwa';
@@ -9,7 +9,7 @@ import { initRouter } from '$lib/router';
 function main(): void {
     try {
         initRouter();
-        document.body.append(PwaUpdateBanner());
+        document.body.append(PwaUpdateToast());
         initPWA();
         initCourseSync();
         initCatalogSync();

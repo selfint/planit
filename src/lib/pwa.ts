@@ -1,9 +1,8 @@
 import { registerSW } from 'virtual:pwa-register';
-import { PWA_UPDATE_EVENT } from '$lib/pwaEvents';
-import type { UpdateSW } from '$lib/pwaEvents';
 
-export { PWA_UPDATE_EVENT } from '$lib/pwaEvents';
-export type { UpdateSW } from '$lib/pwaEvents';
+export const PWA_UPDATE_EVENT = 'planit:pwa-update';
+
+export type UpdateSW = (reloadPage?: boolean) => Promise<void>;
 
 export function initPWA(): void {
     let pendingUpdate = false;

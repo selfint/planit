@@ -1,13 +1,13 @@
 /* @vitest-environment jsdom */
 import { describe, expect, it, vi } from 'vitest';
 
-import { PWA_UPDATE_EVENT } from '$lib/pwaEvents';
+import { PWA_UPDATE_EVENT } from '$lib/pwa';
 
-import { PwaUpdateBanner } from './PwaUpdateBanner';
+import { PwaUpdateToast } from './PwaUpdateToast';
 
-describe('PwaUpdateBanner', () => {
+describe('PwaUpdateToast', () => {
     it('is hidden by default and becomes visible on update event', () => {
-        const banner = PwaUpdateBanner();
+        const banner = PwaUpdateToast();
         document.body.append(banner);
 
         const toast = banner.querySelector<HTMLElement>(
@@ -32,7 +32,7 @@ describe('PwaUpdateBanner', () => {
     });
 
     it('applies update only when user clicks apply', async () => {
-        const banner = PwaUpdateBanner();
+        const banner = PwaUpdateToast();
         document.body.append(banner);
 
         const updateSW = vi.fn<(reloadPage?: boolean) => Promise<void>>(
