@@ -40,3 +40,9 @@ course code using an FNV-1a hash mapped into an HSL color.
   `src/style.css`.
 - The shimmer only applies while `data-skeleton="true"` is present on the root
   element.
+- Card sizing is controlled by the parent wrapper (for example search and
+  semester page links): wrappers provide explicit heights (`h-[7.5rem]` mobile,
+  `sm:h-[6.5rem]`), while `CourseCard` keeps `h-full` so it fills that slot.
+- For long result lists, wrappers should pair those heights with
+  `content-visibility: auto` and matching `contain-intrinsic-size` values to
+  defer offscreen rendering without layout jumps.
