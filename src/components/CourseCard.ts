@@ -10,24 +10,25 @@ export type CourseCardOptions = {
 const DEFAULT_STATUS_COLOR = 'hsl(168 56% 46%)';
 const DEFAULT_EMPTY_VALUE = '—';
 const DEFAULT_TITLE = 'קורס ללא שם';
+let cachedTemplateElement: HTMLTemplateElement | undefined;
+
+type CourseCardElements = {
+    statusDot: HTMLSpanElement | undefined;
+    points: HTMLSpanElement | undefined;
+    median: HTMLSpanElement | undefined;
+    title: HTMLParagraphElement | undefined;
+    code: HTMLParagraphElement | undefined;
+};
 
 export function CourseCard(
     course?: CourseRecord,
     options?: CourseCardOptions
 ): HTMLElement {
-    const template = document.createElement('template');
-    template.innerHTML = templateHtml;
-    const templateElement = template.content.firstElementChild;
-    if (!(templateElement instanceof HTMLTemplateElement)) {
-        throw new Error('CourseCard template element not found');
-    }
-    const root = templateElement.content.firstElementChild?.cloneNode(true);
-    if (!(root instanceof HTMLElement)) {
-        throw new Error('CourseCard template root not found');
-    }
+    const root = createCourseCardRoot();
+    const elements = collectCourseCardElements(root);
 
     if (course === undefined) {
-        applySkeleton(root);
+        applySkeleton(root, elements);
         return root;
     }
 
@@ -61,47 +62,118 @@ export function CourseCard(
         }
     }
 
-    const points = root.querySelector<HTMLSpanElement>(
-        "[data-role='course-points']"
-    );
-    if (points !== null) {
-        points.textContent = formatCourseNumber(course.points, emptyValue);
+    if (elements.points !== undefined) {
+        elements.points.textContent = formatCourseNumber(
+            course.points,
+            emptyValue
+        );
     }
 
-    const median = root.querySelector<HTMLSpanElement>(
-        "[data-role='course-median']"
-    );
-    if (median !== null) {
-        median.textContent = formatCourseNumber(course.median, emptyValue);
+    if (elements.median !== undefined) {
+        elements.median.textContent = formatCourseNumber(
+            course.median,
+            emptyValue
+        );
     }
 
-    const title = root.querySelector<HTMLParagraphElement>(
-        "[data-role='course-title']"
-    );
-    if (title !== null) {
-        title.textContent = titleText;
+    if (elements.title !== undefined) {
+        elements.title.textContent = titleText;
     }
 
-    const code = root.querySelector<HTMLParagraphElement>(
-        "[data-role='course-code']"
-    );
-    if (code !== null) {
-        code.textContent = course.code;
+    if (elements.code !== undefined) {
+        elements.code.textContent = course.code;
     }
 
     return root;
 }
 
-function applySkeleton(root: HTMLElement): void {
+function getTemplateElement(): HTMLTemplateElement {
+    if (cachedTemplateElement !== undefined) {
+        return cachedTemplateElement;
+    }
+
+    const wrapper = document.createElement('template');
+    wrapper.innerHTML = templateHtml;
+    const templateElement = wrapper.content.firstElementChild;
+    if (!(templateElement instanceof HTMLTemplateElement)) {
+        throw new Error('CourseCard template element not found');
+    }
+
+    cachedTemplateElement = templateElement;
+    return templateElement;
+}
+
+function createCourseCardRoot(): HTMLElement {
+    const templateElement = getTemplateElement();
+    const root = templateElement.content.firstElementChild?.cloneNode(true);
+    if (!(root instanceof HTMLElement)) {
+        throw new Error('CourseCard template root not found');
+    }
+
+    return root;
+}
+
+function collectCourseCardElements(root: HTMLElement): CourseCardElements {
+    const elements: CourseCardElements = {
+        statusDot: undefined,
+        points: undefined,
+        median: undefined,
+        title: undefined,
+        code: undefined,
+    };
+
+    const roleElements = root.querySelectorAll<HTMLElement>('[data-role]');
+    for (const roleElement of roleElements) {
+        const role = roleElement.dataset.role;
+        switch (role) {
+            case 'status-dot':
+                if (roleElement instanceof HTMLSpanElement) {
+                    elements.statusDot = roleElement;
+                }
+                break;
+            case 'course-points':
+                if (roleElement instanceof HTMLSpanElement) {
+                    elements.points = roleElement;
+                }
+                break;
+            case 'course-median':
+                if (roleElement instanceof HTMLSpanElement) {
+                    elements.median = roleElement;
+                }
+                break;
+            case 'course-title':
+                if (roleElement instanceof HTMLParagraphElement) {
+                    elements.title = roleElement;
+                }
+                break;
+            case 'course-code':
+                if (roleElement instanceof HTMLParagraphElement) {
+                    elements.code = roleElement;
+                }
+                break;
+            default:
+                break;
+        }
+    }
+
+    return elements;
+}
+
+function applySkeleton(root: HTMLElement, elements: CourseCardElements): void {
     root.setAttribute('data-skeleton', 'true');
     root.setAttribute('aria-busy', 'true');
 
-    const textNodes = root.querySelectorAll<HTMLElement>(
-        "[data-role='course-points'], [data-role='course-median'], [data-role='course-title'], [data-role='course-code']"
-    );
-
-    for (const node of textNodes) {
-        node.textContent = '';
+    if (elements.points !== undefined) {
+        elements.points.textContent = '';
+    }
+    if (elements.median !== undefined) {
+        elements.median.textContent = '';
+    }
+    if (elements.title !== undefined) {
+        elements.title.textContent = '';
+    }
+    if (elements.code !== undefined) {
+        elements.code.textContent = '';
     }
 }
 
