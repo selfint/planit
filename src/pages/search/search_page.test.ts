@@ -101,7 +101,7 @@ describe('SearchPage', () => {
         expect(grid).toBeInstanceOf(HTMLElement);
         expect(grid?.className).toContain('relative');
         expect(viewport).toBeInstanceOf(HTMLElement);
-        expect(viewport?.className).toContain('overflow-auto');
+        expect(viewport?.className).toContain('rounded-2xl');
         expect(availableFilter).toBeInstanceOf(HTMLInputElement);
         expect(facultyFilter).toBeInstanceOf(HTMLSelectElement);
         expect(requirementFilter).toBeInstanceOf(HTMLSelectElement);

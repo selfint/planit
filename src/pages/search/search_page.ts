@@ -11,9 +11,8 @@ import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
 import {
     Virtualizer,
-    elementScroll,
-    observeElementOffset,
-    observeElementRect,
+    observeWindowOffset,
+    observeWindowRect,
 } from '@tanstack/virtual-core';
 
 import templateHtml from './search_page.html?raw';
@@ -46,13 +45,14 @@ type SearchPageElements = {
 };
 
 type SearchRenderState = {
-    viewport: HTMLDivElement;
+    resultsViewport: HTMLDivElement;
     results: HTMLDivElement;
-    virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>;
+    virtualizer: Virtualizer<Window, HTMLDivElement>;
     courses: CourseRecord[];
     rows: CourseRecord[][];
     columnCount: number;
     rowGap: number;
+    scrollMargin: number;
 };
 
 type SearchPageState = {
@@ -493,27 +493,30 @@ function createSearchRenderState(
     elements: SearchPageElements
 ): SearchRenderState {
     const state: SearchRenderState = {
-        viewport: elements.resultsViewport,
+        resultsViewport: elements.resultsViewport,
         results: elements.results,
         virtualizer: null as never,
         courses: [],
         rows: [],
         columnCount: getColumnCount(elements.resultsViewport.clientWidth),
         rowGap: getRowGap(elements.resultsViewport.clientWidth),
+        scrollMargin: getScrollMargin(elements.resultsViewport),
     };
 
-    state.virtualizer = new Virtualizer<HTMLDivElement, HTMLDivElement>({
+    state.virtualizer = new Virtualizer<Window, HTMLDivElement>({
         count: 0,
-        getScrollElement: () => state.viewport,
+        getScrollElement: () => window,
         estimateSize: () => SEARCH_ROW_ESTIMATE_HEIGHT,
         initialRect: {
-            width: elements.resultsViewport.clientWidth || 1200,
-            height: elements.resultsViewport.clientHeight || 720,
+            width: window.innerWidth || 1200,
+            height: window.innerHeight || 720,
         },
         overscan: SEARCH_ROW_OVERSCAN,
-        scrollToFn: elementScroll,
-        observeElementRect,
-        observeElementOffset,
+        scrollToFn: scrollToWindowOffset,
+        observeElementRect: observeWindowRect,
+        observeElementOffset: observeWindowOffset,
+        scrollMargin: state.scrollMargin,
+        gap: state.rowGap,
         onChange: () => {
             renderVirtualRows(state);
         },
@@ -524,7 +527,7 @@ function createSearchRenderState(
         const observer = new ResizeObserver(() => {
             updateRenderMetrics(state);
         });
-        observer.observe(state.viewport);
+        observer.observe(state.resultsViewport);
     }
 
     return state;
@@ -536,7 +539,6 @@ function renderLoadingState(state: SearchRenderState, amount: number): void {
     state.results.className =
         'grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5';
     state.results.style.removeProperty('height');
-    state.viewport.scrollTop = 0;
     state.virtualizer._willUpdate();
     state.virtualizer.setOptions({ ...state.virtualizer.options, count: 0 });
 
@@ -565,22 +567,66 @@ function renderResults(
 }
 
 function updateRenderMetrics(state: SearchRenderState): void {
-    const nextColumnCount = getColumnCount(state.viewport.clientWidth);
-    const nextRowGap = getRowGap(state.viewport.clientWidth);
-    if (nextColumnCount === state.columnCount && nextRowGap === state.rowGap) {
+    const nextColumnCount = getColumnCount(state.resultsViewport.clientWidth);
+    const nextRowGap = getRowGap(state.resultsViewport.clientWidth);
+    const nextScrollMargin = getScrollMargin(state.resultsViewport);
+    if (
+        nextColumnCount === state.columnCount &&
+        nextRowGap === state.rowGap &&
+        nextScrollMargin === state.scrollMargin
+    ) {
         return;
     }
 
     state.columnCount = nextColumnCount;
     state.rowGap = nextRowGap;
+    state.scrollMargin = nextScrollMargin;
     state.rows = buildRows(state.courses, state.columnCount);
     state.virtualizer.setOptions({
         ...state.virtualizer.options,
         count: state.rows.length,
         gap: state.rowGap,
+        scrollMargin: state.scrollMargin,
     });
     state.virtualizer.measure();
     renderVirtualRows(state);
+}
+
+function getScrollMargin(container: HTMLElement): number {
+    const top = container.getBoundingClientRect().top;
+    return top + window.scrollY;
+}
+
+function scrollToWindowOffset(
+    offset: number,
+    options: { adjustments?: number; behavior?: ScrollBehavior },
+    instance: Virtualizer<Window, HTMLDivElement>
+): void {
+    if (isJsdomEnvironment()) {
+        return;
+    }
+
+    const toOffset = offset + (options.adjustments ?? 0);
+    if (typeof instance.scrollElement?.scrollTo !== 'function') {
+        return;
+    }
+
+    try {
+        instance.scrollElement.scrollTo({
+            top: toOffset,
+            behavior: options.behavior,
+        });
+    } catch {
+        return;
+    }
+}
+
+function isJsdomEnvironment(): boolean {
+    if (typeof navigator === 'undefined') {
+        return false;
+    }
+
+    return /jsdom/i.test(navigator.userAgent);
 }
 
 function getColumnCount(viewportWidth: number): number {
@@ -629,7 +675,7 @@ function createVirtualRowNode(
 ): HTMLDivElement {
     const row = document.createElement('div');
     row.className = 'absolute inset-x-0';
-    row.style.transform = `translateY(${String(rowStart)}px)`;
+    row.style.transform = `translateY(${String(rowStart - state.scrollMargin)}px)`;
     row.dataset.index = String(rowIndex);
     row.setAttribute('data-search-virtual-row', String(rowIndex));
 
