@@ -466,7 +466,7 @@ function renderCurrentSemesterCourses(
 
     empty.classList.add('hidden');
     for (const course of courses) {
-        row.append(createCourseLink(course));
+        row.append(createCourseLink(course, 'current'));
     }
 }
 
@@ -499,7 +499,7 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
             row.append(empty);
         } else {
             for (const course of group.courses) {
-                row.append(createCourseLink(course));
+                row.append(createCourseLink(course, 'group'));
             }
         }
 
@@ -509,11 +509,18 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
     }
 }
 
-function createCourseLink(course: CourseRecord): HTMLAnchorElement {
+function createCourseLink(
+    course: CourseRecord,
+    layout: 'current' | 'group'
+): HTMLAnchorElement {
     const link = document.createElement('a');
     link.href = `/course?code=${encodeURIComponent(course.code)}`;
+    const widthClass =
+        layout === 'group'
+            ? 'w-[7.5rem] sm:w-[8.5rem] md:w-auto'
+            : 'w-[7.5rem] sm:w-[8.5rem] lg:w-auto';
     link.className =
-        'touch-manipulation focus-visible:ring-accent/60 block h-[7.5rem] w-[15.5rem] shrink-0 snap-start rounded-2xl focus-visible:ring-2 sm:h-[6.5rem] [content-visibility:auto] [contain-intrinsic-size:7.5rem] sm:[contain-intrinsic-size:6.5rem] md:w-auto md:shrink';
+        `touch-manipulation focus-visible:ring-accent/60 block h-[7.5rem] ${widthClass} shrink-0 snap-start rounded-2xl focus-visible:ring-2 sm:h-[6.5rem] [content-visibility:auto] [contain-intrinsic-size:7.5rem] sm:[contain-intrinsic-size:6.5rem] md:shrink`.trim();
     link.dataset.courseCode = course.code;
     if (course.current !== true) {
         link.classList.add('opacity-70');
