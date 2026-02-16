@@ -9,6 +9,7 @@
     --color-surface-1-dark: #121b22;
     --color-surface-2: #edf2f4;
     --color-surface-2-dark: #19242c;
+    /* Keep .storybook/preview.css dark-mode variable mapping in sync. */
     --color-semester-surface: hsl(195 29% 98%);
     --color-semester-surface-dark: hsl(201 29% 9%);
     --color-border: #d7e0e6;
