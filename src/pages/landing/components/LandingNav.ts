@@ -1,4 +1,4 @@
-import logoUrl from '$assets/logo.webp';
+import logoUrl from '$assets/logo.webp?w=256';
 import templateHtml from './LandingNav.html?raw';
 import titleUrl from '$assets/Title.svg?url';
 

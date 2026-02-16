@@ -14,7 +14,8 @@
         "baseUrl": ".",
         "paths": {
             "$lib/*": ["src/lib/*"],
-            "$components/*": ["src/components/*"]
+            "$components/*": ["src/components/*"],
+            "$assets/*": ["src/assets/*"]
         },
         "strict": true,
         "noUnusedLocals": true,

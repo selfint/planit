@@ -1,5 +1,6 @@
 import { VitePWA } from 'vite-plugin-pwa';
 import tailwindcss from '@tailwindcss/vite';
+import { imagetools } from 'vite-imagetools';
 import { defineConfig } from 'vite';
 import { execSync } from 'node:child_process';
 import { resolve } from 'node:path';
@@ -33,6 +34,7 @@ export default defineConfig(({ command }) => ({
     },
     plugins: [
         tailwindcss(),
+        imagetools(),
         VitePWA({
             registerType: 'autoUpdate',
             injectRegister: false,

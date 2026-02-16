@@ -19,7 +19,8 @@
         "pw:codegen": "playwright codegen http://localhost:5173",
         "optimize:videos": "node scripts/optimize-playwright-videos.mjs",
         "test": "pnpm run unittest && pnpm run integtest",
-        "vibe": "PORT=9999 vibe-kanban"
+        "vibe": "PORT=9999 vibe-kanban",
+        "fix-webp-asset": "pnpx sharp-cli -i"
     },
     "devDependencies": {
         "@eslint/css": "^0.14.1",
@@ -44,6 +45,7 @@
         "jsdom": "^28.0.0",
         "prettier": "3.8.1",
         "prettier-plugin-tailwindcss": "^0.7.2",
+        "sharp": "^0.33.5",
         "storybook": "^8.6.14",
         "tailwindcss": "^4.1.18",
         "typescript": "~5.9.3",
@@ -54,9 +56,5 @@
         "vite-plugin-pwa": "^1.1.0",
         "vitest": "^3.2.4",
         "workbox-window": "^7.4.0"
-    },
-    "resolutions": {
-        "sharp": "^0.33.5",
-        "sharp-ico": "^0.1.5"
     }
 }
