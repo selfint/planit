@@ -8,13 +8,13 @@ Relevant files:
 
 - [`src/lib/courseSync.ts`](src/lib/courseSync.ts)
 - [`src/lib/indexeddb.ts`](src/lib/indexeddb.ts)
-- [`src/components/CourseTable.ts`](src/components/CourseTable.ts)
 - [`src/pages/course/course_page.ts`](src/pages/course/course_page.ts)
+- [`src/pages/search/search_page.ts`](src/pages/search/search_page.ts)
 
 ```mermaid
 sequenceDiagram
     autonumber
-    participant UI as Course UI (CourseTable/CoursePage)
+    participant UI as CoursePage
     participant CS as courseSync
     participant GH as GitHub API (commit metadata)
     participant RAW as Raw JSON (courseData.json)
