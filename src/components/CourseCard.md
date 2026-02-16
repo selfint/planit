@@ -54,9 +54,11 @@ course code using an FNV-1a hash mapped into an HSL color.
   breakpoint.
 - Width should follow layout context: in grid layouts (search page) rely on the
   grid column width and keep card wrappers fluid (`w-full`/auto), while in
-  horizontal scrollers (semester mobile) use compact explicit widths and then
-  release them at larger breakpoints (for example
-  `w-[7.5rem] sm:w-[8.5rem] md:w-auto` or `lg:w-auto`).
+  horizontal scrollers (semester mobile/desktop rows) keep a constant row-card
+  width (`w-[7.5rem] sm:w-[8.5rem]`).
+- If a section switches from horizontal row to grid at a breakpoint, use the
+  same row widths and then release at that breakpoint (for example
+  `w-[7.5rem] sm:w-[8.5rem] md:w-auto`).
 - Keep spacing around course cards on the `2` scale for consistency with search
   and semester layouts: use `gap-2` between cards and prefer matching
   `p-2`/`m-2` when local wrappers need padding or margins around the card area.

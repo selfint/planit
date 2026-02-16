@@ -477,7 +477,7 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
         const row = document.createElement('div');
         row.className =
             group.kind === 'requirement'
-                ? 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2'
+                ? 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2 lg:me-0 lg:p-0'
                 : 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2 md:me-0 md:grid md:grid-cols-2 md:p-0 xl:grid-cols-3';
 
         if (group.courses.length === 0) {
@@ -487,7 +487,14 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
             row.append(empty);
         } else {
             for (const course of group.courses) {
-                row.append(createCourseLink(course, 'group'));
+                row.append(
+                    createCourseLink(
+                        course,
+                        group.kind === 'requirement'
+                            ? 'group-row'
+                            : 'group-grid'
+                    )
+                );
             }
         }
 
@@ -499,14 +506,16 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
 
 function createCourseLink(
     course: CourseRecord,
-    layout: 'current' | 'group'
+    layout: 'current' | 'group-row' | 'group-grid'
 ): HTMLAnchorElement {
     const link = document.createElement('a');
     link.href = `/course?code=${encodeURIComponent(course.code)}`;
     const widthClass =
-        layout === 'group'
-            ? 'w-[7.5rem] sm:w-[8.5rem] md:w-auto'
-            : 'w-[7.5rem] sm:w-[8.5rem] md:w-[10rem] lg:w-auto';
+        layout === 'group-row'
+            ? 'w-[7.5rem] sm:w-[8.5rem]'
+            : layout === 'group-grid'
+              ? 'w-[7.5rem] sm:w-[8.5rem] md:w-auto'
+              : 'w-[7.5rem] sm:w-[8.5rem] md:w-[10rem] lg:w-auto';
     link.className =
         `touch-manipulation focus-visible:ring-accent/60 block h-[7.5rem] ${widthClass} shrink-0 snap-start rounded-2xl focus-visible:ring-2 sm:h-[6.5rem] [content-visibility:auto] [contain-intrinsic-size:7.5rem] sm:[contain-intrinsic-size:6.5rem]`.trim();
     link.dataset.courseCode = course.code;
