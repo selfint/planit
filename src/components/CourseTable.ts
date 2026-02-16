@@ -1,5 +1,5 @@
 import { getCoursesPageSorted, getMeta } from '$lib/indexeddb';
-import { initCourseSync } from '$lib/courseSync';
+import { COURSE_SYNC_EVENT } from '$lib/courseSync';
 
 import templateHtml from './CourseTable.html?raw';
 
@@ -149,21 +149,22 @@ export function CourseTable(): HTMLElement {
         });
     }
 
-    initCourseSync({
-        onSync: () => {
-            void loadCourseTable(
-                state,
-                rows,
-                empty,
-                count,
-                lastUpdated,
-                pageLabel,
-                prevButton,
-                nextButton,
-                sortButtons,
-                sortIndicators
-            );
-        },
+    window.addEventListener(COURSE_SYNC_EVENT, () => {
+        if (!root.isConnected) {
+            return;
+        }
+        void loadCourseTable(
+            state,
+            rows,
+            empty,
+            count,
+            lastUpdated,
+            pageLabel,
+            prevButton,
+            nextButton,
+            sortButtons,
+            sortIndicators
+        );
     });
 
     void loadCourseTable(

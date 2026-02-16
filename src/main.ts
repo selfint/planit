@@ -1,5 +1,7 @@
 import './style.css';
 
+import { initCatalogSync } from '$lib/catalogSync';
+import { initCourseSync } from '$lib/courseSync';
 import { initPWA } from '$lib/pwa';
 import { initRouter } from '$lib/router';
 
@@ -7,6 +9,8 @@ function main(): void {
     try {
         initRouter();
         initPWA();
+        initCourseSync();
+        initCatalogSync();
     } catch (err: unknown) {
         console.error('Failed to start app:', err);
     }

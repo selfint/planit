@@ -13,6 +13,8 @@ const COURSE_META_KEYS = {
     lastChecked: 'courseDataLastChecked',
 };
 
+export const COURSE_SYNC_EVENT = 'planit:course-sync';
+
 export type CourseSyncResult = {
     status: 'updated' | 'skipped' | 'offline';
     count?: number;
@@ -189,6 +191,9 @@ export function initCourseSync(options?: CourseSyncOptions): void {
         try {
             const result = await syncCourseData();
             options?.onSync?.(result);
+            window.dispatchEvent(
+                new CustomEvent(COURSE_SYNC_EVENT, { detail: result })
+            );
         } catch (error) {
             console.error('Course sync failed', error);
             options?.onError?.(error);

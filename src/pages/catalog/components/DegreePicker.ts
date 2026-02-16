@@ -13,7 +13,7 @@ import {
     syncRequirements,
 } from '$lib/requirementsSync';
 import { getCatalogs, getRequirement } from '$lib/indexeddb';
-import { initCatalogSync } from '$lib/catalogSync';
+import { CATALOG_SYNC_EVENT } from '$lib/catalogSync';
 import templateHtml from './DegreePicker.html?raw';
 
 type CatalogMap = Record<string, unknown>;
@@ -186,19 +186,20 @@ export function DegreePicker(): HTMLElement {
         }
     });
 
-    initCatalogSync({
-        onSync: () => {
-            void loadCatalogs(
-                state,
-                catalogSelect,
-                facultySelect,
-                programSelect,
-                pathSelect,
-                pathEmpty,
-                requirementRows,
-                status
-            );
-        },
+    window.addEventListener(CATALOG_SYNC_EVENT, () => {
+        if (!root.isConnected) {
+            return;
+        }
+        void loadCatalogs(
+            state,
+            catalogSelect,
+            facultySelect,
+            programSelect,
+            pathSelect,
+            pathEmpty,
+            requirementRows,
+            status
+        );
     });
 
     void loadCatalogs(

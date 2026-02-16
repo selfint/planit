@@ -12,6 +12,8 @@ const CATALOGS_META_KEYS = {
     lastChecked: 'catalogsDataLastChecked',
 };
 
+export const CATALOG_SYNC_EVENT = 'planit:catalog-sync';
+
 export type CatalogSyncResult = {
     status: 'updated' | 'skipped' | 'offline';
     count?: number;
@@ -188,6 +190,9 @@ export function initCatalogSync(options?: CatalogSyncOptions): void {
         try {
             const result = await syncCatalogs();
             options?.onSync?.(result);
+            window.dispatchEvent(
+                new CustomEvent(CATALOG_SYNC_EVENT, { detail: result })
+            );
         } catch (error) {
             console.error('Catalog sync failed', error);
             options?.onError?.(error);
