@@ -36,7 +36,7 @@ export default defineConfig(({ command }) => ({
         tailwindcss(),
         imagetools(),
         VitePWA({
-            registerType: 'autoUpdate',
+            registerType: 'prompt',
             injectRegister: false,
 
             pwaAssets: {
@@ -57,7 +57,7 @@ export default defineConfig(({ command }) => ({
                 globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
                 cleanupOutdatedCaches: true,
                 clientsClaim: true,
-                skipWaiting: true,
+                skipWaiting: false,
             },
 
             devOptions: {

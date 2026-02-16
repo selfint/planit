@@ -47,7 +47,7 @@ describe('pwa lib', () => {
         );
     });
 
-    it('checks for updates on the interval', async () => {
+    it('checks for updates on the interval when service worker script is not modified', async () => {
         let options: RegisterOptions | undefined;
         registerSW.mockImplementation((opts): (() => Promise<void>) => {
             options = opts;
@@ -57,7 +57,7 @@ describe('pwa lib', () => {
             'fetch',
             vi.fn(
                 (): Promise<Response> =>
-                    Promise.resolve({ status: 200 } as Response)
+                    Promise.resolve({ status: 304 } as Response)
             )
         );
         Object.defineProperty(window.navigator, 'onLine', {

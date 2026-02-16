@@ -137,7 +137,7 @@ function registerPeriodicSync(
             },
         });
 
-        if (resp.status === 200) {
+        if (resp.status === 200 || resp.status === 304) {
             await r.update();
         }
     };
