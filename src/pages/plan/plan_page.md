@@ -36,21 +36,29 @@ It is designed as a row-based board that avoids horizontal scrolling and keeps m
 ## Unit Tests
 
 - `renders planner rows including wishlist and exemptions`
-    - Validates base render and presence of row model extras.
+    - Renders `PlanPage()` with mocked IndexedDB payloads and asserts row count,
+      wishlist/exemptions labels, and semester link `href` values.
 - `shows row move controls and clears selection with row cancel`
-    - Validates selection state, move/cancel visibility, and highlighted target rows.
+    - Clicks a row course action, asserts cancel visibility and highlighted
+      rows, then clicks row cancel and asserts move targets/highlights are reset.
 - `clamps semester count to last semester containing courses`
-    - Validates dynamic minimum semester rule and persisted resize payload.
+    - Seeds persisted semesters via mocked `getMeta`, changes semester-count
+      input below minimum, then asserts clamped input value and saved meta payload.
 
 ## Integration Tests
 
 - `renders vertical rows with wishlist and exemptions`
-    - Validates route load, row-based layout, and removed horizontal rail controls.
+    - Navigates to `/plan` and asserts row counts, wishlist/exemptions labels,
+      semester links, and absence of horizontal rail controls.
 - `navigates to semester page from semester row link`
-    - Validates semester row navigation to `/semester?number=<n>`.
+    - Clicks a semester link in the plan rail, then asserts browser URL and
+      semester-page root match the selected semester.
 - `moves selected course to wishlist row`
-    - Validates select-then-move flow, row highlighting, and updated course placement.
+    - Selects a course action, verifies highlighted move targets, clicks
+      wishlist row target, then asserts course relocation and cleared selection UI.
 - `keeps semester count minimum at last populated semester`
-    - Validates count input cannot go below the computed minimum.
+    - Fills a smaller value in semester-count input, dispatches change, and
+      asserts value snaps back to computed minimum.
 - `renders schedule errors section below planner rows`
-    - Validates problems section ordering in the final page layout.
+    - Evaluates DOM ordering and asserts the schedule-problems section follows
+      the planner rail in document flow.

@@ -19,10 +19,13 @@ by the router when no page factory matches the normalized pathname.
 
 ## Unit Tests
 
-- `renders a root element`: validates the factory returns an `HTMLElement`.
-- `renders supplied route path`: validates path-slot binding for unknown routes.
+- `renders a root element`: calls `NotFoundPage()` and asserts the returned
+  value is an `HTMLElement`.
+- `renders supplied route path`: calls `NotFoundPage('/does-not-exist')` and
+  asserts the `data-slot="path"` node contains the provided route string.
 
 ## Integration Tests
 
-- `not_found_page.spec.ts` validates unknown routes render fallback heading,
-  echoed path, and return-home link.
+- `renders not-found content for unknown route`: navigates to a missing route,
+  then asserts fallback heading visibility, echoed path in `data-slot="path"`,
+  and presence of the `/` return link.

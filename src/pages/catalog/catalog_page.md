@@ -34,17 +34,24 @@ their courses from local IndexedDB data.
 ## Unit Tests
 
 - `renders waiting state when no active selection exists`: validates waiting
-  message when no persisted selection is available.
+  message by mocking `getActiveRequirementsSelection()` to `undefined`,
+  rendering `CatalogPage()`, and asserting `data-catalog-state` text.
 - `renders one page of three course cards and supports paging`: validates
-  median ordering, paging controls, and non-current course dimming.
+  median ordering and pager behavior by mocking requirement/course payloads,
+  asserting first-page link order and dimming, clicking `הבא`, and asserting
+  second-page links.
 - `hides rendered requirements while picker selection is changing`: validates
-  pending state while picker values are transient.
+  pending state by mutating picker input values, dispatching `change`, then
+  asserting requirement cards are hidden and pending copy is shown.
 - `renders three cards per page on narrow mobile width`: validates mobile
-  cards-per-page behavior.
+  cards-per-page behavior by setting `window.innerWidth` to a narrow value and
+  asserting rendered card link count.
 - `renders nine cards per page on tablet and wider view`: validates
-  tablet/desktop cards-per-page behavior.
+  tablet/desktop cards-per-page behavior by setting `window.innerWidth` above
+  tablet threshold and asserting first-page card count.
 
 ## Integration Tests
 
-- `catalog_page.spec.ts` verifies route-level rendering and missing-requirements
-  fallback when a selection exists but no requirement payload is stored.
+- `renders catalog route and picker section`: navigates to `/catalog` and
+  asserts the route `<main>`, degree picker root (`[data-degree-catalog]`), and
+  requirements container (`[data-catalog-groups]`) are visible.

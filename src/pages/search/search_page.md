@@ -26,12 +26,21 @@ from IndexedDB without network blocking.
 ## Unit Tests
 
 - `renders result grid and filter controls`: validates search form structure,
-  filter controls, and sync link behavior.
+  filter controls, and sync link behavior by rendering `SearchPage()` and
+  asserting key selectors/classes (`grid-cols-3`, `sm:grid-cols-4`, filter
+  inputs/selects, and `/catalog` sync link).
 - `renders all queried cards from results`: validates `queryCourses` call shape,
-  result links, and non-current styling.
+  result links, and non-current styling by mocking result payloads and asserting
+  generated anchor `href`s, size classes, and dimmed classes for non-current
+  courses.
 - `hides empty filter message before courses are available`: validates empty
-  panel stays hidden when total local course count is zero.
+  panel stays hidden by mocking zero local course count and asserting the empty
+  panel retains `hidden` class after render.
 
 ## Integration Tests
 
-- `search_page.spec.ts` validates route rendering and deep-link query handling.
+- `renders search form, filters, and results region`: navigates to `/search` and
+  asserts visibility of `<main>`, search form, faculty filter, and results grid.
+- `keeps query parameter in the input when deep-linked`: navigates to
+  `/search?q=104031` and asserts the search input value is hydrated from the
+  query parameter.

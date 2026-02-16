@@ -20,11 +20,13 @@ future authentication flows.
 
 ## Unit Tests
 
-- `renders a root element`: validates the page factory returns an `HTMLElement`.
+- `renders a root element`: calls `LoginPage()` and asserts the returned value
+  is an `HTMLElement`.
 - `mounts console navigation and login placeholder copy`: validates nav mount and
-  placeholder heading text.
+  placeholder heading text by mocking `ConsoleNav`, then asserting the mounted
+  nav marker and Hebrew heading copy are present.
 
 ## Integration Tests
 
-- `login_page.spec.ts` validates `/login` route render, heading visibility, and
-  home link availability.
+- `renders login placeholder page`: navigates to `/login` and asserts `<main>`
+  visibility, heading text (`עמוד כניסה`), and presence of the home link.

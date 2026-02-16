@@ -29,12 +29,17 @@ semester selected by the `number` query parameter.
 ## Unit Tests
 
 - `uses query param number and shows semester metadata in sticky title`:
-  validates URL query parsing and semester title rendering.
+  sets URL to `/semester?number=3`, mocks plan metadata, then asserts current
+  semester title contains both semester index and parsed season/year.
 - `renders current semester separately from catalog and free-elective groups`:
-  validates separation of current semester courses, requirement groups, and
-  faculty-grouped free electives.
+  mocks semester plan + requirement data, then asserts current-semester course
+  links, requirement-group links, and faculty-group titles are rendered in
+  separate containers.
 
 ## Integration Tests
 
-- `semester_page.spec.ts` validates route rendering and query-based semester
-  navigation behavior.
+- `renders semester route and current semester section`: navigates to
+  `/semester` and asserts `<main>`, current-semester title slot, and groups root
+  are visible.
+- `supports query-based semester deep link`: navigates to
+  `/semester?number=3` and asserts current-semester title contains `סמסטר 3`.

@@ -23,11 +23,14 @@ core planner flows.
 
 ## Unit Tests
 
-- `landing_page.test.ts`: verifies page root renders and key mounted regions are present.
-- `landing_page.test.ts`: verifies feature hosts are replaced with five rendered
-  feature cards and expected route links.
+- `renders mounted page regions`: calls `LandingPage()` with mocked
+  `LandingNav`/`LandingHero` factories and asserts mounted region markers exist.
+- `replaces feature hosts with five feature cards`: calls `LandingPage()` with
+  mocked `LandingFeatureCard`, then asserts exactly five cards were mounted and
+  their captured `href` values match expected route links.
 
 ## Integration Tests
 
-- `landing_page.spec.ts`: verifies `/` renders hero/navigation sections and key
-  CTA links.
+- `renders hero and navigation actions`: navigates to `/` and asserts
+  `LandingNav` and `LandingHero` containers are visible, then asserts
+  `/plan` and `/catalog` CTA anchors are present in the DOM.

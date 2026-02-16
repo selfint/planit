@@ -33,12 +33,20 @@ navigation and is rendered by the client-side router.
 
 ## Unit Tests
 
-- Renders the page root element with the expected page marker.
-- Shows query validation not-found state when `code` is missing.
-- Renders loaded course details and uses `CourseCard` for related courses.
+- `renders a root element`: calls `CoursePage()` with mocked IndexedDB methods
+  and asserts the returned node is an `HTMLElement` with `data-page="course"`.
+- `shows not found when code query param is missing`: sets URL to `/course`,
+  awaits async render, then asserts not-found state is visible and message text
+  contains `נדרש פרמטר code`.
+- `renders fetched course and related course cards`: deep-links to
+  `/course?code=CS101`, mocks related course lookups and dependency graph data,
+  then asserts found state visibility, dependency grouping (`או` labels), card
+  counts per relation grid, and `initCourseSync` invocation.
 
 ## Integration Tests
 
-- Navigating to `/course` shows validation guidance for missing `code`.
-- Navigating to `/course?code=...` renders the page without exposing the raw
-  route query string in the header.
+- `shows validation state when code is missing`: navigates to `/course` and
+  asserts `<main>` visibility plus validation copy for missing `code`.
+- `accepts query-based course deep link`: navigates to
+  `/course?code=104031`, asserts the page heading is visible, and verifies the
+  raw query string is not rendered in visible content.
