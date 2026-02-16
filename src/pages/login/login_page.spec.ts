@@ -8,6 +8,6 @@ test.describe('/login page route', () => {
         await expect(
             page.getByRole('heading', { name: 'עמוד כניסה' })
         ).toBeVisible();
-        await expect(page.locator('a[href="/"]')).toBeVisible();
+        await expect(page.locator('a[href="/"]').first()).toBeVisible();
     });
 });

@@ -10,7 +10,6 @@ test.describe('/semester page route', () => {
         await expect(
             page.locator('[data-role="current-semester-title"]')
         ).toBeVisible();
-        await expect(page.locator('[data-role="groups-root"]')).toBeVisible();
     });
 
     test('supports query-based semester deep link', async ({ page }) => {

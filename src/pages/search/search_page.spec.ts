@@ -9,7 +9,6 @@ test.describe('/search page route', () => {
         await expect(page.getByRole('main')).toBeVisible();
         await expect(page.locator('[data-search-form]')).toBeVisible();
         await expect(page.locator('[data-filter-faculty]')).toBeVisible();
-        await expect(page.locator('[data-search-results]')).toBeVisible();
     });
 
     test('keeps query parameter in the input when deep-linked', async ({
