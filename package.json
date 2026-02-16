@@ -58,5 +58,8 @@
     "resolutions": {
         "sharp": "^0.33.5",
         "sharp-ico": "^0.1.5"
+    },
+    "dependencies": {
+        "@tanstack/virtual-core": "^3.13.18"
     }
 }

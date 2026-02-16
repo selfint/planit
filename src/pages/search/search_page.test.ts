@@ -86,6 +86,9 @@ describe('SearchPage', () => {
         await waitForSearchRender();
 
         const grid = page.querySelector<HTMLElement>('[data-search-results]');
+        const viewport = page.querySelector<HTMLElement>(
+            '[data-search-results-viewport]'
+        );
         const availableFilter = page.querySelector('[data-filter-available]');
         const facultyFilter = page.querySelector('[data-filter-faculty]');
         const requirementFilter = page.querySelector(
@@ -96,8 +99,9 @@ describe('SearchPage', () => {
         );
 
         expect(grid).toBeInstanceOf(HTMLElement);
-        expect(grid?.className).toContain('grid-cols-3');
-        expect(grid?.className).toContain('sm:grid-cols-4');
+        expect(grid?.className).toContain('relative');
+        expect(viewport).toBeInstanceOf(HTMLElement);
+        expect(viewport?.className).toContain('overflow-auto');
         expect(availableFilter).toBeInstanceOf(HTMLInputElement);
         expect(facultyFilter).toBeInstanceOf(HTMLSelectElement);
         expect(requirementFilter).toBeInstanceOf(HTMLSelectElement);
@@ -124,7 +128,7 @@ describe('SearchPage', () => {
         await waitForSearchRender();
 
         const links = page.querySelectorAll<HTMLAnchorElement>(
-            '[data-search-results] > a'
+            '[data-search-results] a'
         );
 
         expect(queryCoursesMock).toHaveBeenCalledWith(

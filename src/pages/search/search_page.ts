@@ -9,10 +9,25 @@ import {
 } from '$lib/indexeddb';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
+import {
+    Virtualizer,
+    elementScroll,
+    observeElementOffset,
+    observeElementRect,
+} from '@tanstack/virtual-core';
 
 import templateHtml from './search_page.html?raw';
 
 const SEARCH_DEBOUNCE_MS = 220;
+const SEARCH_COLUMNS_SMALL_BREAKPOINT = 640;
+const SEARCH_COLUMNS_LARGE_BREAKPOINT = 1024;
+const SEARCH_COLUMNS_BASE = 3;
+const SEARCH_COLUMNS_SMALL = 4;
+const SEARCH_COLUMNS_LARGE = 5;
+const SEARCH_ROW_GAP_BASE = 8;
+const SEARCH_ROW_GAP_SMALL = 12;
+const SEARCH_ROW_ESTIMATE_HEIGHT = 148;
+const SEARCH_ROW_OVERSCAN = 4;
 
 type SearchPageElements = {
     form: HTMLFormElement;
@@ -26,7 +41,18 @@ type SearchPageElements = {
     status: HTMLParagraphElement;
     sync: HTMLParagraphElement;
     empty: HTMLParagraphElement;
+    resultsViewport: HTMLDivElement;
     results: HTMLDivElement;
+};
+
+type SearchRenderState = {
+    viewport: HTMLDivElement;
+    results: HTMLDivElement;
+    virtualizer: Virtualizer<HTMLDivElement, HTMLDivElement>;
+    courses: CourseRecord[];
+    rows: CourseRecord[][];
+    columnCount: number;
+    rowGap: number;
 };
 
 type SearchPageState = {
@@ -79,14 +105,15 @@ export function SearchPage(): HTMLElement {
 
     const elements = collectElements(root);
     const state = parseStateFromUrl();
+    const renderState = createSearchRenderState(elements);
 
     hydrateFormFromState(elements, state);
-    bindEvents(elements, state);
+    bindEvents(elements, state, renderState);
 
     void updateSyncLabel(elements.sync);
     void hydrateFilterOptions(elements, state);
-    void hydrateTotalCourses(state, elements);
-    void runSearch(elements, state, false);
+    void hydrateTotalCourses(state, elements, renderState);
+    void runSearch(elements, state, renderState, false);
 
     return root;
 }
@@ -119,6 +146,9 @@ function collectElements(root: HTMLElement): SearchPageElements {
     const empty = root.querySelector<HTMLParagraphElement>(
         '[data-search-empty]'
     );
+    const resultsViewport = root.querySelector<HTMLDivElement>(
+        '[data-search-results-viewport]'
+    );
     const results = root.querySelector<HTMLDivElement>('[data-search-results]');
 
     if (
@@ -133,6 +163,7 @@ function collectElements(root: HTMLElement): SearchPageElements {
         status === null ||
         sync === null ||
         empty === null ||
+        resultsViewport === null ||
         results === null
     ) {
         throw new Error('SearchPage required elements not found');
@@ -150,6 +181,7 @@ function collectElements(root: HTMLElement): SearchPageElements {
         status,
         sync,
         empty,
+        resultsViewport,
         results,
     };
 }
@@ -188,13 +220,14 @@ function hydrateFormFromState(
 
 function bindEvents(
     elements: SearchPageElements,
-    state: SearchPageState
+    state: SearchPageState,
+    renderState: SearchRenderState
 ): void {
     elements.form.addEventListener('submit', (event) => {
         event.preventDefault();
         state.query = normalizeText(elements.input.value);
         cancelDebounce(state);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, renderState, true);
     });
 
     elements.input.addEventListener('input', () => {
@@ -202,7 +235,7 @@ function bindEvents(
         cancelDebounce(state);
         state.debounceId = window.setTimeout(() => {
             state.debounceId = undefined;
-            void runSearch(elements, state, true);
+            void runSearch(elements, state, renderState, true);
         }, SEARCH_DEBOUNCE_MS);
     });
 
@@ -214,37 +247,37 @@ function bindEvents(
         state.query = '';
         elements.input.value = '';
         cancelDebounce(state);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, renderState, true);
     });
 
     elements.available.addEventListener('change', () => {
         state.availableOnly = elements.available.checked;
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, renderState, true);
     });
 
     elements.faculty.addEventListener('change', () => {
         state.faculty = normalizeText(elements.faculty.value);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, renderState, true);
     });
 
     elements.requirement.addEventListener('change', () => {
         state.requirement = normalizeText(elements.requirement.value);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, renderState, true);
     });
 
     elements.pointsMin.addEventListener('input', () => {
         state.pointsMin = normalizeText(elements.pointsMin.value);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, renderState, true);
     });
 
     elements.pointsMax.addEventListener('input', () => {
         state.pointsMax = normalizeText(elements.pointsMax.value);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, renderState, true);
     });
 
     elements.medianMin.addEventListener('input', () => {
         state.medianMin = normalizeText(elements.medianMin.value);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, renderState, true);
     });
 }
 
@@ -310,6 +343,7 @@ async function hydrateFilterOptions(
 async function runSearch(
     elements: SearchPageElements,
     state: SearchPageState,
+    renderState: SearchRenderState,
     syncUrl: boolean
 ): Promise<void> {
     const requestId = state.requestId + 1;
@@ -320,7 +354,7 @@ async function runSearch(
         writeStateToUrl(state);
     }
 
-    renderLoadingState(elements.results, 6);
+    renderLoadingState(renderState, 6);
     elements.empty.classList.add('hidden');
     elements.status.textContent = 'מחפש...';
 
@@ -337,7 +371,7 @@ async function runSearch(
             return;
         }
 
-        renderResults(elements.results, result.courses);
+        renderResults(renderState, result.courses);
 
         if (result.total === 0) {
             const totalCourses = state.totalCourses ?? 0;
@@ -365,7 +399,7 @@ async function runSearch(
             return;
         }
 
-        elements.results.replaceChildren();
+        renderResults(renderState, []);
         elements.status.textContent = 'טעינת התוצאות נכשלה.';
         elements.empty.textContent = 'אירעה שגיאה בקריאת הנתונים המקומיים.';
         elements.empty.classList.remove('hidden');
@@ -455,27 +489,169 @@ function normalizeText(value: string): string {
     return value.trim().replace(/\s+/g, ' ');
 }
 
-function renderLoadingState(results: HTMLDivElement, amount: number): void {
+function createSearchRenderState(
+    elements: SearchPageElements
+): SearchRenderState {
+    const state: SearchRenderState = {
+        viewport: elements.resultsViewport,
+        results: elements.results,
+        virtualizer: null as never,
+        courses: [],
+        rows: [],
+        columnCount: getColumnCount(elements.resultsViewport.clientWidth),
+        rowGap: getRowGap(elements.resultsViewport.clientWidth),
+    };
+
+    state.virtualizer = new Virtualizer<HTMLDivElement, HTMLDivElement>({
+        count: 0,
+        getScrollElement: () => state.viewport,
+        estimateSize: () => SEARCH_ROW_ESTIMATE_HEIGHT,
+        initialRect: {
+            width: elements.resultsViewport.clientWidth || 1200,
+            height: elements.resultsViewport.clientHeight || 720,
+        },
+        overscan: SEARCH_ROW_OVERSCAN,
+        scrollToFn: elementScroll,
+        observeElementRect,
+        observeElementOffset,
+        onChange: () => {
+            renderVirtualRows(state);
+        },
+    });
+
+    if (typeof ResizeObserver === 'function') {
+        const observer = new ResizeObserver(() => {
+            updateRenderMetrics(state);
+        });
+        observer.observe(state.viewport);
+    }
+
+    return state;
+}
+
+function renderLoadingState(state: SearchRenderState, amount: number): void {
+    state.rows = [];
+    state.courses = [];
+    state.results.className =
+        'grid grid-cols-3 gap-2 sm:grid-cols-4 sm:gap-3 lg:grid-cols-5';
+    state.results.style.removeProperty('height');
+    state.viewport.scrollTop = 0;
+    state.virtualizer.setOptions({ ...state.virtualizer.options, count: 0 });
+
     const placeholders: HTMLElement[] = [];
     for (let index = 0; index < amount; index += 1) {
         placeholders.push(CourseCard());
     }
-    results.replaceChildren(...placeholders);
+    state.results.replaceChildren(...placeholders);
 }
 
-function renderResults(results: HTMLDivElement, courses: CourseRecord[]): void {
-    const nodes = courses.map((course) => {
-        const anchor = document.createElement('a');
-        anchor.href = `/course?code=${encodeURIComponent(course.code)}`;
-        const availabilityClass =
-            course.current === true ? '' : 'opacity-45 saturate-40';
-        anchor.className =
-            `focus-visible:ring-accent/60 block rounded-2xl focus-visible:ring-2 ${availabilityClass}`.trim();
-        anchor.setAttribute('aria-label', `פתיחת הקורס ${course.code}`);
-        anchor.append(CourseCard(course));
-        return anchor;
+function renderResults(
+    state: SearchRenderState,
+    courses: CourseRecord[]
+): void {
+    state.courses = courses;
+    updateRenderMetrics(state);
+    state.rows = buildRows(courses, state.columnCount);
+
+    state.virtualizer.setOptions({
+        ...state.virtualizer.options,
+        count: state.rows.length,
     });
-    results.replaceChildren(...nodes);
+    state.virtualizer.measure();
+    renderVirtualRows(state);
+}
+
+function updateRenderMetrics(state: SearchRenderState): void {
+    const nextColumnCount = getColumnCount(state.viewport.clientWidth);
+    const nextRowGap = getRowGap(state.viewport.clientWidth);
+    if (nextColumnCount === state.columnCount && nextRowGap === state.rowGap) {
+        return;
+    }
+
+    state.columnCount = nextColumnCount;
+    state.rowGap = nextRowGap;
+    state.rows = buildRows(state.courses, state.columnCount);
+    state.virtualizer.setOptions({
+        ...state.virtualizer.options,
+        count: state.rows.length,
+        gap: state.rowGap,
+    });
+    state.virtualizer.measure();
+    renderVirtualRows(state);
+}
+
+function getColumnCount(viewportWidth: number): number {
+    if (viewportWidth >= SEARCH_COLUMNS_LARGE_BREAKPOINT) {
+        return SEARCH_COLUMNS_LARGE;
+    }
+    if (viewportWidth >= SEARCH_COLUMNS_SMALL_BREAKPOINT) {
+        return SEARCH_COLUMNS_SMALL;
+    }
+    return SEARCH_COLUMNS_BASE;
+}
+
+function getRowGap(viewportWidth: number): number {
+    if (viewportWidth >= SEARCH_COLUMNS_SMALL_BREAKPOINT) {
+        return SEARCH_ROW_GAP_SMALL;
+    }
+    return SEARCH_ROW_GAP_BASE;
+}
+
+function buildRows(
+    courses: CourseRecord[],
+    columnCount: number
+): CourseRecord[][] {
+    const rows: CourseRecord[][] = [];
+    for (let index = 0; index < courses.length; index += columnCount) {
+        rows.push(courses.slice(index, index + columnCount));
+    }
+    return rows;
+}
+
+function renderVirtualRows(state: SearchRenderState): void {
+    state.results.className = 'relative';
+    state.results.style.height = `${String(state.virtualizer.getTotalSize())}px`;
+
+    const virtualRows = state.virtualizer.getVirtualItems();
+    const nodes = virtualRows.map((virtualRow) =>
+        createVirtualRowNode(state, virtualRow.index, virtualRow.start)
+    );
+    state.results.replaceChildren(...nodes);
+}
+
+function createVirtualRowNode(
+    state: SearchRenderState,
+    rowIndex: number,
+    rowStart: number
+): HTMLDivElement {
+    const row = document.createElement('div');
+    row.className = 'absolute inset-x-0';
+    row.style.transform = `translateY(${String(rowStart)}px)`;
+    row.dataset.index = String(rowIndex);
+    row.setAttribute('data-search-virtual-row', String(rowIndex));
+
+    const grid = document.createElement('div');
+    grid.className =
+        'grid grid-cols-3 gap-2 pb-2 sm:grid-cols-4 sm:gap-3 sm:pb-3 lg:grid-cols-5';
+    const courses = state.rows[rowIndex] ?? [];
+    const cards = courses.map((course) => createCourseAnchor(course));
+    grid.append(...cards);
+
+    row.append(grid);
+    state.virtualizer.measureElement(row);
+    return row;
+}
+
+function createCourseAnchor(course: CourseRecord): HTMLAnchorElement {
+    const anchor = document.createElement('a');
+    anchor.href = `/course?code=${encodeURIComponent(course.code)}`;
+    const availabilityClass =
+        course.current === true ? '' : 'opacity-45 saturate-40';
+    anchor.className =
+        `focus-visible:ring-accent/60 block rounded-2xl focus-visible:ring-2 ${availabilityClass}`.trim();
+    anchor.setAttribute('aria-label', `פתיחת הקורס ${course.code}`);
+    anchor.append(CourseCard(course));
+    return anchor;
 }
 
 function renderSelectOptions(
@@ -625,11 +801,12 @@ async function updateSyncLabel(target: HTMLParagraphElement): Promise<void> {
 
 async function hydrateTotalCourses(
     state: SearchPageState,
-    elements: SearchPageElements
+    elements: SearchPageElements,
+    renderState: SearchRenderState
 ): Promise<void> {
     try {
         state.totalCourses = await getCoursesCount();
-        void runSearch(elements, state, false);
+        void runSearch(elements, state, renderState, false);
     } catch {
         state.totalCourses = undefined;
     }
