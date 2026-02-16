@@ -518,9 +518,9 @@ function createCourseLink(
     const widthClass =
         layout === 'group'
             ? 'w-[7.5rem] sm:w-[8.5rem] md:w-auto'
-            : 'w-[7.5rem] sm:w-[8.5rem] lg:w-auto';
+            : 'w-[7.5rem] sm:w-[8.5rem] md:w-[10rem] lg:w-auto';
     link.className =
-        `touch-manipulation focus-visible:ring-accent/60 block h-[7.5rem] ${widthClass} shrink-0 snap-start rounded-2xl focus-visible:ring-2 sm:h-[6.5rem] [content-visibility:auto] [contain-intrinsic-size:7.5rem] sm:[contain-intrinsic-size:6.5rem] md:shrink`.trim();
+        `touch-manipulation focus-visible:ring-accent/60 block h-[7.5rem] ${widthClass} shrink-0 snap-start rounded-2xl focus-visible:ring-2 sm:h-[6.5rem] [content-visibility:auto] [contain-intrinsic-size:7.5rem] sm:[contain-intrinsic-size:6.5rem]`.trim();
     link.dataset.courseCode = course.code;
     if (course.current !== true) {
         link.classList.add('opacity-70');
