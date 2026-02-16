@@ -454,7 +454,12 @@ function renderCurrentSemesterCourses(
     courses: CourseRecord[]
 ): void {
     container.replaceChildren();
-    container.append(createLeadingSeparator('current'));
+    const row = document.createElement('div');
+    row.className =
+        'mx-2 flex min-h-0 snap-x snap-mandatory gap-2 lg:mx-0 lg:snap-none lg:flex-col lg:gap-2';
+    row.append(createLeadingSeparator('current'));
+    container.append(row);
+
     if (courses.length === 0) {
         empty.classList.remove('hidden');
         return;
@@ -462,7 +467,7 @@ function renderCurrentSemesterCourses(
 
     empty.classList.add('hidden');
     for (const course of courses) {
-        container.append(createCourseLink(course));
+        row.append(createCourseLink(course));
     }
 }
 
