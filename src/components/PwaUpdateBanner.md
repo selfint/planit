@@ -12,7 +12,7 @@ explicitly apply the service worker update.
 - Hidden by default.
 - Shows when a `planit:pwa-update` event is dispatched with `detail.updateSW`.
 - Calls `updateSW(true)` only when the user clicks the apply button.
-- Dismiss button hides the toast without applying the update.
+- In development mode, the toast is always visible for quick verification.
 
 ## Files
 

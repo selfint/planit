@@ -26,26 +26,22 @@ export function PwaUpdateBanner(): HTMLElement {
         '[data-component="PwaUpdateToast"]'
     );
     const message = root.querySelector<HTMLElement>('[data-role="message"]');
-    const dismissButton = root.querySelector<HTMLButtonElement>(
-        '[data-role="dismiss"]'
-    );
     const applyButton = root.querySelector<HTMLButtonElement>(
         '[data-role="apply"]'
     );
 
-    if (
-        toast === null ||
-        message === null ||
-        dismissButton === null ||
-        applyButton === null
-    ) {
+    if (toast === null || message === null || applyButton === null) {
         throw new Error('PwaUpdateBanner required elements not found');
     }
 
     let pendingUpdate: UpdateSW | null = null;
 
     if (IS_DEVELOPMENT_MODE) {
-        message.textContent = 'מצב פיתוח: טוסט העדכון מוצג תמיד לתצוגה מקדימה.';
+        pendingUpdate = async (reloadPage = true): Promise<void> => {
+            if (reloadPage) {
+                window.location.reload();
+            }
+        };
         toast.classList.remove('hidden');
     }
 
@@ -58,15 +54,7 @@ export function PwaUpdateBanner(): HTMLElement {
         pendingUpdate = updateSW;
         message.textContent = 'ניתן לעדכן עכשיו כדי לטעון את הגרסה החדשה.';
         applyButton.disabled = false;
-        dismissButton.disabled = false;
         toast.classList.remove('hidden');
-    });
-
-    dismissButton.addEventListener('click', () => {
-        if (IS_DEVELOPMENT_MODE) {
-            return;
-        }
-        toast.classList.add('hidden');
     });
 
     applyButton.addEventListener('click', () => {
@@ -74,11 +62,9 @@ export function PwaUpdateBanner(): HTMLElement {
             return;
         }
         applyButton.disabled = true;
-        dismissButton.disabled = true;
         message.textContent = 'מעדכן גרסה...';
         void pendingUpdate(true).catch(() => {
             applyButton.disabled = false;
-            dismissButton.disabled = false;
             message.textContent = 'העדכון נכשל. נסו שוב בעוד רגע.';
         });
     });
