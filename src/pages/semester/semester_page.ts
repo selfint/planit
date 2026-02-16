@@ -470,11 +470,15 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
 
         const rowScroll = document.createElement('div');
         rowScroll.className =
-            'overflow-x-auto pb-2 [scrollbar-width:thin] md:overflow-visible md:pb-0';
+            group.kind === 'requirement'
+                ? 'overflow-x-auto pb-2 [scrollbar-width:thin]'
+                : 'overflow-x-auto pb-2 [scrollbar-width:thin] md:overflow-visible md:pb-0';
 
         const row = document.createElement('div');
         row.className =
-            'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2 md:me-0 md:grid md:grid-cols-2 md:p-0 xl:grid-cols-3';
+            group.kind === 'requirement'
+                ? 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2'
+                : 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2 md:me-0 md:grid md:grid-cols-2 md:p-0 xl:grid-cols-3';
 
         if (group.courses.length === 0) {
             const empty = document.createElement('p');
