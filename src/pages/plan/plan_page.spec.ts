@@ -40,6 +40,13 @@ test.describe('/plan page route', () => {
         await expect(
             page.locator('[data-plan-row][data-row-id="exemptions"]')
         ).toContainText('פטורים');
+        await expect(page.locator('[data-semester-link]')).toHaveCount(6);
+        await expect(
+            page.locator('[data-semester-link][data-semester-number="1"]')
+        ).toHaveAttribute('href', /\/semester\?number=1$/);
+        await expect(
+            page.locator('[data-semester-link][data-semester-number="6"]')
+        ).toHaveAttribute('href', /\/semester\?number=6$/);
 
         const usesHorizontalOverflow = await page
             .locator('[data-semester-rail]')
@@ -49,6 +56,17 @@ test.describe('/plan page route', () => {
                     node.classList.contains('snap-x')
             );
         expect(usesHorizontalOverflow).toBe(false);
+    });
+
+    test('navigates to semester page from semester row link', async ({
+        page,
+    }) => {
+        await page.goto('plan');
+
+        await page.click('[data-semester-link][data-semester-number="3"]');
+
+        await expect(page).toHaveURL(/\/semester\?number=3$/);
+        await expect(page.locator('[data-page="semester"]')).toBeVisible();
     });
 
     test('moves selected course to wishlist row', async ({ page }) => {
