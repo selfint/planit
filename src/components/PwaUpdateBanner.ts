@@ -7,6 +7,8 @@ type UpdateEventDetail = {
     updateSW: UpdateSW;
 };
 
+const IS_DEVELOPMENT_MODE = import.meta.env.MODE === 'development';
+
 export function PwaUpdateBanner(): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
@@ -42,6 +44,11 @@ export function PwaUpdateBanner(): HTMLElement {
 
     let pendingUpdate: UpdateSW | null = null;
 
+    if (IS_DEVELOPMENT_MODE) {
+        message.textContent = 'מצב פיתוח: טוסט העדכון מוצג תמיד לתצוגה מקדימה.';
+        toast.classList.remove('hidden');
+    }
+
     window.addEventListener(PWA_UPDATE_EVENT, (event) => {
         const customEvent = event as CustomEvent<UpdateEventDetail>;
         const updateSW = customEvent.detail?.updateSW;
@@ -56,6 +63,9 @@ export function PwaUpdateBanner(): HTMLElement {
     });
 
     dismissButton.addEventListener('click', () => {
+        if (IS_DEVELOPMENT_MODE) {
+            return;
+        }
         toast.classList.add('hidden');
     });
 
