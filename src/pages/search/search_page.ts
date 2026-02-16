@@ -433,7 +433,7 @@ function renderResults(results: HTMLDivElement, courses: CourseRecord[]): void {
         const availabilityClass =
             course.current === true ? '' : 'opacity-45 saturate-40';
         anchor.className =
-            `focus-visible:ring-accent/60 block rounded-2xl focus-visible:ring-2 ${availabilityClass}`.trim();
+            `focus-visible:ring-accent/60 block rounded-2xl focus-visible:ring-2 [content-visibility:auto] [contain-intrinsic-size:150px] ${availabilityClass}`.trim();
         anchor.setAttribute('aria-label', `פתיחת הקורס ${course.code}`);
         anchor.append(CourseCard(course));
         return anchor;
