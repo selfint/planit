@@ -6,6 +6,9 @@ const mocks = vi.hoisted(() => {
         getCourseMock: vi.fn(),
         getCoursesCountMock: vi.fn(),
         getCoursesPageMock: vi.fn(),
+        getMetaMock: vi.fn(),
+        setMetaMock: vi.fn(),
+        initCourseSyncMock: vi.fn(),
     };
 });
 
@@ -13,6 +16,8 @@ vi.mock('$lib/indexeddb', () => ({
     getCourse: mocks.getCourseMock,
     getCoursesCount: mocks.getCoursesCountMock,
     getCoursesPage: mocks.getCoursesPageMock,
+    getMeta: mocks.getMetaMock,
+    setMeta: mocks.setMetaMock,
 }));
 
 vi.mock('$lib/courseSync', () => ({
@@ -34,8 +39,13 @@ describe('course page', () => {
         mocks.getCourseMock.mockReset();
         mocks.getCoursesCountMock.mockReset();
         mocks.getCoursesPageMock.mockReset();
+        mocks.getMetaMock.mockReset();
+        mocks.setMetaMock.mockReset();
+        mocks.initCourseSyncMock.mockReset();
         mocks.getCoursesCountMock.mockResolvedValue(0);
         mocks.getCoursesPageMock.mockResolvedValue([]);
+        mocks.getMetaMock.mockResolvedValue(undefined);
+        mocks.setMetaMock.mockResolvedValue(undefined);
         window.history.replaceState(null, '', '/course');
     });
 

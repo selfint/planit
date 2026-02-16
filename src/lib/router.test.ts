@@ -16,9 +16,6 @@ vi.mock('../pages/course/course_page', () => ({
 vi.mock('../pages/landing/landing_page', () => ({
     LandingPage: (): HTMLElement => mockPage(),
 }));
-vi.mock('../pages/login/login_page', () => ({
-    LoginPage: (): HTMLElement => mockPage(),
-}));
 vi.mock('../pages/plan/plan_page', () => ({
     PlanPage: (): HTMLElement => mockPage(),
 }));

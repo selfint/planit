@@ -3,6 +3,8 @@ import {
     getCourse,
     getCoursesCount,
     getCoursesPage,
+    getMeta,
+    setMeta,
 } from '$lib/indexeddb';
 import { COURSE_SYNC_EVENT } from '$lib/courseSync';
 import { ConsoleNav } from '$components/ConsoleNav';
@@ -13,6 +15,9 @@ import templateHtml from './course_page.html?raw';
 const EMPTY_VALUE = '—';
 const UNKNOWN_COURSE_LABEL = 'קורס לא זמין במאגר';
 const COURSES_BATCH_SIZE = 300;
+const PLAN_META_KEY = 'planPageState';
+const PLAN_META_VERSION = 2;
+const DEFAULT_SEMESTER_COUNT = 6;
 
 const COUNT_SKELETON_CLASS = [
     'skeleton-shimmer',
@@ -34,6 +39,8 @@ type CoursePageElements = {
     courseMedianCard: HTMLElement;
     courseFacultyCard: HTMLElement;
     courseSeasonsCard: HTMLElement;
+    wishlistAdd: HTMLButtonElement;
+    wishlistStatus: HTMLElement;
     searchLink: HTMLAnchorElement;
     notFoundState: HTMLElement;
     notFoundMessage: HTMLElement;
@@ -53,6 +60,14 @@ type CoursePageElements = {
 
 type DependencyGroup = string[];
 type RelatedCourseGroups = CourseRecord[][];
+
+type PersistedPlan = {
+    version: number;
+    semesterCount?: number;
+    semesters: { id?: string; courseCodes?: string[] }[];
+    wishlistCourseCodes?: string[];
+    exemptionsCourseCodes?: string[];
+};
 
 export function CoursePage(): HTMLElement {
     const template = document.createElement('template');
@@ -77,11 +92,22 @@ export function CoursePage(): HTMLElement {
     const requestedCode = getRequestedCourseCode(window.location.search);
     updateSearchLink(elements.searchLink, requestedCode);
 
+    void refreshWishlistUi(elements, requestedCode);
+    elements.wishlistAdd.addEventListener('click', () => {
+        if (requestedCode === undefined) {
+            return;
+        }
+        void handleWishlistAdd(elements, requestedCode);
+    });
+
     if (requestedCode === undefined) {
         showNotFound(
             elements,
             'נדרש פרמטר code בכתובת, למשל /course?code=104031.'
         );
+        elements.wishlistAdd.disabled = true;
+        elements.wishlistStatus.textContent =
+            'אי אפשר להוסיף לרשימת המשאלות בלי קוד קורס.';
         return root;
     }
 
@@ -150,6 +176,12 @@ function queryElements(root: HTMLElement): CoursePageElements {
     const courseSeasonsCard = root.querySelector<HTMLElement>(
         "[data-role='course-seasons-card']"
     );
+    const wishlistAdd = root.querySelector<HTMLButtonElement>(
+        "[data-role='wishlist-add']"
+    );
+    const wishlistStatus = root.querySelector<HTMLElement>(
+        "[data-role='wishlist-status']"
+    );
     const searchLink = root.querySelector<HTMLAnchorElement>(
         "[data-role='search-link']"
     );
@@ -207,6 +239,8 @@ function queryElements(root: HTMLElement): CoursePageElements {
         courseMedianCard === null ||
         courseFacultyCard === null ||
         courseSeasonsCard === null ||
+        wishlistAdd === null ||
+        wishlistStatus === null ||
         searchLink === null ||
         notFoundState === null ||
         notFoundMessage === null ||
@@ -237,6 +271,8 @@ function queryElements(root: HTMLElement): CoursePageElements {
         courseMedianCard,
         courseFacultyCard,
         courseSeasonsCard,
+        wishlistAdd,
+        wishlistStatus,
         searchLink,
         notFoundState,
         notFoundMessage,
@@ -280,6 +316,147 @@ function updateSearchLink(
     }
 
     link.href = `/search?q=${encodeURIComponent(code)}`;
+}
+
+async function handleWishlistAdd(
+    elements: CoursePageElements,
+    courseCode: string
+): Promise<void> {
+    elements.wishlistAdd.disabled = true;
+    elements.wishlistStatus.textContent = 'מעדכן רשימת משאלות...';
+
+    try {
+        const added = await addCourseToWishlist(courseCode);
+        if (added) {
+            elements.wishlistStatus.textContent = 'הקורס נוסף לרשימת המשאלות.';
+        } else {
+            elements.wishlistStatus.textContent =
+                'הקורס כבר קיים ברשימת המשאלות.';
+        }
+        await refreshWishlistUi(elements, courseCode);
+    } catch {
+        elements.wishlistAdd.disabled = false;
+        elements.wishlistStatus.textContent =
+            'לא הצלחנו לעדכן את רשימת המשאלות.';
+    }
+}
+
+async function refreshWishlistUi(
+    elements: CoursePageElements,
+    code: string | undefined
+): Promise<void> {
+    if (code === undefined) {
+        elements.wishlistAdd.disabled = true;
+        if (elements.wishlistStatus.textContent?.trim().length === 0) {
+            elements.wishlistStatus.textContent =
+                'אי אפשר להוסיף לרשימת המשאלות בלי קוד קורס.';
+        }
+        return;
+    }
+
+    const wishlist = await readWishlistCourseCodes();
+    const isAdded = wishlist.includes(code);
+    elements.wishlistAdd.disabled = isAdded;
+    if (isAdded) {
+        elements.wishlistStatus.textContent = 'הקורס כבר ברשימת המשאלות.';
+        return;
+    }
+
+    if (elements.wishlistStatus.textContent?.trim().length === 0) {
+        elements.wishlistStatus.textContent =
+            'אפשר להוסיף את הקורס לרשימת המשאלות.';
+    }
+}
+
+async function readWishlistCourseCodes(): Promise<string[]> {
+    const metaEntry = await getMeta(PLAN_META_KEY);
+    const plan = toPersistedPlan(metaEntry?.value);
+    return normalizeCourseCodes(plan?.wishlistCourseCodes);
+}
+
+async function addCourseToWishlist(courseCode: string): Promise<boolean> {
+    const code = courseCode.trim().toUpperCase();
+    if (code.length === 0) {
+        return false;
+    }
+
+    const metaEntry = await getMeta(PLAN_META_KEY);
+    const plan = toPersistedPlan(metaEntry?.value);
+    const wishlist = normalizeCourseCodes(plan?.wishlistCourseCodes);
+    if (wishlist.includes(code)) {
+        return false;
+    }
+
+    const wishlistWithCode = [...wishlist, code];
+    const payload: PersistedPlan = {
+        version: PLAN_META_VERSION,
+        semesterCount: normalizeSemesterCount(plan?.semesterCount),
+        semesters: normalizeSemesters(plan?.semesters),
+        wishlistCourseCodes: wishlistWithCode,
+        exemptionsCourseCodes: normalizeCourseCodes(
+            plan?.exemptionsCourseCodes
+        ),
+    };
+
+    await setMeta({
+        key: PLAN_META_KEY,
+        value: payload,
+    });
+
+    return true;
+}
+
+function toPersistedPlan(value: unknown): Partial<PersistedPlan> | undefined {
+    if (typeof value !== 'object' || value === null) {
+        return undefined;
+    }
+    return value as Partial<PersistedPlan>;
+}
+
+function normalizeCourseCodes(value: unknown): string[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    const codes = new Set<string>();
+    for (const entry of value) {
+        if (typeof entry !== 'string') {
+            continue;
+        }
+        const normalized = entry.trim().toUpperCase();
+        if (normalized.length === 0) {
+            continue;
+        }
+        codes.add(normalized);
+    }
+
+    return [...codes];
+}
+
+function normalizeSemesters(
+    value: unknown
+): { id?: string; courseCodes?: string[] }[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.map((entry) => {
+        if (typeof entry !== 'object' || entry === null) {
+            return { courseCodes: [] };
+        }
+        const raw = entry as { id?: unknown; courseCodes?: unknown };
+        return {
+            id: typeof raw.id === 'string' ? raw.id : undefined,
+            courseCodes: normalizeCourseCodes(raw.courseCodes),
+        };
+    });
+}
+
+function normalizeSemesterCount(value: unknown): number {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return Math.max(3, Math.floor(value));
+    }
+    return DEFAULT_SEMESTER_COUNT;
 }
 
 function showNotFound(elements: CoursePageElements, message: string): void {

@@ -38,6 +38,7 @@ const WISHLIST_ROW_ID = 'wishlist';
 const EXEMPTIONS_ROW_ID = 'exemptions';
 const WISHLIST_ROW_TITLE = 'רשימת משאלות';
 const EXEMPTIONS_ROW_TITLE = 'פטורים';
+const FALLBACK_COURSE_NAME_PREFIX = 'קורס';
 
 type PlanRow = {
     id: string;
@@ -320,7 +321,7 @@ async function hydratePlan(
     );
     const map = createCourseMap(usableCourses);
 
-    const restored = restoreSemestersFromMeta(meta?.value, map);
+    const restored = await restoreSemestersFromMeta(meta?.value, map);
     if (restored !== undefined) {
         state.semesterCount = restored.semesters.length;
         state.semesters = restored.semesters;
@@ -924,12 +925,26 @@ function getRowById(state: PlanState, rowId: string): PlanRow | undefined {
     return getPlanRows(state).find((row) => row.id === rowId);
 }
 
+function navigateToSemesterPage(semesterNumber: number): void {
+    const url = new URL('/semester', window.location.origin);
+    url.searchParams.set('number', String(semesterNumber));
+    window.history.pushState(null, '', url);
+    window.dispatchEvent(new PopStateEvent('popstate'));
+}
+
 async function handleRowClick(
     state: PlanState,
     targetRowId: string,
     rail: HTMLElement
 ): Promise<void> {
     if (state.selected === undefined) {
+        const targetRow = getRowById(state, targetRowId);
+        if (
+            targetRow?.kind === 'semester' &&
+            targetRow.semesterNumber !== undefined
+        ) {
+            navigateToSemesterPage(targetRow.semesterNumber);
+        }
         return;
     }
 
@@ -1023,16 +1038,17 @@ function createCourseMap(courses: CourseRecord[]): Map<string, CourseRecord> {
     return map;
 }
 
-function restoreSemestersFromMeta(
+async function restoreSemestersFromMeta(
     value: unknown,
     courseMap: Map<string, CourseRecord>
-):
+): Promise<
     | {
           semesters: SemesterState[];
           wishlist: CourseRecord[];
           exemptions: CourseRecord[];
       }
-    | undefined {
+    | undefined
+> {
     if (typeof value !== 'object' || value === null) {
         return undefined;
     }
@@ -1053,22 +1069,22 @@ function restoreSemestersFromMeta(
         })
     );
 
-    record.semesters.forEach((entry, index) => {
+    for (const [index, entry] of record.semesters.entries()) {
         const semester =
             semesters.find((item) => item.id === entry.id) ??
             semesters.at(index);
         if (semester === undefined) {
-            return;
+            continue;
         }
 
         const codes = Array.isArray(entry.courseCodes) ? entry.courseCodes : [];
         for (const code of codes) {
-            const course = courseMap.get(code);
+            const course = await resolveCourseFromMapOrStore(courseMap, code);
             if (course !== undefined) {
                 semester.courses.push(course);
             }
         }
-    });
+    }
 
     const wishlistCodes = Array.isArray(record.wishlistCourseCodes)
         ? record.wishlistCourseCodes
@@ -1077,15 +1093,51 @@ function restoreSemestersFromMeta(
         ? record.exemptionsCourseCodes
         : [];
 
+    const [wishlist, exemptions] = await Promise.all([
+        Promise.all(
+            wishlistCodes.map((code) =>
+                resolveCourseFromMapOrStore(courseMap, code)
+            )
+        ),
+        Promise.all(
+            exemptionsCodes.map((code) =>
+                resolveCourseFromMapOrStore(courseMap, code)
+            )
+        ),
+    ]);
+
     return {
         semesters,
-        wishlist: wishlistCodes
-            .map((code) => courseMap.get(code))
-            .filter((course): course is CourseRecord => course !== undefined),
-        exemptions: exemptionsCodes
-            .map((code) => courseMap.get(code))
-            .filter((course): course is CourseRecord => course !== undefined),
+        wishlist: wishlist.filter(
+            (course): course is CourseRecord => course !== undefined
+        ),
+        exemptions: exemptions.filter(
+            (course): course is CourseRecord => course !== undefined
+        ),
     };
+}
+
+async function resolveCourseFromMapOrStore(
+    courseMap: Map<string, CourseRecord>,
+    code: string
+): Promise<CourseRecord | undefined> {
+    const cached = courseMap.get(code);
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    const loaded = await appState.courses.get(code).catch(() => undefined);
+    if (loaded !== undefined) {
+        courseMap.set(code, loaded);
+        return loaded;
+    }
+
+    const fallback: CourseRecord = {
+        code,
+        name: `${FALLBACK_COURSE_NAME_PREFIX} ${code}`,
+    };
+    courseMap.set(code, fallback);
+    return fallback;
 }
 
 function normalizeDuplicateCourses(

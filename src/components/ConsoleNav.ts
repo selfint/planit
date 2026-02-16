@@ -2,7 +2,7 @@ import logoUrl from '$assets/logo.webp?w=256';
 import templateHtml from './ConsoleNav.html?raw';
 import titleUrl from '$assets/Title.svg?url';
 
-type ConsoleLinkKey = 'catalog' | 'plan' | 'search' | 'login';
+type ConsoleLinkKey = 'catalog' | 'plan' | 'search';
 
 type ConsoleNavOptions = {
     activePath?: string;
@@ -12,7 +12,6 @@ const ACTIVE_PATHS: Record<ConsoleLinkKey, string> = {
     catalog: '/catalog',
     plan: '/plan',
     search: '/search',
-    login: '/login',
 };
 
 export function ConsoleNav(options: ConsoleNavOptions = {}): HTMLElement {
@@ -70,12 +69,7 @@ function applyActiveState(
 }
 
 function isConsoleLinkKey(value: string | undefined): value is ConsoleLinkKey {
-    return (
-        value === 'catalog' ||
-        value === 'plan' ||
-        value === 'search' ||
-        value === 'login'
-    );
+    return value === 'catalog' || value === 'plan' || value === 'search';
 }
 
 function normalizePath(path: string | undefined): string {

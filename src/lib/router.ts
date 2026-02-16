@@ -1,7 +1,6 @@
 import { CatalogPage } from '../pages/catalog/catalog_page';
 import { CoursePage } from '../pages/course/course_page';
 import { LandingPage } from '../pages/landing/landing_page';
-import { LoginPage } from '../pages/login/login_page';
 import { NotFoundPage } from '../pages/404/not_found_page';
 import { PlanPage } from '../pages/plan/plan_page';
 import { SearchPage } from '../pages/search/search_page';
@@ -15,13 +14,12 @@ export const REDIRECT_SESSION_KEY = 'planit:redirect-path';
 const APP_BASE_PATH = normalizeBasePath(import.meta.env.BASE_URL);
 
 const routes: Partial<Record<string, PageFactory>> = {
-    '/': () => LandingPage(),
-    '/plan': () => PlanPage(),
-    '/catalog': () => CatalogPage(),
-    '/course': () => CoursePage(),
-    '/search': () => SearchPage(),
-    '/semester': () => SemesterPage(),
-    '/login': () => LoginPage(),
+    '/': LandingPage,
+    '/plan': PlanPage,
+    '/catalog': CatalogPage,
+    '/course': CoursePage,
+    '/search': SearchPage,
+    '/semester': SemesterPage,
 };
 
 export function normalizePath(pathname: string): string {
