@@ -101,12 +101,14 @@ sequenceDiagram
 
     CatSync-->>Picker: dispatch planit:catalog-sync event
     Picker->>IDB: getCatalogs() + get active selection
-    Picker->>ReqSync: syncRequirements(selection)
+    User->>Picker: choose catalog/faculty/program/path
+    Picker->>ReqSync: syncRequirements(selection, persistActiveSelection=false)
     ReqSync->>RAW: GET .../_catalogs/{catalog}/{faculty}/{program}/requirementsData.json
     alt success
         RAW-->>ReqSync: requirement tree
         ReqSync->>IDB: replaceRequirementsWithCow(...)
-        ReqSync->>IDB: set requirementsLastSync (+ active selection/path)
+        ReqSync->>IDB: set requirementsLastSync
+        Picker->>IDB: setActiveRequirementsSelection(selection)
         ReqSync-->>Picker: status=updated
     else offline/failure
         ReqSync-->>Picker: status=offline/failed
@@ -119,8 +121,9 @@ sequenceDiagram
 
 Notes:
 
-- `catalogs.json` is synced globally from `main.ts`; `requirementsData.json` is synced per selected program.
-- Requirement writes use copy-on-write replacement (`replaceRequirementsWithCow`) and persist active selection when complete.
+- `catalogs.json` is synced globally from `main.ts`.
+- `requirementsData.json` is user-selection driven and synced by `DegreePicker` via `requirementsSync`.
+- Requirement writes use copy-on-write replacement (`replaceRequirementsWithCow`); active selection is persisted by the picker once the selection is complete.
 
 ## 3) App code update flow (PWA)
 
@@ -210,5 +213,7 @@ sequenceDiagram
 
 Notes:
 
-- Most user state is local in IndexedDB `meta` plus domain stores (`courses`, `catalogs`, `requirements`).
+- Global datasets are owned by app bootstrap (`main.ts`): `courses` and `catalogs` sync lifecycles.
+- User-owned writes stay in page workflows: `planPageState` (PlanPage) and active degree/requirements selection (DegreePicker/requirementsSync).
+- IndexedDB stores hold both global and user data: `courses`, `catalogs`, `requirements`, plus `meta` keys.
 - Session redirect state is transient and stored in `sessionStorage` (`planit:redirect-path`).
