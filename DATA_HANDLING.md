@@ -6,6 +6,7 @@ This document explains how data is managed end-to-end in the app: dataset sync (
 
 Relevant files:
 
+- [`src/main.ts`](src/main.ts)
 - [`src/lib/courseSync.ts`](src/lib/courseSync.ts)
 - [`src/lib/indexeddb.ts`](src/lib/indexeddb.ts)
 - [`src/pages/course/course_page.ts`](src/pages/course/course_page.ts)
@@ -14,13 +15,14 @@ Relevant files:
 ```mermaid
 sequenceDiagram
     autonumber
-    participant UI as CoursePage
+    participant App as main.ts
+    participant UI as CoursePage/SearchPage
     participant CS as courseSync
     participant GH as GitHub API (commit metadata)
     participant RAW as Raw JSON (courseData.json)
     participant IDB as IndexedDB (courses + meta)
 
-    UI->>CS: initCourseSync() on page load
+    App->>CS: initCourseSync() on app startup
     CS->>CS: check navigator.onLine
     alt offline
         CS-->>UI: status=offline (keep local data)
@@ -46,18 +48,20 @@ sequenceDiagram
         end
     end
 
+    CS-->>UI: dispatch planit:course-sync event
     UI->>IDB: read courses/meta and rerender
 ```
 
 Notes:
 
-- Sync starts immediately (if online) and again on `online` events.
+- Sync starts from app bootstrap (`main.ts`) and runs again on `online` events.
 - Views read from IndexedDB, so local data is still usable offline.
 
 ## 2) Catalog + requirements data sync (`catalogs.json` + `requirementsData.json`)
 
 Relevant files:
 
+- [`src/main.ts`](src/main.ts)
 - [`src/lib/catalogSync.ts`](src/lib/catalogSync.ts)
 - [`src/lib/requirementsSync.ts`](src/lib/requirementsSync.ts)
 - [`src/lib/indexeddb.ts`](src/lib/indexeddb.ts)
@@ -67,6 +71,7 @@ Relevant files:
 ```mermaid
 sequenceDiagram
     autonumber
+    participant App as main.ts
     participant Picker as DegreePicker
     participant CatSync as catalogSync
     participant ReqSync as requirementsSync
@@ -75,7 +80,7 @@ sequenceDiagram
     participant IDB as IndexedDB (catalogs, requirements, meta)
     participant CatalogPage as CatalogPage groups
 
-    Picker->>CatSync: initCatalogSync()
+    App->>CatSync: initCatalogSync() on app startup
     CatSync->>CatSync: check navigator.onLine
     alt offline
         CatSync-->>Picker: status=offline
@@ -94,6 +99,7 @@ sequenceDiagram
         end
     end
 
+    CatSync-->>Picker: dispatch planit:catalog-sync event
     Picker->>IDB: getCatalogs() + get active selection
     Picker->>ReqSync: syncRequirements(selection)
     ReqSync->>RAW: GET .../_catalogs/{catalog}/{faculty}/{program}/requirementsData.json
@@ -113,7 +119,7 @@ sequenceDiagram
 
 Notes:
 
-- `catalogs.json` is synced globally; `requirementsData.json` is synced per selected program.
+- `catalogs.json` is synced globally from `main.ts`; `requirementsData.json` is synced per selected program.
 - Requirement writes use copy-on-write replacement (`replaceRequirementsWithCow`) and persist active selection when complete.
 
 ## 3) App code update flow (PWA)
