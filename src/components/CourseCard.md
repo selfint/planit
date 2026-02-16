@@ -46,3 +46,9 @@ course code using an FNV-1a hash mapped into an HSL color.
 - For long result lists, wrappers should pair those heights with
   `content-visibility: auto` and matching `contain-intrinsic-size` values to
   defer offscreen rendering without layout jumps.
+- For responsive sizing by screen width (same pattern as search page), set the
+  mobile default first and then override at breakpoints, for example:
+  `h-[7.5rem] sm:h-[6.5rem]` together with
+  `[contain-intrinsic-size:7.5rem] sm:[contain-intrinsic-size:6.5rem]`.
+  This keeps the placeholder size aligned with the actual card height at each
+  breakpoint.
