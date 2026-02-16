@@ -40,3 +40,25 @@ course code using an FNV-1a hash mapped into an HSL color.
   `src/style.css`.
 - The shimmer only applies while `data-skeleton="true"` is present on the root
   element.
+- Card sizing is controlled by the parent wrapper (for example search and
+  semester page links): wrappers provide explicit heights (`h-[7.5rem]` mobile,
+  `sm:h-[6.5rem]`), while `CourseCard` keeps `h-full` so it fills that slot.
+- For long result lists, wrappers should pair those heights with
+  `content-visibility: auto` and matching `contain-intrinsic-size` values to
+  defer offscreen rendering without layout jumps.
+- For responsive sizing by screen width (same pattern as search page), set the
+  mobile default first and then override at breakpoints, for example:
+  `h-[7.5rem] sm:h-[6.5rem]` together with
+  `[contain-intrinsic-size:7.5rem] sm:[contain-intrinsic-size:6.5rem]`.
+  This keeps the placeholder size aligned with the actual card height at each
+  breakpoint.
+- Width should follow layout context: in grid layouts (search page) rely on the
+  grid column width and keep card wrappers fluid (`w-full`/auto), while in
+  horizontal scrollers (semester mobile/desktop rows) keep a constant row-card
+  width (`w-[7.5rem] sm:w-[8.5rem]`).
+- If a section switches from horizontal row to grid at a breakpoint, use the
+  same row widths and then release at that breakpoint (for example
+  `w-[7.5rem] sm:w-[8.5rem] md:w-auto`).
+- Keep spacing around course cards on the `2` scale for consistency with search
+  and semester layouts: use `gap-2` between cards and prefer matching
+  `p-2`/`m-2` when local wrappers need padding or margins around the card area.

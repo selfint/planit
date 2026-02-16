@@ -200,3 +200,6 @@ required files:
 - Keep page docs technical and concise.
 - Prefer explicit DOM querying scoped to the page root.
 - Do not move page `.spec.ts` files into `tests/`; keep them in the page route.
+- For large repeated rows/cards, prefer `content-visibility: auto` with a
+  reasonable `contain-intrinsic-size` placeholder to defer offscreen rendering
+  while keeping scroll geometry stable (see search page card rendering pattern).

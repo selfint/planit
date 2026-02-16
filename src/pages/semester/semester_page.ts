@@ -20,9 +20,6 @@ const PLAN_META_KEY = 'planPageState';
 const FALLBACK_COURSE_NAME_PREFIX = 'קורס';
 const FALLBACK_FACULTY = 'ללא פקולטה';
 const DEFAULT_SEMESTER_NUMBER = 1;
-const DESKTOP_MIN_WIDTH = 1024;
-const DESKTOP_STICKY_GAP_PX = 8;
-const DESKTOP_STICKY_BOTTOM_GAP_PX = 12;
 const SEASONS = ['אביב', 'קיץ', 'חורף'] as const;
 
 type PersistedPlan = {
@@ -31,8 +28,6 @@ type PersistedPlan = {
 
 type SemesterPageElements = {
     groupsRoot: HTMLElement;
-    currentAside: HTMLElement;
-    currentSection: HTMLElement;
     currentTitle: HTMLElement;
     currentCourses: HTMLElement;
     currentEmpty: HTMLElement;
@@ -71,7 +66,6 @@ export function SemesterPage(): HTMLElement {
 
     const elements = queryElements(root);
     const semesterNumber = getSemesterNumberFromUrl(window.location.search);
-    setupStickyExpansion(elements.currentAside, elements.currentSection);
 
     void hydratePage(elements, semesterNumber);
 
@@ -81,12 +75,6 @@ export function SemesterPage(): HTMLElement {
 function queryElements(root: HTMLElement): SemesterPageElements {
     const groupsRoot = root.querySelector<HTMLElement>(
         '[data-role="groups-root"]'
-    );
-    const currentAside = root.querySelector<HTMLElement>(
-        '[data-role="current-semester-aside"]'
-    );
-    const currentSection = root.querySelector<HTMLElement>(
-        '[data-role="current-semester"]'
     );
     const currentTitle = root.querySelector<HTMLElement>(
         '[data-role="current-semester-title"]'
@@ -100,8 +88,6 @@ function queryElements(root: HTMLElement): SemesterPageElements {
 
     if (
         groupsRoot === null ||
-        currentAside === null ||
-        currentSection === null ||
         currentTitle === null ||
         currentCourses === null ||
         currentEmpty === null
@@ -111,8 +97,6 @@ function queryElements(root: HTMLElement): SemesterPageElements {
 
     return {
         groupsRoot,
-        currentAside,
-        currentSection,
         currentTitle,
         currentCourses,
         currentEmpty,
@@ -454,7 +438,11 @@ function renderCurrentSemesterCourses(
     courses: CourseRecord[]
 ): void {
     container.replaceChildren();
-    container.append(createLeadingSeparator('current'));
+    const row = document.createElement('div');
+    row.className =
+        'me-2 flex min-h-0 snap-x snap-mandatory gap-2 p-2 lg:me-0 lg:snap-none lg:flex-col lg:p-0';
+    container.append(row);
+
     if (courses.length === 0) {
         empty.classList.remove('hidden');
         return;
@@ -462,7 +450,7 @@ function renderCurrentSemesterCourses(
 
     empty.classList.add('hidden');
     for (const course of courses) {
-        container.append(createCourseLink(course));
+        row.append(createCourseLink(course, 'current'));
     }
 }
 
@@ -470,7 +458,8 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
     root.replaceChildren();
     for (const group of groups) {
         const section = document.createElement('section');
-        section.className = 'flex min-w-0 flex-col gap-3';
+        section.className =
+            'flex min-w-0 flex-col gap-2 [content-visibility:auto] [contain-intrinsic-size:24rem]';
         section.dataset.groupKind = group.kind;
         section.dataset.groupTitle = group.title;
 
@@ -479,10 +468,17 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
         title.textContent = group.title;
         section.append(title);
 
+        const rowScroll = document.createElement('div');
+        rowScroll.className =
+            group.kind === 'requirement'
+                ? 'overflow-x-auto pb-2 [scrollbar-width:thin]'
+                : 'overflow-x-auto pb-2 [scrollbar-width:thin] md:overflow-visible md:pb-0';
+
         const row = document.createElement('div');
         row.className =
-            'flex min-w-0 snap-x snap-mandatory gap-3 overflow-x-auto pb-2 [scrollbar-width:thin] md:grid md:grid-cols-2 md:overflow-visible md:pb-0 xl:grid-cols-3';
-        row.append(createLeadingSeparator('group'));
+            group.kind === 'requirement'
+                ? 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2 lg:me-0 lg:p-0'
+                : 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2 md:me-0 md:grid md:grid-cols-2 md:p-0 xl:grid-cols-3';
 
         if (group.courses.length === 0) {
             const empty = document.createElement('p');
@@ -491,20 +487,26 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
             row.append(empty);
         } else {
             for (const course of group.courses) {
-                row.append(createCourseLink(course));
+                row.append(createCourseLink(course, 'row'));
             }
         }
 
-        section.append(row);
+        rowScroll.append(row);
+        section.append(rowScroll);
         root.append(section);
     }
 }
 
-function createCourseLink(course: CourseRecord): HTMLAnchorElement {
+function createCourseLink(
+    course: CourseRecord,
+    kind: 'row' | 'current'
+): HTMLAnchorElement {
     const link = document.createElement('a');
     link.href = `/course?code=${encodeURIComponent(course.code)}`;
+    const widthClass =
+        kind === 'row' ? 'w-[7.5rem] lg:w-[10.5rem]' : 'w-[7.5rem] lg:w-auto';
     link.className =
-        'touch-manipulation focus-visible:ring-accent/60 block w-[15.5rem] shrink-0 snap-start rounded-2xl focus-visible:ring-2 md:w-auto md:shrink';
+        `touch-manipulation focus-visible:ring-accent/60 block h-[7.5rem] ${widthClass} shrink-0 snap-start rounded-2xl focus-visible:ring-2 sm:h-[6.5rem] [content-visibility:auto] [contain-intrinsic-size:7.5rem] sm:[contain-intrinsic-size:6.5rem]`.trim();
     link.dataset.courseCode = course.code;
     if (course.current !== true) {
         link.classList.add('opacity-70');
@@ -512,72 +514,4 @@ function createCourseLink(course: CourseRecord): HTMLAnchorElement {
 
     link.append(CourseCard(course));
     return link;
-}
-
-function createLeadingSeparator(kind: 'current' | 'group'): HTMLElement {
-    const separator = document.createElement('div');
-    if (kind === 'current') {
-        separator.className = 'w-2 min-w-2 shrink-0 lg:hidden';
-    } else {
-        separator.className = 'w-3 min-w-3 shrink-0 md:hidden';
-    }
-    separator.setAttribute('aria-hidden', 'true');
-    return separator;
-}
-
-function setupStickyExpansion(aside: HTMLElement, section: HTMLElement): void {
-    let expanded = false;
-
-    function update(): void {
-        const isDesktop = window.innerWidth >= DESKTOP_MIN_WIDTH;
-        const navBottom = getConsoleNavBottom();
-        const topOffset = isDesktop
-            ? navBottom + DESKTOP_STICKY_GAP_PX
-            : navBottom;
-        aside.style.top = `${String(topOffset)}px`;
-
-        if (isDesktop) {
-            const desktopMaxHeight = Math.max(
-                160,
-                window.innerHeight - topOffset - DESKTOP_STICKY_BOTTOM_GAP_PX
-            );
-            section.style.maxHeight = `${String(desktopMaxHeight)}px`;
-            section.style.overflowY = 'auto';
-            if (expanded) {
-                setExpanded(false);
-            }
-            return;
-        }
-
-        section.style.maxHeight = '';
-        section.style.overflowY = '';
-
-        const shouldExpand = aside.getBoundingClientRect().top <= topOffset + 1;
-        if (shouldExpand === expanded) {
-            return;
-        }
-        setExpanded(shouldExpand);
-    }
-
-    function setExpanded(nextExpanded: boolean): void {
-        expanded = nextExpanded;
-        section.classList.toggle('rounded-none', nextExpanded);
-        section.classList.toggle('border-s-0', nextExpanded);
-        section.classList.toggle('border-e-0', nextExpanded);
-    }
-
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
-    update();
-}
-
-function getConsoleNavBottom(): number {
-    const nav = document.querySelector<HTMLElement>(
-        '[data-component="ConsoleNav"]'
-    );
-    if (nav === null) {
-        return 0;
-    }
-
-    return Math.max(0, nav.getBoundingClientRect().bottom);
 }

@@ -3,12 +3,15 @@
 @theme {
     --font-sans:
         'Rubik', 'Assistant', 'Heebo', ui-sans-serif, system-ui, sans-serif;
+    /* Keep .storybook/preview.css dark-mode variable mapping in sync. */
     --color-bg: #f5f8f9;
     --color-bg-dark: #0b1116;
     --color-surface-1: #ffffff;
     --color-surface-1-dark: #121b22;
     --color-surface-2: #edf2f4;
     --color-surface-2-dark: #19242c;
+    --color-semester-surface: hsl(195 29% 98%);
+    --color-semester-surface-dark: hsl(201 29% 9%);
     --color-border: #d7e0e6;
     --color-border-dark: #26343d;
     --color-text: #19232a;

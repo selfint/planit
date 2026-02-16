@@ -79,6 +79,9 @@ remains visible while the user scrolls through other course groups.
 - The current semester section is sticky on both desktop and mobile and stays visible while scrolling.
 - Each non-semester group is rendered as a title plus one course row (catalog style),
   without wrapping each group in a card container.
+- Non-semester rows use `content-visibility: auto` with
+  `contain-intrinsic-size` so offscreen rows defer rendering until they are near
+  the viewport.
 - The rest of the catalog courses appear right after the current semester section.
 - Non-catalog courses are grouped by faculty with titles in the format
   `בחירה חופשית: <פקולטה>`.
