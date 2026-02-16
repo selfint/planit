@@ -18,7 +18,7 @@ wishlist-to-plan behavior across routes.
 - Run `pnpm integtest:demo` to record a slower demo video with a large visible
   cursor and click-expand animation.
 - Run `pnpm landing:demo-video` to record and publish the latest flow demo to
-  `public/tutorials/first-time-planning-flow-demo.webm` for landing page usage.
+  `src/assets/first-time-planning-flow-demo.webm` for landing page usage.
 - Demo mode is enabled via `PW_DEMO=on` and sets single-worker execution,
   higher-resolution video, and slower pacing (without trace).
 - Optional tuning:

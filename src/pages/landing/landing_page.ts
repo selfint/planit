@@ -1,6 +1,7 @@
 import { LandingFeatureCard } from './components/LandingFeatureCard';
 import { LandingHero } from './components/LandingHero';
 import { LandingNav } from './components/LandingNav';
+import landingDemoVideoUrl from '$assets/first-time-planning-flow-demo.webm?url';
 import templateHtml from './landing_page.html?raw';
 
 export function LandingPage(): HTMLElement {
@@ -127,6 +128,8 @@ function setupLandingDemoVideo(root: HTMLElement): void {
     const resolvedPlaceholder = placeholder;
     const resolvedVideo = video;
     const resolvedSkeletonLayer = skeletonLayer;
+
+    resolvedVideo.src = landingDemoVideoUrl;
 
     function revealVideo(): void {
         resolvedVideo.classList.remove('opacity-0');

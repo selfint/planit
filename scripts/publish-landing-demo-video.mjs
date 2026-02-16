@@ -4,7 +4,7 @@ import path from 'node:path';
 
 const projectRoot = process.cwd();
 const inputRoot = path.join(projectRoot, 'test-results');
-const outputDir = path.join(projectRoot, 'public', 'tutorials');
+const outputDir = path.join(projectRoot, 'src', 'assets');
 const outputFile = path.join(outputDir, 'first-time-planning-flow-demo.webm');
 
 const targetWidth = Number.parseInt(
@@ -13,6 +13,7 @@ const targetWidth = Number.parseInt(
 );
 const targetCrf = Number.parseInt(process.env.PW_DEMO_PUBLISH_CRF ?? '30', 10);
 const audioBitrate = process.env.PW_DEMO_PUBLISH_AUDIO_BITRATE ?? '96k';
+const targetFps = Number.parseInt(process.env.PW_DEMO_PUBLISH_FPS ?? '60', 10);
 
 function collectVideoFiles(directory) {
     const entries = fs.readdirSync(directory, { withFileTypes: true });
@@ -95,12 +96,15 @@ function hasFfmpeg() {
 }
 
 function transcodeWithFfmpeg(inputPath, outputPath) {
+    const normalizedFps = Number.isNaN(targetFps)
+        ? 60
+        : Math.max(24, targetFps);
     const args = [
         '-y',
         '-i',
         inputPath,
         '-vf',
-        `scale=${targetWidth}:-2`,
+        `scale=${targetWidth}:-2,fps=${normalizedFps}`,
         '-c:v',
         'libvpx-vp9',
         '-b:v',
