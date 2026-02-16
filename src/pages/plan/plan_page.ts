@@ -415,7 +415,7 @@ function getPlanRows(state: PlanState): PlanRow[] {
 function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
     const rowElement = document.createElement('section');
     rowElement.className =
-        'border-border/50 bg-surface-1/40 flex flex-col gap-3 rounded-2xl border p-3 sm:p-4';
+        'border-border/50 bg-semester-surface flex flex-col gap-3 rounded-2xl border p-3 sm:p-4';
     rowElement.dataset.planRow = 'true';
     rowElement.dataset.rowId = row.id;
     rowElement.dataset.rowKind = row.kind;
