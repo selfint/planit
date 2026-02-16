@@ -532,12 +532,31 @@ function createCourseLink(
 
 function setupStickyExpansion(aside: HTMLElement, section: HTMLElement): void {
     let expanded = false;
+    let desktopTopOffset: number | undefined;
+
+    function readDesktopTopOffset(): number {
+        const navBottom = getConsoleNavBottom();
+        return navBottom + DESKTOP_STICKY_GAP_PX;
+    }
 
     function update(): void {
         const isDesktop = window.innerWidth >= DESKTOP_MIN_WIDTH;
-        const navBottom = getConsoleNavBottom();
+        if (isDesktop && desktopTopOffset === undefined) {
+            desktopTopOffset = readDesktopTopOffset();
+        }
+        if (!isDesktop) {
+            desktopTopOffset = undefined;
+        }
+
+        const navBottom = isDesktop
+            ? Math.max(
+                  0,
+                  (desktopTopOffset ?? DESKTOP_STICKY_GAP_PX) -
+                      DESKTOP_STICKY_GAP_PX
+              )
+            : getConsoleNavBottom();
         const topOffset = isDesktop
-            ? navBottom + DESKTOP_STICKY_GAP_PX
+            ? (desktopTopOffset ?? DESKTOP_STICKY_GAP_PX)
             : navBottom;
         aside.style.top = `${String(topOffset)}px`;
 
@@ -572,7 +591,10 @@ function setupStickyExpansion(aside: HTMLElement, section: HTMLElement): void {
     }
 
     window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', update);
+    window.addEventListener('resize', () => {
+        desktopTopOffset = undefined;
+        update();
+    });
     update();
 }
 
