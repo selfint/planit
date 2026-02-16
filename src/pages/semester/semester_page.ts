@@ -20,9 +20,6 @@ const PLAN_META_KEY = 'planPageState';
 const FALLBACK_COURSE_NAME_PREFIX = 'קורס';
 const FALLBACK_FACULTY = 'ללא פקולטה';
 const DEFAULT_SEMESTER_NUMBER = 1;
-const DESKTOP_MIN_WIDTH = 1024;
-const DESKTOP_STICKY_GAP_PX = 8;
-const DESKTOP_STICKY_BOTTOM_GAP_PX = 12;
 const SEASONS = ['אביב', 'קיץ', 'חורף'] as const;
 
 type PersistedPlan = {
@@ -31,8 +28,6 @@ type PersistedPlan = {
 
 type SemesterPageElements = {
     groupsRoot: HTMLElement;
-    currentAside: HTMLElement;
-    currentSection: HTMLElement;
     currentTitle: HTMLElement;
     currentCourses: HTMLElement;
     currentEmpty: HTMLElement;
@@ -71,7 +66,6 @@ export function SemesterPage(): HTMLElement {
 
     const elements = queryElements(root);
     const semesterNumber = getSemesterNumberFromUrl(window.location.search);
-    setupStickyExpansion(elements.currentAside, elements.currentSection);
 
     void hydratePage(elements, semesterNumber);
 
@@ -81,12 +75,6 @@ export function SemesterPage(): HTMLElement {
 function queryElements(root: HTMLElement): SemesterPageElements {
     const groupsRoot = root.querySelector<HTMLElement>(
         '[data-role="groups-root"]'
-    );
-    const currentAside = root.querySelector<HTMLElement>(
-        '[data-role="current-semester-aside"]'
-    );
-    const currentSection = root.querySelector<HTMLElement>(
-        '[data-role="current-semester"]'
     );
     const currentTitle = root.querySelector<HTMLElement>(
         '[data-role="current-semester-title"]'
@@ -100,8 +88,6 @@ function queryElements(root: HTMLElement): SemesterPageElements {
 
     if (
         groupsRoot === null ||
-        currentAside === null ||
-        currentSection === null ||
         currentTitle === null ||
         currentCourses === null ||
         currentEmpty === null
@@ -111,8 +97,6 @@ function queryElements(root: HTMLElement): SemesterPageElements {
 
     return {
         groupsRoot,
-        currentAside,
-        currentSection,
         currentTitle,
         currentCourses,
         currentEmpty,
@@ -528,83 +512,4 @@ function createCourseLink(
 
     link.append(CourseCard(course));
     return link;
-}
-
-function setupStickyExpansion(aside: HTMLElement, section: HTMLElement): void {
-    let expanded = false;
-    let desktopTopOffset: number | undefined;
-
-    function readDesktopTopOffset(): number {
-        const navBottom = getConsoleNavBottom();
-        return navBottom + DESKTOP_STICKY_GAP_PX;
-    }
-
-    function update(): void {
-        const isDesktop = window.innerWidth >= DESKTOP_MIN_WIDTH;
-        if (isDesktop && desktopTopOffset === undefined) {
-            desktopTopOffset = readDesktopTopOffset();
-        }
-        if (!isDesktop) {
-            desktopTopOffset = undefined;
-        }
-
-        const navBottom = isDesktop
-            ? Math.max(
-                  0,
-                  (desktopTopOffset ?? DESKTOP_STICKY_GAP_PX) -
-                      DESKTOP_STICKY_GAP_PX
-              )
-            : getConsoleNavBottom();
-        const topOffset = isDesktop
-            ? (desktopTopOffset ?? DESKTOP_STICKY_GAP_PX)
-            : navBottom;
-        aside.style.top = `${String(topOffset)}px`;
-
-        if (isDesktop) {
-            const desktopMaxHeight = Math.max(
-                160,
-                window.innerHeight - topOffset - DESKTOP_STICKY_BOTTOM_GAP_PX
-            );
-            section.style.maxHeight = `${String(desktopMaxHeight)}px`;
-            section.style.overflowY = 'auto';
-            if (expanded) {
-                setExpanded(false);
-            }
-            return;
-        }
-
-        section.style.maxHeight = '';
-        section.style.overflowY = '';
-
-        const shouldExpand = aside.getBoundingClientRect().top <= topOffset + 1;
-        if (shouldExpand === expanded) {
-            return;
-        }
-        setExpanded(shouldExpand);
-    }
-
-    function setExpanded(nextExpanded: boolean): void {
-        expanded = nextExpanded;
-        section.classList.toggle('rounded-none', nextExpanded);
-        section.classList.toggle('border-s-0', nextExpanded);
-        section.classList.toggle('border-e-0', nextExpanded);
-    }
-
-    window.addEventListener('scroll', update, { passive: true });
-    window.addEventListener('resize', () => {
-        desktopTopOffset = undefined;
-        update();
-    });
-    update();
-}
-
-function getConsoleNavBottom(): number {
-    const nav = document.querySelector<HTMLElement>(
-        '[data-component="ConsoleNav"]'
-    );
-    if (nav === null) {
-        return 0;
-    }
-
-    return Math.max(0, nav.getBoundingClientRect().bottom);
 }
