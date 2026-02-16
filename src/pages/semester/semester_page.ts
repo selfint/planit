@@ -456,7 +456,7 @@ function renderCurrentSemesterCourses(
     container.replaceChildren();
     const row = document.createElement('div');
     row.className =
-        'mx-2 flex min-h-0 snap-x snap-mandatory gap-2 lg:mx-0 lg:snap-none lg:flex-col lg:gap-2';
+        'flex min-h-0 snap-x snap-mandatory gap-2 p-2 lg:snap-none lg:flex-col lg:p-0';
     container.append(row);
 
     if (courses.length === 0) {
@@ -490,7 +490,7 @@ function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
 
         const row = document.createElement('div');
         row.className =
-            'mx-2 flex min-w-0 snap-x snap-mandatory gap-2 md:mx-0 md:grid md:grid-cols-2 xl:grid-cols-3';
+            'flex min-w-0 snap-x snap-mandatory gap-2 p-2 md:grid md:grid-cols-2 md:p-0 xl:grid-cols-3';
 
         if (group.courses.length === 0) {
             const empty = document.createElement('p');
