@@ -19,13 +19,40 @@ by the router when no page factory matches the normalized pathname.
 
 ## Unit Tests
 
-- `renders a root element`: calls `NotFoundPage()` and asserts the returned
-  value is an `HTMLElement`.
-- `renders supplied route path`: calls `NotFoundPage('/does-not-exist')` and
-  asserts the `data-slot="path"` node contains the provided route string.
+### `renders a root element`
+
+WHAT: Verifies the page factory returns a valid DOM root.
+WHY: Prevents regressions where template cloning fails and route fallback cannot render.
+HOW: Calls `NotFoundPage()` directly and checks the returned type.
+
+```python
+page = NotFoundPage()
+assert isinstance(page, HTMLElement)
+```
+
+### `renders supplied route path`
+
+WHAT: Verifies the unknown path is echoed in the page slot.
+WHY: The user should see which route failed to resolve.
+HOW: Passes a custom pathname and asserts `data-slot="path"` contains that exact value.
+
+```python
+page = NotFoundPage('/does-not-exist')
+path_text = page.query('[data-slot="path"]').text
+assert path_text == '/does-not-exist'
+```
 
 ## Integration Tests
 
-- `renders not-found content for unknown route`: navigates to a missing route,
-  then asserts fallback heading visibility, echoed path in `data-slot="path"`,
-  and presence of the `/` return link.
+### `renders not-found content for unknown route`
+
+WHAT: Verifies full fallback behavior on an invalid browser route.
+WHY: Ensures router failures degrade to a usable not-found page with recovery path.
+HOW: Navigates to a missing URL, then checks heading text, echoed path slot, and home link visibility.
+
+```python
+page.goto('/missing-route')
+assert page.heading('העמוד לא נמצא').is_visible()
+assert page.locator('[data-slot="path"]').contains('/missing-route')
+assert page.locator('a[href="/"]').is_visible()
+```

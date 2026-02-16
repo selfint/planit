@@ -33,20 +33,75 @@ navigation and is rendered by the client-side router.
 
 ## Unit Tests
 
-- `renders a root element`: calls `CoursePage()` with mocked IndexedDB methods
-  and asserts the returned node is an `HTMLElement` with `data-page="course"`.
-- `shows not found when code query param is missing`: sets URL to `/course`,
-  awaits async render, then asserts not-found state is visible and message text
-  contains `נדרש פרמטר code`.
-- `renders fetched course and related course cards`: deep-links to
-  `/course?code=CS101`, mocks related course lookups and dependency graph data,
-  then asserts found state visibility, dependency grouping (`או` labels), card
-  counts per relation grid, and `initCourseSync` invocation.
+### `renders a root element`
+
+WHAT: Verifies the course page factory returns the expected root container.
+WHY: Guards against template wiring regressions that would break route rendering.
+HOW: Calls `CoursePage()` with base mocks and asserts `HTMLElement` + `data-page="course"`.
+
+```python
+mock_default_course_queries()
+page = CoursePage()
+assert isinstance(page, HTMLElement)
+assert page.attr('data-page') == 'course'
+```
+
+### `shows not found when code query param is missing`
+
+WHAT: Verifies validation state when `?code=` is absent.
+WHY: Prevents ambiguous UI when the route is opened without a required query parameter.
+HOW: Sets URL to `/course`, renders, flushes async work, then checks not-found state and guidance text.
+
+```python
+window.history.set('/course')
+page = CoursePage()
+flush_promises()
+assert visible('[data-state="not-found"]')
+assert 'נדרש פרמטר code' in text('[data-role="not-found-message"]')
+```
+
+### `renders fetched course and related course cards`
+
+WHAT: Verifies happy-path render with related-course sections.
+WHY: Ensures dependency, dependant, adjacent, and exclusive groups remain accurate.
+HOW: Deep-links to `CS101`, mocks course graph and course pages, then asserts found state, relation counts, `או` labels, and sync init call.
+
+```python
+window.history.set('/course?code=CS101')
+mock_course_graph_for_cs101()
+page = CoursePage()
+flush_promises()
+assert text('[data-role="course-name"]') == 'Intro to CS'
+assert visible('[data-state="found"]')
+assert count('[data-role="dependencies-grid"] section') == 2
+assert count('[data-role="dependants-grid"] [data-component="CourseCard"]') == 2
+assert initCourseSync.called_once()
+```
 
 ## Integration Tests
 
-- `shows validation state when code is missing`: navigates to `/course` and
-  asserts `<main>` visibility plus validation copy for missing `code`.
-- `accepts query-based course deep link`: navigates to
-  `/course?code=104031`, asserts the page heading is visible, and verifies the
-  raw query string is not rendered in visible content.
+### `shows validation state when code is missing`
+
+WHAT: Verifies browser navigation to `/course` shows validation guidance.
+WHY: Confirms end-to-end behavior matches the unit validation branch.
+HOW: Navigates with Playwright, then asserts main region visibility and missing-code text.
+
+```python
+page.goto('/course')
+assert page.main().is_visible()
+assert page.text('לא נמצא קורס תואם').is_visible()
+assert page.text('נדרש פרמטר code בכתובת').is_visible()
+```
+
+### `accepts query-based course deep link`
+
+WHAT: Verifies deep links with `?code=` render route shell correctly.
+WHY: Users often enter the page from copied links, so query hydration must work.
+HOW: Navigates directly with query param, asserts heading visibility, and verifies raw query text is not leaked in UI.
+
+```python
+page.goto('/course?code=104031')
+assert page.main().is_visible()
+assert page.heading('פרטי קורס').is_visible()
+assert page.text('/course?code=104031').count() == 0
+```

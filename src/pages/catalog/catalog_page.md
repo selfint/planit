@@ -33,25 +33,89 @@ their courses from local IndexedDB data.
 
 ## Unit Tests
 
-- `renders waiting state when no active selection exists`: validates waiting
-  message by mocking `getActiveRequirementsSelection()` to `undefined`,
-  rendering `CatalogPage()`, and asserting `data-catalog-state` text.
-- `renders one page of three course cards and supports paging`: validates
-  median ordering and pager behavior by mocking requirement/course payloads,
-  asserting first-page link order and dimming, clicking `הבא`, and asserting
-  second-page links.
-- `hides rendered requirements while picker selection is changing`: validates
-  pending state by mutating picker input values, dispatching `change`, then
-  asserting requirement cards are hidden and pending copy is shown.
-- `renders three cards per page on narrow mobile width`: validates mobile
-  cards-per-page behavior by setting `window.innerWidth` to a narrow value and
-  asserting rendered card link count.
-- `renders nine cards per page on tablet and wider view`: validates
-  tablet/desktop cards-per-page behavior by setting `window.innerWidth` above
-  tablet threshold and asserting first-page card count.
+### `renders waiting state when no active selection exists`
+
+WHAT: Verifies the page renders a waiting prompt when no selection is stored.
+WHY: Avoids showing stale or incorrect requirement groups before the user picks a track.
+HOW: Mocks active selection as `undefined`, renders the page, then asserts the state text content.
+
+```python
+mock(getActiveRequirementsSelection).returns(None)
+page = CatalogPage()
+wait_for_ui()
+assert 'בחרו תכנית ומסלול' in page.query('[data-catalog-state]').text
+```
+
+### `renders one page of three course cards and supports paging`
+
+WHAT: Verifies card ordering, page size, and next-page navigation.
+WHY: Ensures requirement browsing stays predictable on mobile-sized rendering.
+HOW: Mocks selection + requirements + courses with medians, checks first-page order and dimming, clicks `הבא`, then checks second-page contents.
+
+```python
+set_viewport(width=620)
+mock_active_selection_and_requirement_data()
+mock_courses_with_medians_and_current_flags()
+page = CatalogPage(); wait_for_ui()
+assert first_page_links(page) == ['236363', '236501', '234123']
+assert link_for('236501').has_class('opacity-70')
+click_button('הבא'); wait_for_ui()
+assert current_page_links(page) == ['236343']
+```
+
+### `hides rendered requirements while picker selection is changing`
+
+WHAT: Verifies requirement cards disappear during transient picker state.
+WHY: Prevents flashing mismatched requirements while selection inputs are mid-update.
+HOW: Renders loaded page, clears program select, dispatches `change`, then checks cards are gone and pending copy is displayed.
+
+```python
+page = CatalogPage(); wait_for_ui()
+program_select = page.query('[data-degree-program]')
+program_select.value = ''
+program_select.dispatch('change')
+wait_for_ui()
+assert count('[data-component="CourseCard"]') == 0
+assert 'מעדכן בחירה' in page.query('[data-catalog-state]').text
+```
+
+### `renders three cards per page on narrow mobile width`
+
+WHAT: Verifies mobile page-size behavior for requirement cards.
+WHY: Keeps the layout readable and horizontal scroll manageable on narrow screens.
+HOW: Sets narrow viewport, renders with mocked data, and asserts first page contains exactly three course links.
+
+```python
+set_viewport(width=430)
+mock_selection_and_courses()
+page = CatalogPage(); wait_for_ui()
+assert count('a[href^="/course?code="]') == 3
+```
+
+### `renders nine cards per page on tablet and wider view`
+
+WHAT: Verifies larger viewport page-size behavior.
+WHY: Uses available width efficiently on tablet/desktop without unnecessary paging.
+HOW: Sets wide viewport, renders with 10 mock courses, and asserts first page shows nine links.
+
+```python
+set_viewport(width=900)
+mock_selection_and_ten_courses()
+page = CatalogPage(); wait_for_ui()
+assert count('a[href^="/course?code="]') == 9
+```
 
 ## Integration Tests
 
-- `renders catalog route and picker section`: navigates to `/catalog` and
-  asserts the route `<main>`, degree picker root (`[data-degree-catalog]`), and
-  requirements container (`[data-catalog-groups]`) are visible.
+### `renders catalog route and picker section`
+
+WHAT: Verifies core catalog route shell elements are visible in-browser.
+WHY: Confirms routing and primary interactive regions are mounted end-to-end.
+HOW: Navigates to `/catalog` and asserts visibility of `<main>`, degree picker select, and group container.
+
+```python
+page.goto('/catalog')
+assert page.main().is_visible()
+assert page.locator('[data-degree-catalog]').is_visible()
+assert page.locator('[data-catalog-groups]').is_visible()
+```
