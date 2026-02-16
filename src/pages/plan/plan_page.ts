@@ -50,6 +50,7 @@ type PlanRow = {
     kind: 'semester' | 'wishlist' | 'exemptions';
     courses: CourseRecord[];
     season?: string;
+    semesterNumber?: number;
 };
 
 type SemesterBlueprint = Omit<SemesterState, 'courses'>;
@@ -248,6 +249,13 @@ export function PlanPage(): HTMLElement {
             return;
         }
 
+        const semesterLink = target.closest<HTMLAnchorElement>(
+            '[data-semester-link]'
+        );
+        if (semesterLink !== null) {
+            return;
+        }
+
         const courseButton = target.closest<HTMLElement>(
             '[data-course-action]'
         );
@@ -378,12 +386,13 @@ function renderPlan(
 }
 
 function getPlanRows(state: PlanState): PlanRow[] {
-    const semesterRows: PlanRow[] = state.semesters.map((semester) => ({
+    const semesterRows: PlanRow[] = state.semesters.map((semester, index) => ({
         id: semester.id,
         title: semester.title,
         kind: 'semester',
         courses: semester.courses,
         season: semester.season,
+        semesterNumber: index + 1,
     }));
 
     return [
@@ -421,6 +430,8 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
     title.className = 'text-sm font-medium whitespace-nowrap';
     title.textContent = row.title;
 
+    const semesterLink = createSemesterLink(row);
+
     const metrics = document.createElement('div');
     metrics.className =
         'text-text-muted flex flex-wrap items-center gap-x-3 gap-y-1 text-xs';
@@ -443,7 +454,16 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
     cancelSelectionButton.dataset.cancelSelection = 'true';
     cancelSelectionButton.dataset.rowId = row.id;
 
-    headingRow.append(title, moveTarget, cancelSelectionButton);
+    if (semesterLink !== undefined) {
+        headingRow.append(
+            title,
+            semesterLink,
+            moveTarget,
+            cancelSelectionButton
+        );
+    } else {
+        headingRow.append(title, moveTarget, cancelSelectionButton);
+    }
     header.append(headingRow, metrics);
 
     const list = document.createElement('div');
@@ -498,6 +518,21 @@ function createMetricChip(label: string, value: string): HTMLElement {
     chip.className = 'text-text-muted rounded-xl px-1 py-1';
     chip.textContent = `${label}: ${value}`;
     return chip;
+}
+
+function createSemesterLink(row: PlanRow): HTMLAnchorElement | undefined {
+    if (row.kind !== 'semester' || row.semesterNumber === undefined) {
+        return undefined;
+    }
+
+    const link = document.createElement('a');
+    link.href = `/semester?number=${String(row.semesterNumber)}`;
+    link.className =
+        'border-border/60 bg-surface-1/70 text-text-muted hover:border-accent/50 hover:text-text focus-visible:ring-accent/60 touch-manipulation rounded-xl border px-2 py-1 text-xs transition duration-200 ease-out focus-visible:ring-2';
+    link.textContent = 'פתיחה';
+    link.dataset.semesterLink = 'true';
+    link.dataset.semesterNumber = String(row.semesterNumber);
+    return link;
 }
 
 function renderRowMetrics(container: HTMLElement, row: PlanRow): void {

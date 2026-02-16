@@ -90,6 +90,19 @@ describe('plan page', () => {
             page.querySelector('[data-plan-row][data-row-id="exemptions"]')
                 ?.textContent
         ).toContain('פטורים');
+
+        const semesterLinks = Array.from(
+            page.querySelectorAll<HTMLAnchorElement>('[data-semester-link]')
+        );
+        expect(semesterLinks).toHaveLength(6);
+        expect(semesterLinks.map((link) => link.getAttribute('href'))).toEqual([
+            '/semester?number=1',
+            '/semester?number=2',
+            '/semester?number=3',
+            '/semester?number=4',
+            '/semester?number=5',
+            '/semester?number=6',
+        ]);
     });
 
     it('shows row move controls and clears selection with row cancel', async () => {
