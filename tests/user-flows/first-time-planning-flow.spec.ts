@@ -1,4 +1,5 @@
 import { type Page, expect, test } from '@playwright/test';
+import { installDemoCursor, isDemoModeEnabled } from '../helpers/demoCursor';
 
 const HARD_CODED_COURSE = '03240033';
 
@@ -6,6 +7,10 @@ test.describe('first-time planning flow', () => {
     test('completes landing to semester journey with hardcoded course', async ({
         page,
     }) => {
+        if (isDemoModeEnabled()) {
+            await installDemoCursor(page);
+        }
+
         await page.goto('');
         await expect(
             page.locator('[data-component="LandingHero"]')

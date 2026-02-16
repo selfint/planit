@@ -12,3 +12,10 @@ Verifies the first-time guided journey for a new user:
 
 This flow validates the intended onboarding progression and confirms persisted
 wishlist-to-plan behavior across routes.
+
+## demo recording
+
+- Run `pnpm integtest:demo` to record a slower demo video with a large visible
+  cursor and click-expand animation.
+- Demo mode is enabled via `PW_DEMO=on` and sets single-worker execution,
+  `slowMo`, `video=on`, and `trace=on` for readability.

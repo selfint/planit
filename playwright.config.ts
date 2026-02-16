@@ -8,17 +8,32 @@ const videoMode = (process.env.PW_VIDEO ?? 'retain-on-failure') as
     | 'on'
     | 'retain-on-failure'
     | 'on-first-retry';
+const demoMode = process.env.PW_DEMO === 'on';
+const slowMoMs = Number.parseInt(
+    process.env.PW_SLOWMO ?? (demoMode ? '220' : '0'),
+    10
+);
+const traceMode = (process.env.PW_TRACE ??
+    (demoMode ? 'on' : 'retain-on-failure')) as
+    | 'off'
+    | 'on'
+    | 'retain-on-failure'
+    | 'on-first-retry';
 
 export default defineConfig({
     testDir: '.',
     testMatch: ['tests/**/*.spec.ts', 'src/pages/**/*.spec.ts'],
     testIgnore: ['**/unit/**', '**/node_modules/**', '**/.*/**'],
     outputDir: 'test-results',
+    workers: demoMode ? 1 : undefined,
     use: {
         baseURL,
-        video: videoMode,
-        trace: 'retain-on-failure',
+        video: demoMode ? 'on' : videoMode,
+        trace: traceMode,
         screenshot: 'only-on-failure',
+        launchOptions: {
+            slowMo: Number.isNaN(slowMoMs) ? 0 : Math.max(0, slowMoMs),
+        },
     },
     projects: [
         {
