@@ -347,7 +347,7 @@ async function refreshWishlistUi(
 ): Promise<void> {
     if (code === undefined) {
         elements.wishlistAdd.disabled = true;
-        if (elements.wishlistStatus.textContent?.trim().length === 0) {
+        if (elements.wishlistStatus.textContent.trim().length === 0) {
             elements.wishlistStatus.textContent =
                 'אי אפשר להוסיף לרשימת המשאלות בלי קוד קורס.';
         }
@@ -362,7 +362,7 @@ async function refreshWishlistUi(
         return;
     }
 
-    if (elements.wishlistStatus.textContent?.trim().length === 0) {
+    if (elements.wishlistStatus.textContent.trim().length === 0) {
         elements.wishlistStatus.textContent =
             'אפשר להוסיף את הקורס לרשימת המשאלות.';
     }

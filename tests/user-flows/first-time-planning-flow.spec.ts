@@ -1,4 +1,4 @@
-import { expect, type Page, test } from '@playwright/test';
+import { type Page, expect, test } from '@playwright/test';
 
 const HARD_CODED_COURSE = '03240033';
 
@@ -7,9 +7,14 @@ test.describe('first-time planning flow', () => {
         page,
     }) => {
         await page.goto('');
+        await expect(
+            page.locator('[data-component="LandingHero"]')
+        ).toBeVisible();
 
         await page
-            .locator('[data-component="LandingHero"] [data-action="primary"]')
+            .locator(
+                '[data-component="LandingHero"] a[data-action="primary"][href="/catalog"]'
+            )
             .click();
         await expect(page).toHaveURL(/\/catalog$/);
         await expect(page.locator('[data-page="catalog"]')).toBeVisible();
