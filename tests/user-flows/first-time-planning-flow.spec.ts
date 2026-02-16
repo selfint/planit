@@ -1,5 +1,9 @@
 import { type Page, expect, test } from '@playwright/test';
-import { installDemoCursor, isDemoModeEnabled } from '../helpers/demoCursor';
+import {
+    installDemoCursor,
+    isDemoModeEnabled,
+    primeDemoCursor,
+} from '../helpers/demoCursor';
 
 const HARD_CODED_COURSE = '03240033';
 const DEMO_STEP_PAUSE_MS = Number.parseInt(
@@ -16,6 +20,9 @@ test.describe('first-time planning flow', () => {
         }
 
         await page.goto('');
+        if (isDemoModeEnabled()) {
+            await primeDemoCursor(page);
+        }
         await demoPause(page);
         await expect(
             page.locator('[data-component="LandingHero"]')
@@ -41,7 +48,7 @@ test.describe('first-time planning flow', () => {
 
         await expect(page.locator('[data-catalog-groups]')).toBeVisible();
 
-        await page.goto(`course?code=${HARD_CODED_COURSE}`);
+        await openCourseFromCatalog(page, HARD_CODED_COURSE);
         await demoPause(page);
         await expect(page).toHaveURL(
             new RegExp(`/course\\?code=${HARD_CODED_COURSE}$`)
@@ -145,6 +152,37 @@ async function selectPathIfRequired(page: Page): Promise<void> {
     }
 
     await selectFirstNonEmptyOption(page, '[data-degree-path]');
+}
+
+async function openCourseFromCatalog(
+    page: Page,
+    courseCode: string
+): Promise<void> {
+    const encodedCode = encodeURIComponent(courseCode);
+    const courseLink = page.locator(`a[href="/course?code=${encodedCode}"]`);
+
+    for (let iteration = 0; iteration < 90; iteration += 1) {
+        const visibleCount = await courseLink.count();
+        if (visibleCount > 0) {
+            const firstMatch = courseLink.first();
+            await firstMatch.scrollIntoViewIfNeeded();
+            await firstMatch.click();
+            return;
+        }
+
+        const nextButton = page
+            .locator('button:has-text("הבא"):not(:disabled)')
+            .first();
+
+        if ((await nextButton.count()) === 0) {
+            break;
+        }
+
+        await nextButton.click();
+        await demoPause(page);
+    }
+
+    throw new Error(`Could not find course ${courseCode} in catalog groups.`);
 }
 
 async function demoPause(page: Page): Promise<void> {
