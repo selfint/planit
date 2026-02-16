@@ -154,7 +154,7 @@ sequenceDiagram
         alt new app version available
         SW-->>PWA: onNeedRefresh()
         PWA-->>UI: dispatch planit:pwa-update event
-        UI->>User: show in-app update banner
+        UI->>User: show in-app update toast
         User->>UI: click "update"
         UI->>SW: updateSW(true)
     else no update
@@ -165,7 +165,7 @@ sequenceDiagram
 Notes:
 
 - Workbox is configured with `clientsClaim` and `skipWaiting` for fast activation.
-- Update UX is event-driven via `planit:pwa-update` and is applied only after explicit user confirmation from the banner.
+- Update UX is event-driven via `planit:pwa-update` and is applied only after explicit user confirmation from the toast.
 
 ## 4) User state management (local-first)
 

@@ -1,4 +1,5 @@
-import { PWA_UPDATE_EVENT, type UpdateSW } from '$lib/pwa';
+import { PWA_UPDATE_EVENT } from '$lib/pwaEvents';
+import type { UpdateSW } from '$lib/pwaEvents';
 
 import templateHtml from './PwaUpdateBanner.html?raw';
 
@@ -19,6 +20,9 @@ export function PwaUpdateBanner(): HTMLElement {
         throw new Error('PwaUpdateBanner template root not found');
     }
 
+    const toast = root.querySelector<HTMLElement>(
+        '[data-component="PwaUpdateToast"]'
+    );
     const message = root.querySelector<HTMLElement>('[data-role="message"]');
     const dismissButton = root.querySelector<HTMLButtonElement>(
         '[data-role="dismiss"]'
@@ -27,7 +31,12 @@ export function PwaUpdateBanner(): HTMLElement {
         '[data-role="apply"]'
     );
 
-    if (message === null || dismissButton === null || applyButton === null) {
+    if (
+        toast === null ||
+        message === null ||
+        dismissButton === null ||
+        applyButton === null
+    ) {
         throw new Error('PwaUpdateBanner required elements not found');
     }
 
@@ -43,11 +52,11 @@ export function PwaUpdateBanner(): HTMLElement {
         message.textContent = 'ניתן לעדכן עכשיו כדי לטעון את הגרסה החדשה.';
         applyButton.disabled = false;
         dismissButton.disabled = false;
-        root.classList.remove('hidden');
+        toast.classList.remove('hidden');
     });
 
     dismissButton.addEventListener('click', () => {
-        root.classList.add('hidden');
+        toast.classList.add('hidden');
     });
 
     applyButton.addEventListener('click', () => {

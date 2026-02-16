@@ -1,15 +1,7 @@
 /* @vitest-environment jsdom */
 import { describe, expect, it, vi } from 'vitest';
 
-const { registerSW } = vi.hoisted(() => ({
-    registerSW: vi.fn(),
-}));
-
-vi.mock('virtual:pwa-register', () => ({
-    registerSW,
-}));
-
-import { PWA_UPDATE_EVENT } from '$lib/pwa';
+import { PWA_UPDATE_EVENT } from '$lib/pwaEvents';
 
 import { PwaUpdateBanner } from './PwaUpdateBanner';
 
@@ -18,7 +10,14 @@ describe('PwaUpdateBanner', () => {
         const banner = PwaUpdateBanner();
         document.body.append(banner);
 
-        expect(banner.classList.contains('hidden')).toBe(true);
+        const toast = banner.querySelector<HTMLElement>(
+            '[data-component="PwaUpdateToast"]'
+        );
+        if (toast === null) {
+            throw new Error('Missing toast element');
+        }
+
+        expect(toast.classList.contains('hidden')).toBe(true);
 
         const updateSW = vi.fn<() => Promise<void>>(
             (): Promise<void> => Promise.resolve()
@@ -29,7 +28,7 @@ describe('PwaUpdateBanner', () => {
             })
         );
 
-        expect(banner.classList.contains('hidden')).toBe(false);
+        expect(toast.classList.contains('hidden')).toBe(false);
     });
 
     it('applies update only when user clicks apply', async () => {
