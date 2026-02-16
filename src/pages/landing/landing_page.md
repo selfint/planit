@@ -1,30 +1,68 @@
-# /landing
+# Landing Page
 
-High-level design for the landing page. This is a client-side route in the single-page application.
+## Overview
 
-## Purpose
+The landing page is the `/` route. It introduces Planit and routes users into
+core planner flows.
 
-Introduce Planit, highlight the value quickly, and guide users into the planner experience.
+## Page Contents
 
-## Core UI
+- `LandingNav` header component with desktop links and mobile menu toggle.
+- `LandingHero` section with headline, summary, and primary/secondary CTAs.
+- Hero video placeholder block with skeleton state.
+- Feature grid composed from five `LandingFeatureCard` instances.
+- Final CTA section linking to `/plan` and `/catalog`.
 
-- Hero section with product name, short value statement, and primary CTA (start planning).
-- Secondary CTA (view demo or explore features).
-- Feature overview section with video previews and short text descriptions.
-- Trust or context strip (offline-first, sync, Technion degree focus).
+## Data Flow
 
-## Key Behaviors
+1. `LandingPage()` clones the template and mounts `LandingNav` and `LandingHero`.
+2. Feature hosts (`data-landing-feature-card`) are replaced with
+   `LandingFeatureCard(...)` instances using local static feature data.
+3. Media containers are marked with `data-video-ready="false"` for future lazy
+   media loading behavior.
 
-- Hero CTAs route into the main app flow without full reload.
-- Video previews are lightweight, poster-first, and play on user action.
-- Feature cards link to the relevant routes (/plan, /catalog, /search, /semester, /course).
+## Unit Tests
 
-## Data
+### `renders mounted page regions`
 
-- Static content; no IndexedDB dependency.
-- Video preview assets loaded lazily to keep the initial paint fast.
+WHAT: Verifies page composition mounts navigation and hero subcomponents.
+WHY: Protects route-shell rendering from breakage when composition code changes.
+HOW: Mocks `LandingNav` and `LandingHero`, renders `LandingPage()`, then checks component markers.
 
-## Edge Cases
+```python
+mock(LandingNav).returns(marker('LandingNav'))
+mock(LandingHero).returns(marker('LandingHero'))
+page = LandingPage()
+assert page.query('[data-component="LandingNav"]') is not None
+assert page.query('[data-component="LandingHero"]') is not None
+```
 
-- If video previews fail to load, show a poster image and keep text visible.
-- On small screens, features stack vertically with the video above text.
+### `replaces feature hosts with five feature cards`
+
+WHAT: Verifies all feature placeholders are replaced by real cards.
+WHY: Ensures CTA routing coverage across all promoted landing flows.
+HOW: Mocks `LandingFeatureCard` to expose `href`, renders page, then asserts five cards and expected link targets.
+
+```python
+mock(LandingFeatureCard).returns(card_with_href_metadata)
+page = LandingPage()
+cards = page.query_all('[data-component="LandingFeatureCard"]')
+assert len(cards) == 5
+assert hrefs(cards) == ['/plan', '/catalog', '/search', '/semester', '/course']
+```
+
+## Integration Tests
+
+### `renders hero and navigation actions`
+
+WHAT: Verifies the landing route shows core top-of-page content and CTAs.
+WHY: Confirms users can immediately navigate into main planner flows from `/`.
+HOW: Navigates to root, asserts nav/hero containers are visible, then checks visible CTA anchors.
+
+```python
+page.goto('/')
+assert page.locator('[data-component="LandingNav"]').is_visible()
+assert page.locator('[data-component="LandingHero"]').is_visible()
+assert page.locator('a[href="/plan"]').first().is_visible()
+assert page.locator('a[href="/catalog"]').first().is_visible()
+```

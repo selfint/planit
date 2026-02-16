@@ -3,14 +3,12 @@
 ## Overview
 
 LandingHero renders the landing page hero section with the primary message,
-call-to-action buttons, status highlights, and a preview card placeholder.
+call-to-action buttons, and summary copy.
 
 ## Template Structure
 
 - Badge, title, summary, and CTA buttons.
-- Three highlight tiles for offline status, sync, and focus.
-- Preview media block with shimmer placeholder and a status chip.
-- Two supporting metric cards.
+- Primary CTA link to `/plan` and secondary CTA link to `/semester`.
 
 ## Data Flow
 
@@ -22,4 +20,6 @@ call-to-action buttons, status highlights, and a preview card placeholder.
 
 ## Notes
 
-- The hero preview uses a shimmer placeholder until real assets are available.
+- The component is template-only and currently has no runtime event wiring.
+- This component is route-scoped to the landing page and lives under
+  `src/pages/landing/components`.

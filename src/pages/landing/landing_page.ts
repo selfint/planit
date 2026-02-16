@@ -1,7 +1,6 @@
 import { LandingFeatureCard } from './components/LandingFeatureCard';
 import { LandingHero } from './components/LandingHero';
 import { LandingNav } from './components/LandingNav';
-import logoUrl from '$assets/logo.webp';
 import templateHtml from './landing_page.html?raw';
 
 export function LandingPage(): HTMLElement {
@@ -97,15 +96,6 @@ export function LandingPage(): HTMLElement {
             mediaAlt: data.mediaAlt,
         });
         host.replaceWith(card);
-    });
-
-    const placeholderImages = root.querySelectorAll<HTMLImageElement>(
-        '[data-placeholder="logo"]'
-    );
-    placeholderImages.forEach((image) => {
-        image.src = logoUrl;
-        image.loading = 'lazy';
-        image.decoding = 'async';
     });
 
     const mediaContainers = root.querySelectorAll<HTMLElement>(

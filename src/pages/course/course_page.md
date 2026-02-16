@@ -33,12 +33,75 @@ navigation and is rendered by the client-side router.
 
 ## Unit Tests
 
-- Renders the page root element with the expected page marker.
-- Shows query validation not-found state when `code` is missing.
-- Renders loaded course details and uses `CourseCard` for related courses.
+### `renders a root element`
+
+WHAT: Verifies the course page factory returns the expected root container.
+WHY: Guards against template wiring regressions that would break route rendering.
+HOW: Calls `CoursePage()` with base mocks and asserts `HTMLElement` + `data-page="course"`.
+
+```python
+mock_default_course_queries()
+page = CoursePage()
+assert isinstance(page, HTMLElement)
+assert page.attr('data-page') == 'course'
+```
+
+### `shows not found when code query param is missing`
+
+WHAT: Verifies validation state when `?code=` is absent.
+WHY: Prevents ambiguous UI when the route is opened without a required query parameter.
+HOW: Sets URL to `/course`, renders, flushes async work, then checks not-found state and guidance text.
+
+```python
+window.history.set('/course')
+page = CoursePage()
+flush_promises()
+assert visible('[data-state="not-found"]')
+assert 'נדרש פרמטר code' in text('[data-role="not-found-message"]')
+```
+
+### `renders fetched course and related course cards`
+
+WHAT: Verifies happy-path render with related-course sections.
+WHY: Ensures dependency, dependant, adjacent, and exclusive groups remain accurate.
+HOW: Deep-links to `CS101`, mocks course graph and course pages, then asserts found state, relation counts, `או` labels, and sync init call.
+
+```python
+window.history.set('/course?code=CS101')
+mock_course_graph_for_cs101()
+page = CoursePage()
+flush_promises()
+assert text('[data-role="course-name"]') == 'Intro to CS'
+assert visible('[data-state="found"]')
+assert count('[data-role="dependencies-grid"] section') == 2
+assert count('[data-role="dependants-grid"] [data-component="CourseCard"]') == 2
+assert initCourseSync.called_once()
+```
 
 ## Integration Tests
 
-- Navigating to `/course` shows validation guidance for missing `code`.
-- Navigating to `/course?code=...` renders the page without exposing the raw
-  route query string in the header.
+### `shows validation state when code is missing`
+
+WHAT: Verifies browser navigation to `/course` shows validation guidance.
+WHY: Confirms end-to-end behavior matches the unit validation branch.
+HOW: Navigates with Playwright, then asserts main region visibility and missing-code text.
+
+```python
+page.goto('/course')
+assert page.main().is_visible()
+assert page.text('לא נמצא קורס תואם').is_visible()
+assert page.text('נדרש פרמטר code בכתובת').is_visible()
+```
+
+### `accepts query-based course deep link`
+
+WHAT: Verifies deep links with `?code=` render route shell correctly.
+WHY: Users often enter the page from copied links, so query hydration must work.
+HOW: Navigates directly with query param, asserts heading visibility, and verifies raw query text is not leaked in UI.
+
+```python
+page.goto('/course?code=104031')
+assert page.main().is_visible()
+assert page.heading('פרטי קורס').is_visible()
+assert page.text('/course?code=104031').count() == 0
+```
