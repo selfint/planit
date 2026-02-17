@@ -26,7 +26,7 @@ export default defineConfig(({ command }) => ({
     },
     resolve: {
         alias: {
-            // Keep aliases in sync with .storybook/main.ts (manual).
+            // Keep aliases in sync with vitest.config.ts and .storybook/main.ts (manual).
             $lib: resolve('src/lib'),
             $components: resolve('src/components'),
             $assets: resolve('src/assets'),
