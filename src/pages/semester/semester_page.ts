@@ -582,8 +582,7 @@ function handleCourseLinkClick(
 
     const selected = state.selected;
     const isSameSelection =
-        selected !== undefined &&
-        selected.code === courseCode &&
+        selected?.code === courseCode &&
         selected.element === courseLink;
     if (isSameSelection) {
         navigateToCoursePage(courseCode);
@@ -643,7 +642,7 @@ async function addSelectedCourseToCurrentSemester(
     state: SemesterPageState
 ): Promise<void> {
     const selected = state.selected;
-    if (selected === undefined || selected.sourceKind !== 'row') {
+    if (selected?.sourceKind !== 'row') {
         return;
     }
 
