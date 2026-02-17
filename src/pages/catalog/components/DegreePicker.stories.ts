@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import { state } from '$lib/stateManagement';
+import { type StateProvider, state } from '$lib/stateManagement';
 import { createStoryStateProvider } from '$lib/test-utils/storyStateProvider';
 
 import { DegreePicker } from './DegreePicker';
@@ -37,7 +37,7 @@ export const Dark: Story = {
     },
 };
 
-function createDegreePickerStoryProvider() {
+function createDegreePickerStoryProvider(): StateProvider {
     return createStoryStateProvider({
         courses: {
             query: () => Promise.resolve({ courses: [], total: 0 }),
