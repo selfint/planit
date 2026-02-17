@@ -1,100 +1,90 @@
 import { type Locator, type Page, expect, test } from '@playwright/test';
-import {
-    installDemoCursor,
-    isDemoModeEnabled,
-    primeDemoCursor,
-} from '../helpers/demoCursor';
 
-const DEMO_STEP_PAUSE_MS = Number.parseInt(
-    process.env.PW_DEMO_STEP_PAUSE_MS ?? '700',
-    10
-);
-const DEFAULT_DEMO_COURSE_CODE = '03240033';
-const DEMO_COURSE_CODE =
-    process.env.PW_DEMO_COURSE_CODE?.trim() ?? DEFAULT_DEMO_COURSE_CODE;
-const DEMO_MAJOR_STEP_PAUSE_MULTIPLIER = Number.parseFloat(
-    process.env.PW_DEMO_MAJOR_STEP_PAUSE_MULTIPLIER ?? '1.6'
-);
+const DEFAULT_COURSE_CODE = '03240033';
+const COURSE_CODE =
+    process.env.PW_DEMO_COURSE_CODE?.trim() ?? DEFAULT_COURSE_CODE;
 
-test.describe('first-time planning flow', () => {
+test.describe('first-time-user-experience', () => {
     test('completes landing to semester journey with selected catalog course', async ({
         page,
     }) => {
-        if (isDemoModeEnabled()) {
-            await installDemoCursor(page);
-        }
+        test.setTimeout(120_000);
 
-        await page.goto('');
+        await page.goto('http://localhost:5173/planit/');
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(1200);
         await resetClientCache(page);
         await page.reload();
-        if (isDemoModeEnabled()) {
-            await primeDemoCursor(page);
-        }
-        await demoPause(page);
+        await page.waitForLoadState('networkidle');
+        await page.waitForTimeout(1200);
+        await installDemoCursor(page);
+        await page.waitForTimeout(1000);
         await expect(
             page.locator('[data-component="LandingHero"]')
         ).toBeVisible();
+        await page.waitForTimeout(1200);
 
-        await demoClick(
-            page,
-            page.getByRole('link', { name: 'קטלוגים' }).first()
-        );
-        await demoPause(page, 'major');
+        const catalogsLink = page.getByRole('link', { name: 'קטלוגים' }).first();
+        await humanMove(page, catalogsLink);
+        await humanClick(page, catalogsLink);
+        await page.waitForTimeout(1000);
         await expect(page).toHaveURL(/\/catalog$/);
         await expect(page.locator('[data-page="catalog"]')).toBeVisible();
+        await page.waitForTimeout(1700);
 
         await selectFirstNonEmptyOption(page, '[data-degree-catalog]');
-        await demoPause(page);
+        await page.waitForTimeout(900);
         await selectFirstNonEmptyOption(page, '[data-degree-faculty]');
-        await demoPause(page);
+        await page.waitForTimeout(900);
         await selectFirstNonEmptyOption(page, '[data-degree-program]');
-        await demoPause(page);
+        await page.waitForTimeout(900);
         await selectPathIfRequired(page);
-        await demoPause(page);
+        await page.waitForTimeout(1200);
 
         await expect(page.locator('[data-catalog-groups]')).toBeVisible();
+        await page.waitForTimeout(1700);
 
-        const selectedCourseCode = await openCourseFromCatalog(
-            page,
-            DEMO_COURSE_CODE
-        );
-        await demoPause(page, 'major');
+        const selectedCourseCode = await openCourseFromCatalog(page, COURSE_CODE);
+        await page.waitForTimeout(1000);
         await expect(page).toHaveURL(
             new RegExp(`/course\\?code=${selectedCourseCode}$`)
         );
         await expect(page.locator('[data-page="course"]')).toBeVisible();
+        await page.waitForTimeout(1500);
 
         const wishlistAdd = page.locator('[data-role="wishlist-add"]');
         if ((await wishlistAdd.count()) > 0) {
-            await demoClick(page, wishlistAdd);
-            await demoPause(page);
+            await humanClick(page, wishlistAdd);
+            await page.waitForTimeout(900);
             await expect(
                 page.locator('[data-role="wishlist-status"]')
             ).toContainText(/נוסף|כבר/);
+            await page.waitForTimeout(1200);
         }
 
-        await demoClick(
+        await humanClick(
             page,
             page.locator('[data-page="course"] a[href="/plan"]').first()
         );
-        await demoPause(page, 'major');
+        await page.waitForTimeout(1000);
         await expect(page).toHaveURL(/\/plan$/);
         await expect(page.locator('[data-page="plan"]')).toBeVisible();
+        await page.waitForTimeout(1800);
 
         const wishlistCourse = page.locator(
             `[data-course-action][data-row-id="wishlist"][data-course-code="${selectedCourseCode}"]`
         );
         const wishlistCount = await wishlistCourse.count();
         if (wishlistCount > 0) {
-            await demoClick(page, wishlistCourse);
-            await demoPause(page);
+            await humanClick(page, wishlistCourse);
+            await page.waitForTimeout(900);
         }
 
         const firstSemesterRow = page
             .locator('[data-plan-row][data-row-kind="semester"]')
             .first();
-        await demoClick(page, firstSemesterRow.locator('header'));
-        await demoPause(page);
+        await humanClick(page, firstSemesterRow.locator('header'));
+        await page.waitForTimeout(1000);
 
         if (wishlistCount > 0) {
             await expect(
@@ -103,22 +93,28 @@ test.describe('first-time planning flow', () => {
                 )
             ).toHaveCount(1);
             await expect(wishlistCourse).toHaveCount(0);
+            await page.waitForTimeout(1500);
         }
 
         if (!page.url().includes('/semester?number=1')) {
-            await demoClick(
+            await humanClick(
                 page,
                 firstSemesterRow.locator('[data-semester-link]').first()
             );
-            await demoPause(page, 'major');
+            await page.waitForTimeout(1000);
         }
         await expect(page).toHaveURL(/\/semester\?number=1$/);
+        await expect(
+            page.locator('[data-role="current-semester-title"]')
+        ).toContainText('סמסטר');
+        await page.waitForTimeout(1800);
         if (wishlistCount > 0) {
             await expect(
                 page.locator(
                     `[data-role="current-semester-courses"] [data-course-code="${selectedCourseCode}"]`
                 )
             ).toHaveCount(1);
+            await page.waitForTimeout(1200);
         }
     });
 });
@@ -130,6 +126,8 @@ async function selectFirstNonEmptyOption(
     const select = page.locator(selector);
     await expect(select).toBeVisible();
     await expect(select).toBeEnabled();
+    await humanClick(page, select);
+    await page.waitForTimeout(300);
 
     await expect
         .poll(async () => {
@@ -187,7 +185,7 @@ async function openCourseFromCatalog(
             .locator(`a[href*="/course?code=${encodedPreferredCode}"]`)
             .first();
         await expect(preferredLink).toBeVisible({ timeout: 15_000 });
-        await demoClick(page, preferredLink);
+        await humanClick(page, preferredLink);
         return preferredCourseCode;
     }
 
@@ -199,7 +197,7 @@ async function openCourseFromCatalog(
         throw new Error('Could not find any course in catalog groups.');
     }
 
-    await demoClick(page, firstCourseLink);
+    await humanClick(page, firstCourseLink);
 
     const parsedCode = extractCourseCodeFromHref(firstCourseHref);
     if (parsedCode === null) {
@@ -231,53 +229,67 @@ function extractCourseCodeFromHref(href: string): string | null {
     }
 }
 
-async function demoPause(
-    page: Page,
-    cadence: 'minor' | 'major' = 'minor'
-): Promise<void> {
-    if (!isDemoModeEnabled()) {
-        return;
-    }
-
-    const normalizedMajorMultiplier = Number.isNaN(
-        DEMO_MAJOR_STEP_PAUSE_MULTIPLIER
-    )
-        ? 1.6
-        : Math.max(1, DEMO_MAJOR_STEP_PAUSE_MULTIPLIER);
-    const cadenceMultiplier =
-        cadence === 'major' ? normalizedMajorMultiplier : 1;
-
-    await page.waitForTimeout(
-        Math.round(
-            (Number.isNaN(DEMO_STEP_PAUSE_MS)
-                ? 700
-                : Math.max(100, DEMO_STEP_PAUSE_MS)) * cadenceMultiplier
-        )
-    );
-}
-
-async function demoClick(page: Page, locator: Locator): Promise<void> {
+async function humanClick(page: Page, locator: Locator): Promise<void> {
     await expect(locator).toBeVisible();
+    await locator.waitFor({ state: 'visible' });
     await locator.scrollIntoViewIfNeeded();
-
-    if (isDemoModeEnabled()) {
-        await moveMouseToLocatorCenter(page, locator);
+    const box = await locator.boundingBox();
+    if (box === null) {
+        throw new Error('Element not visible');
     }
 
-    await locator.click();
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+
+    await page.mouse.move(x, y, { steps: 40 });
+    await page.waitForTimeout(250);
+
+    await page.mouse.down();
+    await page.waitForTimeout(80);
+    await page.mouse.up();
 }
 
-async function moveMouseToLocatorCenter(
-    page: Page,
-    locator: Locator
-): Promise<void> {
+async function humanMove(page: Page, locator: Locator): Promise<void> {
     const box = await locator.boundingBox();
     if (box === null) {
         return;
     }
 
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, {
-        steps: 18,
+    const x = box.x + box.width / 2;
+    const y = box.y + box.height / 2;
+
+    await page.mouse.move(x, y, { steps: 35 });
+    await page.waitForTimeout(200);
+}
+
+async function installDemoCursor(page: Page): Promise<void> {
+    await page.addStyleTag({
+        content: `
+    * { cursor: none !important; }
+
+    .demo-cursor {
+      position: fixed;
+      width: 20px;
+      height: 20px;
+      border: 2px solid black;
+      border-radius: 50%;
+      background: white;
+      pointer-events: none;
+      z-index: 999999;
+      transform: translate(-50%, -50%);
+    }
+  `,
+    });
+
+    await page.evaluate(() => {
+        const cursor = document.createElement('div');
+        cursor.className = 'demo-cursor';
+        document.body.appendChild(cursor);
+
+        document.addEventListener('mousemove', (e) => {
+            cursor.style.left = `${String(e.clientX)}px`;
+            cursor.style.top = `${String(e.clientY)}px`;
+        });
     });
 }
 

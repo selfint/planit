@@ -121,6 +121,7 @@ function setupLandingDemoVideo(root: HTMLElement): void {
     const skeletonLayer = root.querySelector<HTMLElement>(
         '[data-skeleton-layer]'
     );
+    const fallback = root.querySelector<HTMLElement>('[data-video-fallback]');
     if (placeholder === null || video === null || skeletonLayer === null) {
         return;
     }
@@ -135,11 +136,13 @@ function setupLandingDemoVideo(root: HTMLElement): void {
         resolvedVideo.classList.remove('opacity-0');
         resolvedPlaceholder.dataset.skeleton = 'false';
         resolvedSkeletonLayer.classList.add('hidden');
+        fallback?.classList.add('hidden');
     }
 
     function handleVideoFailure(): void {
         resolvedSkeletonLayer.classList.remove('skeleton-shimmer');
         resolvedSkeletonLayer.classList.add('bg-surface-2/70');
+        fallback?.classList.remove('hidden');
     }
 
     if (resolvedVideo.readyState >= 2) {

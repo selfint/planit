@@ -13,7 +13,6 @@ const targetWidth = Number.parseInt(
 );
 const targetCrf = Number.parseInt(process.env.PW_DEMO_PUBLISH_CRF ?? '30', 10);
 const audioBitrate = process.env.PW_DEMO_PUBLISH_AUDIO_BITRATE ?? '96k';
-const targetFps = Number.parseInt(process.env.PW_DEMO_PUBLISH_FPS ?? '60', 10);
 
 function collectVideoFiles(directory) {
     const entries = fs.readdirSync(directory, { withFileTypes: true });
@@ -96,15 +95,12 @@ function hasFfmpeg() {
 }
 
 function transcodeWithFfmpeg(inputPath, outputPath) {
-    const normalizedFps = Number.isNaN(targetFps)
-        ? 60
-        : Math.max(24, targetFps);
     const args = [
         '-y',
         '-i',
         inputPath,
         '-vf',
-        `scale=${targetWidth}:-2,fps=${normalizedFps}`,
+        `scale=${targetWidth}:-2`,
         '-c:v',
         'libvpx-vp9',
         '-b:v',

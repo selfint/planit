@@ -6,8 +6,9 @@ const DEMO_CURSOR_SCRIPT = String.raw`
     const CURSOR_ID = 'pw-demo-cursor';
     const RIPPLE_CLASS = 'pw-demo-cursor-ripple';
 
-    const cursorSize = 48;
+    const cursorSize = 40;
     const cursorHalf = cursorSize / 2;
+    const rippleSize = Math.round(cursorSize * 0.9);
 
     const mount = () => {
         if (document.getElementById(STYLE_ID) !== null) {
@@ -22,15 +23,15 @@ const DEMO_CURSOR_SCRIPT = String.raw`
         'width: '+String(cursorSize)+'px;',
         'height: '+String(cursorSize)+'px;',
         'border-radius: 9999px;',
-        'border: 4px solid rgba(255,255,255,1);',
-        'background: rgba(20,184,166,0.78);',
-        'box-shadow: 0 0 0 4px rgba(15,23,42,0.75), 0 0 0 10px rgba(45,212,191,0.28), 0 10px 28px rgba(15,23,42,0.55);',
+        'border: 3px solid rgba(255,255,255,0.94);',
+        'background: rgba(20,184,166,0.66);',
+        'box-shadow: 0 0 0 3px rgba(15,23,42,0.62), 0 0 0 8px rgba(45,212,191,0.2), 0 8px 20px rgba(15,23,42,0.46);',
         'pointer-events: none;',
         'z-index: 2147483647;',
         'left: 0;',
         'top: 0;',
-        'transform: translate(24px, 24px);',
-        'transition: transform 26ms linear;',
+        'transform: translate('+String(cursorHalf)+'px, '+String(cursorHalf)+'px);',
+        'transition: transform 22ms linear;',
         'backdrop-filter: saturate(115%);',
         '}',
         '#'+CURSOR_ID+'::after {',
@@ -38,29 +39,29 @@ const DEMO_CURSOR_SCRIPT = String.raw`
         'position: absolute;',
         'left: 50%;',
         'top: 50%;',
-        'width: 8px;',
-        'height: 8px;',
+        'width: 7px;',
+        'height: 7px;',
         'border-radius: 9999px;',
         'background: rgba(255,255,255,0.95);',
         'transform: translate(-50%, -50%);',
         '}',
         '.'+RIPPLE_CLASS+' {',
         'position: fixed;',
-        'width: '+String(cursorSize)+'px;',
-        'height: '+String(cursorSize)+'px;',
+        'width: '+String(rippleSize)+'px;',
+        'height: '+String(rippleSize)+'px;',
         'border-radius: 9999px;',
-        'border: 5px solid rgba(45,212,191,0.95);',
-        'background: rgba(45,212,191,0.35);',
+        'border: 4px solid rgba(45,212,191,0.82);',
+        'background: rgba(45,212,191,0.2);',
         'pointer-events: none;',
         'z-index: 2147483646;',
         'left: 0;',
         'top: 0;',
         'transform: translate(-50%, -50%) scale(0.9);',
-        'animation: pw-demo-cursor-click 620ms ease-out forwards;',
+        'animation: pw-demo-cursor-click 520ms ease-out forwards;',
         '}',
         '@keyframes pw-demo-cursor-click {',
-        '0% { opacity: 0.98; transform: translate(-50%, -50%) scale(0.9); }',
-        '100% { opacity: 0; transform: translate(-50%, -50%) scale(3.2); }',
+        '0% { opacity: 0.9; transform: translate(-50%, -50%) scale(0.86); }',
+        '100% { opacity: 0; transform: translate(-50%, -50%) scale(2.7); }',
         '}',
     ].join('');
         const styleHost = document.head ?? document.documentElement;
@@ -93,10 +94,7 @@ const DEMO_CURSOR_SCRIPT = String.raw`
         moveCursor(Math.max(cursorHalf + 12, window.innerWidth * 0.35), Math.max(cursorHalf + 12, window.innerHeight * 0.24));
 
         window.addEventListener('pointermove', onMove, { passive: true });
-        window.addEventListener('mousemove', onMove, { passive: true });
         window.addEventListener('pointerdown', onDown, { passive: true });
-        window.addEventListener('mousedown', onDown, { passive: true });
-        window.addEventListener('click', onDown, { passive: true });
     };
 
     if (document.readyState === 'loading') {
