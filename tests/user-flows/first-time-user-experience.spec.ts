@@ -1,8 +1,24 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
 import { type Locator, type Page, expect, test } from '@playwright/test';
 
 const DEFAULT_COURSE_CODE = '03240033';
 const COURSE_CODE =
     process.env.PW_DEMO_COURSE_CODE?.trim() ?? DEFAULT_COURSE_CODE;
+const FTUX_VIDEO_OUTPUT_PATH = path.join(
+    process.cwd(),
+    'src',
+    'assets',
+    'demos',
+    'first-time-user-experience.webm'
+);
+const DEMO_TIME_SCALE_RAW = Number.parseFloat(
+    process.env.PW_DEMO_TIME_SCALE ?? '1'
+);
+const DEMO_TIME_SCALE =
+    Number.isFinite(DEMO_TIME_SCALE_RAW) && DEMO_TIME_SCALE_RAW > 0
+        ? DEMO_TIME_SCALE_RAW
+        : 1;
 
 test.describe('first-time-user-experience', () => {
     test('completes landing to semester journey with selected catalog course', async ({
@@ -12,64 +28,66 @@ test.describe('first-time-user-experience', () => {
 
         await page.goto('');
         await page.waitForLoadState('networkidle');
-        await page.waitForTimeout(1200);
         await resetClientCache(page);
         await page.reload();
         await page.waitForLoadState('networkidle');
-        await page.waitForTimeout(1200);
         await installDemoCursor(page);
-        await page.waitForTimeout(1000);
         await expect(
             page.locator('[data-component="LandingHero"]')
         ).toBeVisible();
-        await page.waitForTimeout(1200);
+        await pause(page, 600);
 
-        const catalogsLink = page.getByRole('link', { name: 'קטלוגים' }).first();
+        const catalogsLink = page
+            .getByRole('link', { name: 'קטלוגים' })
+            .first();
         await humanMove(page, catalogsLink);
         await humanClick(page, catalogsLink);
-        await page.waitForTimeout(1000);
+        await pause(page, 1000);
         await expect(page).toHaveURL(/\/catalog$/);
         await expect(page.locator('[data-page="catalog"]')).toBeVisible();
-        await page.waitForTimeout(1700);
+        await pause(page, 1700);
 
         await selectFirstNonEmptyOption(page, '[data-degree-catalog]');
-        await page.waitForTimeout(900);
+        await pause(page, 900);
         await selectFirstNonEmptyOption(page, '[data-degree-faculty]');
-        await page.waitForTimeout(900);
+        await pause(page, 900);
         await selectFirstNonEmptyOption(page, '[data-degree-program]');
-        await page.waitForTimeout(900);
+        await pause(page, 900);
         await selectPathIfRequired(page);
-        await page.waitForTimeout(1200);
+        await pause(page, 1200);
 
         await expect(page.locator('[data-catalog-groups]')).toBeVisible();
-        await page.waitForTimeout(1700);
+        await pause(page, 1700);
 
-        const selectedCourseCode = await openCourseFromCatalog(page, COURSE_CODE);
-        await page.waitForTimeout(1000);
+        const selectedCourseCode = await openCourseFromCatalog(
+            page,
+            COURSE_CODE
+        );
+        await pause(page, 1000);
         await expect(page).toHaveURL(
             new RegExp(`/course\\?code=${selectedCourseCode}$`)
         );
         await expect(page.locator('[data-page="course"]')).toBeVisible();
-        await page.waitForTimeout(1500);
+        await pause(page, 1500);
 
         const wishlistAdd = page.locator('[data-role="wishlist-add"]');
         if ((await wishlistAdd.count()) > 0) {
             await humanClick(page, wishlistAdd);
-            await page.waitForTimeout(900);
+            await pause(page, 900);
             await expect(
                 page.locator('[data-role="wishlist-status"]')
             ).toContainText(/נוסף|כבר/);
-            await page.waitForTimeout(1200);
+            await pause(page, 1200);
         }
 
         await humanClick(
             page,
             page.locator('[data-page="course"] a[href="/plan"]').first()
         );
-        await page.waitForTimeout(1000);
+        await pause(page, 1000);
         await expect(page).toHaveURL(/\/plan$/);
         await expect(page.locator('[data-page="plan"]')).toBeVisible();
-        await page.waitForTimeout(1800);
+        await pause(page, 1800);
 
         const wishlistCourse = page.locator(
             `[data-course-action][data-row-id="wishlist"][data-course-code="${selectedCourseCode}"]`
@@ -77,14 +95,14 @@ test.describe('first-time-user-experience', () => {
         const wishlistCount = await wishlistCourse.count();
         if (wishlistCount > 0) {
             await humanClick(page, wishlistCourse);
-            await page.waitForTimeout(900);
+            await pause(page, 900);
         }
 
         const firstSemesterRow = page
             .locator('[data-plan-row][data-row-kind="semester"]')
             .first();
         await humanClick(page, firstSemesterRow.locator('header'));
-        await page.waitForTimeout(1000);
+        await pause(page, 1000);
 
         if (wishlistCount > 0) {
             await expect(
@@ -93,7 +111,7 @@ test.describe('first-time-user-experience', () => {
                 )
             ).toHaveCount(1);
             await expect(wishlistCourse).toHaveCount(0);
-            await page.waitForTimeout(1500);
+            await pause(page, 1500);
         }
 
         if (!page.url().includes('/semester?number=1')) {
@@ -101,21 +119,23 @@ test.describe('first-time-user-experience', () => {
                 page,
                 firstSemesterRow.locator('[data-semester-link]').first()
             );
-            await page.waitForTimeout(1000);
+            await pause(page, 1000);
         }
         await expect(page).toHaveURL(/\/semester\?number=1$/);
         await expect(
             page.locator('[data-role="current-semester-title"]')
         ).toContainText('סמסטר');
-        await page.waitForTimeout(1800);
+        await pause(page, 1800);
         if (wishlistCount > 0) {
             await expect(
                 page.locator(
                     `[data-role="current-semester-courses"] [data-course-code="${selectedCourseCode}"]`
                 )
             ).toHaveCount(1);
-            await page.waitForTimeout(1200);
+            await pause(page, 1200);
         }
+
+        await saveFtuxVideo(page);
     });
 });
 
@@ -127,7 +147,7 @@ async function selectFirstNonEmptyOption(
     await expect(select).toBeVisible();
     await expect(select).toBeEnabled();
     await humanClick(page, select);
-    await page.waitForTimeout(300);
+    await pause(page, 300);
 
     await expect
         .poll(async () => {
@@ -232,7 +252,7 @@ function extractCourseCodeFromHref(href: string): string | null {
 async function humanClick(page: Page, locator: Locator): Promise<void> {
     await expect(locator).toBeVisible();
     await locator.waitFor({ state: 'visible' });
-    await locator.scrollIntoViewIfNeeded();
+    await smoothScrollToLocator(page, locator);
     const box = await locator.boundingBox();
     if (box === null) {
         throw new Error('Element not visible');
@@ -242,17 +262,18 @@ async function humanClick(page: Page, locator: Locator): Promise<void> {
     const y = box.y + box.height / 2;
 
     await page.mouse.move(x, y, { steps: 55 });
-    await page.waitForTimeout(250);
+    await pause(page, 250);
 
     await setDemoCursorPressed(page, true);
     await page.mouse.down();
-    await page.waitForTimeout(80);
+    await pause(page, 80);
     await page.mouse.up();
     await setDemoCursorPressed(page, false);
-    await page.waitForTimeout(120);
+    await pause(page, 120);
 }
 
 async function humanMove(page: Page, locator: Locator): Promise<void> {
+    await smoothScrollToLocator(page, locator);
     const box = await locator.boundingBox();
     if (box === null) {
         return;
@@ -262,7 +283,7 @@ async function humanMove(page: Page, locator: Locator): Promise<void> {
     const y = box.y + box.height / 2;
 
     await page.mouse.move(x, y, { steps: 45 });
-    await page.waitForTimeout(200);
+    await pause(page, 200);
 }
 
 async function installDemoCursor(page: Page): Promise<void> {
@@ -325,7 +346,10 @@ async function installDemoCursor(page: Page): Promise<void> {
     });
 }
 
-async function setDemoCursorPressed(page: Page, pressed: boolean): Promise<void> {
+async function setDemoCursorPressed(
+    page: Page,
+    pressed: boolean
+): Promise<void> {
     await page.evaluate((nextPressed) => {
         const cursor = document.querySelector('.demo-cursor');
         if (!(cursor instanceof HTMLElement)) {
@@ -333,6 +357,53 @@ async function setDemoCursorPressed(page: Page, pressed: boolean): Promise<void>
         }
         cursor.dataset.pressed = nextPressed ? 'true' : 'false';
     }, pressed);
+}
+
+async function pause(page: Page, durationMs: number): Promise<void> {
+    await page.waitForTimeout(
+        Math.max(40, Math.round(durationMs * DEMO_TIME_SCALE))
+    );
+}
+
+async function smoothScrollToLocator(
+    page: Page,
+    locator: Locator
+): Promise<void> {
+    await locator.evaluate(async (node) => {
+        if (!(node instanceof HTMLElement)) {
+            return;
+        }
+        node.scrollIntoView({
+            behavior: 'smooth',
+            block: 'center',
+            inline: 'center',
+        });
+
+        await new Promise<void>((resolve) => {
+            let lastY = window.scrollY;
+            let stableFrames = 0;
+
+            const tick = (): void => {
+                const currentY = window.scrollY;
+                if (Math.abs(currentY - lastY) < 1) {
+                    stableFrames += 1;
+                } else {
+                    stableFrames = 0;
+                    lastY = currentY;
+                }
+
+                if (stableFrames >= 6) {
+                    resolve();
+                    return;
+                }
+
+                window.requestAnimationFrame(tick);
+            };
+
+            window.requestAnimationFrame(tick);
+        });
+    });
+    await pause(page, 160);
 }
 
 async function resetClientCache(page: Page): Promise<void> {
@@ -352,4 +423,15 @@ async function resetClientCache(page: Page): Promise<void> {
             );
         }
     });
+}
+
+async function saveFtuxVideo(page: Page): Promise<void> {
+    const video = page.video();
+    if (video === null) {
+        return;
+    }
+
+    await fs.mkdir(path.dirname(FTUX_VIDEO_OUTPUT_PATH), { recursive: true });
+    await page.close();
+    await video.saveAs(FTUX_VIDEO_OUTPUT_PATH);
 }
