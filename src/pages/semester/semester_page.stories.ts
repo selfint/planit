@@ -68,39 +68,85 @@ function buildSemesterUrl(semesterNumber: number): string {
 function createSemesterStoryProvider(): StateProvider {
     return createStoryStateProvider({
         courses: {
-            query: () =>
-                Promise.resolve({
-                    total: 4,
-                    courses: [
-                        {
-                            code: 'A100',
-                            name: 'A100',
-                            faculty: 'מדעי המחשב',
-                            median: 90,
-                        },
-                        {
-                            code: 'B200',
-                            name: 'B200',
-                            faculty: 'מדעי המחשב',
-                            median: 80,
-                        },
-                        {
-                            code: 'C300',
-                            name: 'C300',
-                            faculty: 'מתמטיקה',
-                            median: 70,
-                        },
-                        {
-                            code: 'D400',
-                            name: 'D400',
-                            faculty: 'פיזיקה',
-                            median: 85,
-                        },
-                    ],
-                }),
+            get: (code) => {
+                const byCode: Record<
+                    string,
+                    {
+                        code: string;
+                        name: string;
+                        faculty: string;
+                        median: number;
+                    }
+                > = {
+                    A100: {
+                        code: 'A100',
+                        name: 'A100',
+                        faculty: 'מדעי המחשב',
+                        median: 90,
+                    },
+                    B200: {
+                        code: 'B200',
+                        name: 'B200',
+                        faculty: 'מדעי המחשב',
+                        median: 80,
+                    },
+                };
+
+                return Promise.resolve(byCode[code]);
+            },
+            query: ({ faculty }) => {
+                if (faculty === 'מדעי המחשב') {
+                    return Promise.resolve({
+                        total: 2,
+                        courses: [
+                            {
+                                code: 'A100',
+                                name: 'A100',
+                                faculty: 'מדעי המחשב',
+                                median: 90,
+                            },
+                            {
+                                code: 'B200',
+                                name: 'B200',
+                                faculty: 'מדעי המחשב',
+                                median: 80,
+                            },
+                        ],
+                    });
+                }
+                if (faculty === 'מתמטיקה') {
+                    return Promise.resolve({
+                        total: 1,
+                        courses: [
+                            {
+                                code: 'C300',
+                                name: 'C300',
+                                faculty: 'מתמטיקה',
+                                median: 70,
+                            },
+                        ],
+                    });
+                }
+                if (faculty === 'פיזיקה') {
+                    return Promise.resolve({
+                        total: 1,
+                        courses: [
+                            {
+                                code: 'D400',
+                                name: 'D400',
+                                faculty: 'פיזיקה',
+                                median: 85,
+                            },
+                        ],
+                    });
+                }
+
+                return Promise.resolve({ total: 0, courses: [] });
+            },
             page: () => Promise.resolve([]),
             count: () => Promise.resolve(4),
-            faculties: () => Promise.resolve([]),
+            faculties: () =>
+                Promise.resolve(['מדעי המחשב', 'מתמטיקה', 'פיזיקה']),
         },
         catalogs: {
             get: () => Promise.resolve({}),
