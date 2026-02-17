@@ -20,10 +20,19 @@
                         class="border-border/60 bg-semester-surface flex w-full min-w-0 flex-col gap-3 border py-3 shadow-sm lg:max-h-[calc(100vh-env(safe-area-inset-top)-4.75rem-0.75rem)] lg:overflow-y-auto lg:rounded-2xl lg:px-2"
                         data-role="current-semester"
                     >
-                        <h2
-                            class="mx-3 text-sm font-medium"
-                            data-role="current-semester-title"
-                        ></h2>
+                        <div class="mx-3 flex items-center gap-2">
+                            <h2
+                                class="text-sm font-medium"
+                                data-role="current-semester-title"
+                            ></h2>
+                            <button
+                                type="button"
+                                class="border-border/60 bg-surface-1/70 text-text-muted hover:border-accent/50 hover:text-text pointer-events-none invisible ms-auto min-h-7 touch-manipulation rounded-xl border px-2 py-1 text-xs opacity-0 transition-opacity duration-200 ease-out"
+                                data-role="current-semester-cancel"
+                            >
+                                ביטול
+                            </button>
+                        </div>
                         <div
                             class="min-h-0 overflow-x-auto overflow-y-hidden pb-1 [scrollbar-width:thin] lg:overflow-x-hidden lg:overflow-y-visible lg:pb-0"
                             data-role="current-semester-courses"

@@ -11,6 +11,10 @@ semester selected by the `number` query parameter.
 - Grouped catalog requirements (excluding courses already in the selected semester).
 - Free-elective groups bucketed by faculty with title format
   `בחירה חופשית: <פקולטה>`.
+- Move flow for planning: first click selects/highlights a course, click on
+  current semester adds it, second click on the same selected course opens
+  the course page.
+- Cancel button in the current semester panel clears pending move selection.
 - Horizontal scroll rows on mobile and denser row/grid behavior on wider screens.
 - Error state message when local data reads fail.
 
@@ -24,7 +28,11 @@ semester selected by the `number` query parameter.
    `filterRequirementsByPath(...)`, then current-semester courses are excluded.
 5. Remaining non-catalog and non-semester courses are grouped into
    free-elective sections by faculty.
-6. All course entries render as links to `/course?code=<code>` using `CourseCard`.
+6. All course entries render as `CourseCard` links with semester move behavior:
+   select on first click, navigate to `/course?code=<code>` on second click of
+   the same card.
+7. Adding a selected course into the current semester updates plan metadata via
+   `state.userPlan.set(...)` while preserving existing plan fields.
 
 ## Unit Tests
 
@@ -58,6 +66,49 @@ assert codes('[data-role="current-semester-courses"]') == ['A100']
 assert 'B200' in codes('[data-group-kind="requirement"]')
 assert 'בחירה חופשית: מתמטיקה' in group_titles('[data-group-kind="free"]')
 assert 'בחירה חופשית: פיזיקה' in group_titles('[data-group-kind="free"]')
+```
+
+### `selects a course and adds it into current semester panel`
+
+WHAT: Verifies selection-highlight and move-into-current-semester behavior.
+WHY: The semester page is used to add courses directly into the current term.
+HOW: Selects a requirement course, clicks current semester panel, and verifies
+the course appears there and persisted `courseCodes` were updated.
+
+```python
+click('[data-role="groups-root"] a[data-course-code="B200"]')
+assert has_class('ring-2')
+click('[data-role="current-semester"]')
+assert codes('[data-role="current-semester-courses"]') == ['A100', 'B200']
+assert persisted.semesters[1].courseCodes == ['A100', 'B200']
+```
+
+### `opens course page when clicking same selected course twice`
+
+WHAT: Verifies double-click-like behavior (two consecutive clicks).
+WHY: Users still need quick navigation to course details.
+HOW: Clicks the same course twice and checks URL changed to `/course?code=...`.
+
+```python
+click('a[data-course-code="B200"]')
+click('a[data-course-code="B200"]')
+assert location.pathname == '/course'
+assert search_param('code') == 'B200'
+```
+
+### `shows cancel button while selected and clears selection on cancel`
+
+WHAT: Verifies current-semester cancel control behavior.
+WHY: Users need an explicit way to abort move mode.
+HOW: Selects a course, confirms cancel appears, clicks cancel, confirms
+selection and move mode are cleared.
+
+```python
+click('a[data-course-code="B200"]')
+assert not has_class('[data-role="current-semester-cancel"]', 'invisible')
+click('[data-role="current-semester-cancel"]')
+assert not has_class('a[data-course-code="B200"]', 'ring-2')
+assert has_class('[data-role="current-semester-cancel"]', 'invisible')
 ```
 
 ## Integration Tests

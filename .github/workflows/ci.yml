@@ -24,20 +24,20 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build
+        run: pnpm build
+
       - name: Lint check
         run: pnpm lint:check
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps
 
       - name: Run unit tests
         run: pnpm unittest
 
-      - name: Run desktop integration tests
-        run: pnpm integtest:desktop
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps
 
-      - name: Run mobile smoke integration tests
-        run: pnpm integtest:mobile
+      - name: Run integration tests
+        run: pnpm integtest
 
       - name: Upload Playwright artifacts on failure
         if: failure()
@@ -47,9 +47,6 @@ jobs:
           path: |
             test-results
             playwright-report
-
-      - name: Build
-        run: pnpm build
 
       - name: Lighthouse CI (report-only)
         run: pnpm lhci:ci
