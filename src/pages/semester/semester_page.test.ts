@@ -6,6 +6,7 @@ const mocks = vi.hoisted(() => ({
     getMetaMock: vi.fn(),
     setMetaMock: vi.fn(),
     queryCoursesMock: vi.fn(),
+    getCourseFacultiesMock: vi.fn(),
     getRequirementMock: vi.fn(),
     getCourseMock: vi.fn(),
     getActiveRequirementsSelectionMock: vi.fn(),
@@ -36,10 +37,13 @@ describe('SemesterPage', () => {
         mocks.getMetaMock.mockReset();
         mocks.setMetaMock.mockReset();
         mocks.queryCoursesMock.mockReset();
+        mocks.getCourseFacultiesMock.mockReset();
         mocks.getRequirementMock.mockReset();
         mocks.getCourseMock.mockReset();
         mocks.getActiveRequirementsSelectionMock.mockReset();
         mocks.getCourseMock.mockResolvedValue(undefined);
+        mocks.queryCoursesMock.mockResolvedValue({ courses: [], total: 0 });
+        mocks.getCourseFacultiesMock.mockResolvedValue([]);
         mocks.setMetaMock.mockResolvedValue(undefined);
         window.history.replaceState(null, '', '/semester');
         await state.provider.set(createStateProviderMock());
@@ -56,9 +60,16 @@ describe('SemesterPage', () => {
                 ],
             },
         });
-        mocks.queryCoursesMock.mockResolvedValue({
-            courses: [{ code: '104031', name: 'חדו"א 1', faculty: 'מתמטיקה' }],
-            total: 1,
+        mocks.getCourseMock.mockImplementation((code: string) => {
+            if (code === '104031') {
+                return Promise.resolve({
+                    code: '104031',
+                    name: 'חדו"א 1',
+                    faculty: 'מתמטיקה',
+                });
+            }
+
+            return Promise.resolve(undefined);
         });
         mocks.getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
 
@@ -82,25 +93,85 @@ describe('SemesterPage', () => {
                 ],
             },
         });
-        mocks.queryCoursesMock.mockResolvedValue({
-            courses: [
-                {
+        mocks.getCourseMock.mockImplementation((code: string) => {
+            const byCode: Record<
+                string,
+                { code: string; name: string; faculty: string; median: number }
+            > = {
+                A100: {
                     code: 'A100',
                     name: 'A100',
                     faculty: 'מדעי המחשב',
                     median: 90,
                 },
-                {
+                B200: {
                     code: 'B200',
                     name: 'B200',
                     faculty: 'מדעי המחשב',
                     median: 80,
                 },
-                { code: 'C300', name: 'C300', faculty: 'מתמטיקה', median: 70 },
-                { code: 'D400', name: 'D400', faculty: 'פיזיקה', median: 85 },
-            ],
-            total: 4,
+            };
+
+            return Promise.resolve(byCode[code]);
         });
+        mocks.getCourseFacultiesMock.mockResolvedValue([
+            'מדעי המחשב',
+            'מתמטיקה',
+            'פיזיקה',
+        ]);
+        mocks.queryCoursesMock.mockImplementation(
+            ({ faculty }: { faculty?: string }) => {
+                if (faculty === 'מדעי המחשב') {
+                    return Promise.resolve({
+                        courses: [
+                            {
+                                code: 'A100',
+                                name: 'A100',
+                                faculty: 'מדעי המחשב',
+                                median: 90,
+                            },
+                            {
+                                code: 'B200',
+                                name: 'B200',
+                                faculty: 'מדעי המחשב',
+                                median: 80,
+                            },
+                        ],
+                        total: 2,
+                    });
+                }
+
+                if (faculty === 'מתמטיקה') {
+                    return Promise.resolve({
+                        courses: [
+                            {
+                                code: 'C300',
+                                name: 'C300',
+                                faculty: 'מתמטיקה',
+                                median: 70,
+                            },
+                        ],
+                        total: 1,
+                    });
+                }
+
+                if (faculty === 'פיזיקה') {
+                    return Promise.resolve({
+                        courses: [
+                            {
+                                code: 'D400',
+                                name: 'D400',
+                                faculty: 'פיזיקה',
+                                median: 85,
+                            },
+                        ],
+                        total: 1,
+                    });
+                }
+
+                return Promise.resolve({ courses: [], total: 0 });
+            }
+        );
         mocks.getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
             facultyId: 'computer-science',
@@ -165,22 +236,26 @@ describe('SemesterPage', () => {
                 exemptionsCourseCodes: [],
             },
         });
-        mocks.queryCoursesMock.mockResolvedValue({
-            courses: [
-                {
+        mocks.getCourseMock.mockImplementation((code: string) => {
+            const byCode: Record<
+                string,
+                { code: string; name: string; faculty: string; median: number }
+            > = {
+                A100: {
                     code: 'A100',
                     name: 'A100',
                     faculty: 'מדעי המחשב',
                     median: 90,
                 },
-                {
+                B200: {
                     code: 'B200',
                     name: 'B200',
                     faculty: 'מדעי המחשב',
                     median: 80,
                 },
-            ],
-            total: 2,
+            };
+
+            return Promise.resolve(byCode[code]);
         });
         mocks.getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
@@ -243,9 +318,16 @@ describe('SemesterPage', () => {
                 ],
             },
         });
-        mocks.queryCoursesMock.mockResolvedValue({
-            courses: [{ code: 'B200', name: 'B200', faculty: 'מדעי המחשב' }],
-            total: 1,
+        mocks.getCourseMock.mockImplementation((code: string) => {
+            if (code === 'B200') {
+                return Promise.resolve({
+                    code: 'B200',
+                    name: 'B200',
+                    faculty: 'מדעי המחשב',
+                });
+            }
+
+            return Promise.resolve(undefined);
         });
         mocks.getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
@@ -292,9 +374,16 @@ describe('SemesterPage', () => {
                 ],
             },
         });
-        mocks.queryCoursesMock.mockResolvedValue({
-            courses: [{ code: 'B200', name: 'B200', faculty: 'מדעי המחשב' }],
-            total: 1,
+        mocks.getCourseMock.mockImplementation((code: string) => {
+            if (code === 'B200') {
+                return Promise.resolve({
+                    code: 'B200',
+                    name: 'B200',
+                    faculty: 'מדעי המחשב',
+                });
+            }
+
+            return Promise.resolve(undefined);
         });
         mocks.getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
@@ -333,6 +422,63 @@ describe('SemesterPage', () => {
         expect(b200?.classList.contains('ring-2')).toBe(false);
         expect(cancelButton?.classList.contains('invisible')).toBe(true);
     });
+
+    it('renders non-clickable skeletons while row courses are loading', async () => {
+        window.history.replaceState(null, '', '/semester?number=2');
+        mocks.getMetaMock.mockResolvedValue({
+            value: {
+                semesters: [
+                    { id: 'אביב-2026-0', courseCodes: [] },
+                    { id: 'קיץ-2026-1', courseCodes: [] },
+                ],
+            },
+        });
+        const deferredCourse = createDeferred<{ code: string; name: string }>();
+        mocks.getCourseMock.mockImplementation((code: string) => {
+            if (code === 'B200') {
+                return deferredCourse.promise;
+            }
+
+            return Promise.resolve(undefined);
+        });
+        mocks.getActiveRequirementsSelectionMock.mockResolvedValue({
+            catalogId: '2025_200',
+            facultyId: 'computer-science',
+            programId: '0324',
+            path: 'software',
+        });
+        mocks.getRequirementMock.mockResolvedValue({
+            data: {
+                name: 'root',
+                nested: [
+                    {
+                        name: 'software',
+                        nested: [{ name: 'core', courses: ['B200'] }],
+                    },
+                ],
+            },
+        });
+
+        const page = SemesterPage();
+        await flushPromises();
+
+        const clickableCards = page.querySelectorAll(
+            '[data-group-kind="requirement"] a[data-course-code]'
+        );
+        const skeletonCards = page.querySelectorAll(
+            '[data-group-kind="requirement"] [aria-hidden="true"] [data-component="CourseCard"][data-course-code="skeleton"]'
+        );
+        expect(clickableCards.length).toBe(0);
+        expect(skeletonCards.length).toBeGreaterThan(0);
+
+        deferredCourse.resolve({ code: 'B200', name: 'B200' });
+        await flushPromises();
+
+        const hydratedCards = page.querySelectorAll(
+            '[data-group-kind="requirement"] a[data-course-code="B200"]'
+        );
+        expect(hydratedCards.length).toBe(1);
+    });
 });
 
 async function flushPromises(): Promise<void> {
@@ -351,7 +497,7 @@ function createStateProviderMock(): StateProvider {
             query: mocks.queryCoursesMock,
             page: vi.fn(),
             count: vi.fn(),
-            faculties: vi.fn(),
+            faculties: mocks.getCourseFacultiesMock,
             getLastSync: vi.fn(),
         },
         catalogs: {
@@ -369,6 +515,23 @@ function createStateProviderMock(): StateProvider {
         userPlan: {
             get: mocks.getMetaMock,
             set: mocks.setMetaMock,
+        },
+    };
+}
+
+function createDeferred<T>(): {
+    promise: Promise<T>;
+    resolve: (value: T) => void;
+} {
+    let resolve: ((value: T) => void) | undefined;
+    const promise = new Promise<T>((res) => {
+        resolve = res;
+    });
+
+    return {
+        promise,
+        resolve: (value: T): void => {
+            resolve?.(value);
         },
     };
 }

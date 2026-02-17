@@ -11,8 +11,8 @@ import { state as appState } from '$lib/stateManagement';
 import templateHtml from './semester_page.html?raw';
 
 const FALLBACK_COURSE_NAME_PREFIX = 'קורס';
-const FALLBACK_FACULTY = 'ללא פקולטה';
 const DEFAULT_SEMESTER_NUMBER = 1;
+const MAX_SKELETONS_PER_ROW = 10;
 const SEASONS = ['אביב', 'קיץ', 'חורף'] as const;
 
 type PersistedPlan = {
@@ -57,6 +57,11 @@ type CourseGroup = {
     title: string;
     courses: CourseRecord[];
     kind: 'requirement' | 'free';
+};
+
+type CourseSection = {
+    section: HTMLElement;
+    row: HTMLElement;
 };
 
 export function SemesterPage(): HTMLElement {
@@ -165,20 +170,11 @@ function getFallbackSemesterInfo(number: number): SemesterInfo {
 async function hydratePage(pageState: SemesterPageState): Promise<void> {
     const { elements, semesterNumber } = pageState;
     try {
-        const [selection, requirementCountEntry, allCoursesResult] =
-            await Promise.all([
-                appState.userDegree.get(),
-                appState.userPlan.get(),
-                appState.courses.query({
-                    page: 1,
-                    pageSize: 'all',
-                }),
-            ]);
-
-        const allCourses = allCoursesResult.courses;
-        const courseMap = new Map(
-            allCourses.map((course) => [course.code, course])
-        );
+        const [selection, requirementCountEntry] = await Promise.all([
+            appState.userDegree.get(),
+            appState.userPlan.get(),
+        ]);
+        const courseCache = new Map<string, Promise<CourseRecord>>();
 
         const persistedPlan = toPersistedPlan(requirementCountEntry?.value);
         pageState.planValue = requirementCountEntry?.value;
@@ -188,46 +184,50 @@ async function hydratePage(pageState: SemesterPageState): Promise<void> {
         const semesterCourseCodes = normalizeCourseCodes(
             semesterEntry?.courseCodes
         );
-        const semesterCourses = await loadCoursesForCodes(
-            semesterCourseCodes,
-            courseMap
+        renderCurrentSemesterSkeleton(
+            elements.currentCourses,
+            elements.currentEmpty,
+            semesterCourseCodes.length
         );
 
         const semesterInfo = getSemesterInfo(semesterNumber, semesterEntry?.id);
         pageState.semesterId = semesterEntry?.id;
         pageState.semesterCourseCodeSet = new Set(semesterCourseCodes);
         elements.currentTitle.textContent = `סמסטר ${String(semesterInfo.number)} • ${semesterInfo.season} ${String(semesterInfo.year)}`;
+        const semesterCourseCodeSet = new Set(semesterCourseCodes);
+
+        const requirementCodeGroups =
+            selection === undefined
+                ? []
+                : await loadRequirementCodeGroups(
+                      selection.programId,
+                      selection.path,
+                      semesterCourseCodeSet
+                  );
+        const requirementCodeSet = collectUniqueCodesFromCodeGroups(
+            requirementCodeGroups
+        );
+        elements.groupsRoot.replaceChildren();
+
+        const [semesterCourses] = await Promise.all([
+            loadCoursesForCodes(semesterCourseCodes, courseCache),
+            hydrateRequirementSections(
+                elements.groupsRoot,
+                requirementCodeGroups,
+                courseCache
+            ),
+            hydrateFreeElectiveSections(
+                elements.groupsRoot,
+                requirementCodeSet,
+                semesterCourseCodeSet
+            ),
+        ]);
 
         renderCurrentSemesterCourses(
             elements.currentCourses,
             elements.currentEmpty,
             semesterCourses
         );
-
-        const semesterCourseCodeSet = new Set(semesterCourseCodes);
-
-        const catalogGroups =
-            selection === undefined
-                ? []
-                : await loadRequirementCourseGroups(
-                      selection.programId,
-                      selection.path,
-                      courseMap,
-                      semesterCourseCodeSet
-                  );
-        const catalogCodes = collectUniqueCodesFromGroups(catalogGroups);
-
-        const catalogCodeSet = new Set(catalogCodes);
-        const freeElectiveGroups = groupFreeElectiveCourses(
-            allCourses,
-            catalogCodeSet,
-            semesterCourseCodeSet
-        );
-
-        renderGroups(elements.groupsRoot, [
-            ...catalogGroups,
-            ...freeElectiveGroups,
-        ]);
         setCurrentSemesterMoveUi(pageState, false);
     } catch {
         elements.groupsRoot.replaceChildren();
@@ -282,33 +282,38 @@ function getSemesterInfo(number: number, semesterId?: string): SemesterInfo {
 
 async function loadCoursesForCodes(
     codes: string[],
-    courseMap: Map<string, CourseRecord>
+    courseCache: Map<string, Promise<CourseRecord>>
 ): Promise<CourseRecord[]> {
-    const courses: CourseRecord[] = [];
-
-    await Promise.all(
-        codes.map(async (code, index) => {
-            const cached = courseMap.get(code);
-            if (cached !== undefined) {
-                courses[index] = cached;
-                return;
-            }
-
-            const loaded = await appState.courses.get(code);
-            if (loaded !== undefined) {
-                courseMap.set(code, loaded);
-                courses[index] = loaded;
-                return;
-            }
-
-            courses[index] = {
-                code,
-                name: `${FALLBACK_COURSE_NAME_PREFIX} ${code}`,
-            };
-        })
+    return Promise.all(
+        codes.map((code) => loadCourseForCode(code, courseCache))
     );
+}
 
-    return courses;
+function loadCourseForCode(
+    code: string,
+    courseCache: Map<string, Promise<CourseRecord>>
+): Promise<CourseRecord> {
+    const cached = courseCache.get(code);
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    const promise = appState.courses
+        .get(code)
+        .then(
+            (loaded) =>
+                loaded ?? {
+                    code,
+                    name: `${FALLBACK_COURSE_NAME_PREFIX} ${code}`,
+                }
+        )
+        .catch(() => ({
+            code,
+            name: `${FALLBACK_COURSE_NAME_PREFIX} ${code}`,
+        }));
+
+    courseCache.set(code, promise);
+    return promise;
 }
 
 function toRequirementNode(value: unknown): RequirementNode | undefined {
@@ -318,12 +323,11 @@ function toRequirementNode(value: unknown): RequirementNode | undefined {
     return value as RequirementNode;
 }
 
-async function loadRequirementCourseGroups(
+async function loadRequirementCodeGroups(
     programId: string,
     path: string | undefined,
-    courseMap: Map<string, CourseRecord>,
     semesterCodeSet: Set<string>
-): Promise<CourseGroup[]> {
+): Promise<RequirementCourseGroup[]> {
     const requirementRecord = await appState.requirements.get(programId);
     const requirementRoot = toRequirementNode(requirementRecord?.data);
     if (requirementRoot === undefined) {
@@ -332,7 +336,7 @@ async function loadRequirementCourseGroups(
 
     const filteredRequirement = filterRequirementsByPath(requirementRoot, path);
     const rawGroups = collectRequirementGroups(filteredRequirement);
-    const result: CourseGroup[] = [];
+    const result: RequirementCourseGroup[] = [];
 
     for (const rawGroup of rawGroups) {
         const groupCodes = rawGroup.courseCodes.filter(
@@ -341,14 +345,9 @@ async function loadRequirementCourseGroups(
         if (groupCodes.length === 0) {
             continue;
         }
-
-        const courses = sortCoursesByMedianAndCode(
-            await loadCoursesForCodes(groupCodes, courseMap)
-        );
         result.push({
-            title: rawGroup.label,
-            courses,
-            kind: 'requirement',
+            label: rawGroup.label,
+            courseCodes: groupCodes,
         });
     }
 
@@ -406,14 +405,16 @@ function collectDirectCourses(node: RequirementNode): string[] {
     return [...uniqueCodes];
 }
 
-function collectUniqueCodesFromGroups(groups: CourseGroup[]): string[] {
+function collectUniqueCodesFromCodeGroups(
+    groups: RequirementCourseGroup[]
+): Set<string> {
     const codes = new Set<string>();
     for (const group of groups) {
-        for (const course of group.courses) {
-            codes.add(course.code);
+        for (const code of group.courseCodes) {
+            codes.add(code);
         }
     }
-    return [...codes];
+    return codes;
 }
 
 function sortCoursesByMedianAndCode(courses: CourseRecord[]): CourseRecord[] {
@@ -432,43 +433,6 @@ function sortCoursesByMedianAndCode(courses: CourseRecord[]): CourseRecord[] {
         }
         return left.code.localeCompare(right.code);
     });
-}
-
-function groupFreeElectiveCourses(
-    allCourses: CourseRecord[],
-    catalogCodeSet: Set<string>,
-    semesterCodeSet: Set<string>
-): CourseGroup[] {
-    const groups = new Map<string, CourseRecord[]>();
-
-    for (const course of allCourses) {
-        if (
-            catalogCodeSet.has(course.code) ||
-            semesterCodeSet.has(course.code)
-        ) {
-            continue;
-        }
-
-        const faculty =
-            typeof course.faculty === 'string' &&
-            course.faculty.trim().length > 0
-                ? course.faculty.trim()
-                : FALLBACK_FACULTY;
-        const bucket = groups.get(faculty);
-        if (bucket === undefined) {
-            groups.set(faculty, [course]);
-            continue;
-        }
-        bucket.push(course);
-    }
-
-    return [...groups.entries()]
-        .sort(([left], [right]) => left.localeCompare(right, 'he'))
-        .map(([faculty, courses]) => ({
-            title: `בחירה חופשית: ${faculty}`,
-            courses: sortCoursesByMedianAndCode(courses),
-            kind: 'free' as const,
-        }));
 }
 
 function renderCurrentSemesterCourses(
@@ -493,46 +457,169 @@ function renderCurrentSemesterCourses(
     }
 }
 
-function renderGroups(root: HTMLElement, groups: CourseGroup[]): void {
-    root.replaceChildren();
-    for (const group of groups) {
-        const section = document.createElement('section');
-        section.className =
-            'flex min-w-0 flex-col gap-2 [content-visibility:auto] [contain-intrinsic-size:24rem]';
-        section.dataset.groupKind = group.kind;
-        section.dataset.groupTitle = group.title;
+function renderCurrentSemesterSkeleton(
+    container: HTMLElement,
+    empty: HTMLElement,
+    courseCount: number
+): void {
+    container.replaceChildren();
+    empty.classList.add('hidden');
+    const row = document.createElement('div');
+    row.className =
+        'me-2 flex min-h-0 snap-x snap-mandatory gap-2 p-2 lg:me-0 lg:snap-none lg:flex-col lg:p-0';
+    container.append(row);
 
-        const title = document.createElement('h2');
-        title.className = 'mx-3 text-sm font-medium';
-        title.textContent = group.title;
-        section.append(title);
+    appendRowSkeletons(row, courseCount);
+}
 
-        const rowScroll = document.createElement('div');
-        rowScroll.className =
-            group.kind === 'requirement'
-                ? 'overflow-x-auto pb-2 [scrollbar-width:thin]'
-                : 'overflow-x-auto pb-2 [scrollbar-width:thin] md:overflow-visible md:pb-0';
+async function hydrateRequirementSections(
+    root: HTMLElement,
+    groups: RequirementCourseGroup[],
+    courseCache: Map<string, Promise<CourseRecord>>
+): Promise<void> {
+    await Promise.all(
+        groups.map(async (group) => {
+            const section = appendGroupSection(
+                root,
+                {
+                    title: group.label,
+                    courses: [],
+                    kind: 'requirement',
+                },
+                group.courseCodes.length
+            );
+            const courses = sortCoursesByMedianAndCode(
+                await loadCoursesForCodes(group.courseCodes, courseCache)
+            );
+            renderGroupRowCourses(section.row, courses);
+        })
+    );
+}
 
-        const row = document.createElement('div');
-        row.className =
-            group.kind === 'requirement'
-                ? 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2 lg:me-0 lg:p-0'
-                : 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2 md:me-0 md:grid md:grid-cols-2 md:p-0 xl:grid-cols-3';
+async function hydrateFreeElectiveSections(
+    root: HTMLElement,
+    requirementCodeSet: Set<string>,
+    semesterCodeSet: Set<string>
+): Promise<void> {
+    const faculties = await appState.courses.faculties().catch(() => []);
+    const sortedFaculties = [...faculties].sort((left, right) =>
+        left.localeCompare(right, 'he')
+    );
 
-        if (group.courses.length === 0) {
-            const empty = document.createElement('p');
-            empty.className = 'text-text-muted text-xs';
-            empty.textContent = 'אין קורסים להצגה בקבוצה זו.';
-            row.append(empty);
-        } else {
-            for (const course of group.courses) {
-                row.append(createCourseLink(course, 'row'));
+    await Promise.all(
+        sortedFaculties.map(async (faculty) => {
+            const section = appendGroupSection(
+                root,
+                {
+                    title: `בחירה חופשית: ${faculty}`,
+                    courses: [],
+                    kind: 'free',
+                },
+                MAX_SKELETONS_PER_ROW
+            );
+
+            const result = await appState.courses
+                .query({
+                    faculty,
+                    page: 1,
+                    pageSize: 'all',
+                })
+                .catch(() => ({ courses: [], total: 0 }));
+            const courses = sortCoursesByMedianAndCode(
+                result.courses.filter(
+                    (course) =>
+                        !requirementCodeSet.has(course.code) &&
+                        !semesterCodeSet.has(course.code)
+                )
+            );
+
+            if (courses.length === 0) {
+                section.section.remove();
+                return;
             }
-        }
 
-        rowScroll.append(row);
-        section.append(rowScroll);
-        root.append(section);
+            renderGroupRowCourses(section.row, courses);
+        })
+    );
+
+    const noSections = root.querySelector('section[data-group-kind]') === null;
+    if (noSections) {
+        const empty = document.createElement('p');
+        empty.className = 'text-text-muted text-xs';
+        empty.textContent = 'אין קבוצות קורסים להצגה.';
+        root.append(empty);
+    }
+}
+
+function appendGroupSection(
+    root: HTMLElement,
+    group: CourseGroup,
+    skeletonCount: number
+): CourseSection {
+    const section = document.createElement('section');
+    section.className =
+        'flex min-w-0 flex-col gap-2 [content-visibility:auto] [contain-intrinsic-size:24rem]';
+    section.dataset.groupKind = group.kind;
+    section.dataset.groupTitle = group.title;
+
+    const title = document.createElement('h2');
+    title.className = 'mx-3 text-sm font-medium';
+    title.textContent = group.title;
+    section.append(title);
+
+    const rowScroll = document.createElement('div');
+    rowScroll.className =
+        group.kind === 'requirement'
+            ? 'overflow-x-auto pb-2 [scrollbar-width:thin]'
+            : 'overflow-x-auto pb-2 [scrollbar-width:thin] md:overflow-visible md:pb-0';
+
+    const row = document.createElement('div');
+    row.className =
+        group.kind === 'requirement'
+            ? 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2 lg:me-0 lg:p-0'
+            : 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2 md:me-0 md:grid md:grid-cols-2 md:p-0 xl:grid-cols-3';
+
+    if (skeletonCount > 0) {
+        appendRowSkeletons(row, skeletonCount);
+    }
+
+    rowScroll.append(row);
+    section.append(rowScroll);
+    root.append(section);
+
+    return {
+        section,
+        row,
+    };
+}
+
+function renderGroupRowCourses(
+    row: HTMLElement,
+    courses: CourseRecord[]
+): void {
+    row.replaceChildren();
+    if (courses.length === 0) {
+        const empty = document.createElement('p');
+        empty.className = 'text-text-muted text-xs';
+        empty.textContent = 'אין קורסים להצגה בקבוצה זו.';
+        row.append(empty);
+        return;
+    }
+
+    for (const course of courses) {
+        row.append(createCourseLink(course, 'row'));
+    }
+}
+
+function appendRowSkeletons(row: HTMLElement, courseCount: number): void {
+    const count = Math.max(1, Math.min(courseCount, MAX_SKELETONS_PER_ROW));
+    for (let index = 0; index < count; index += 1) {
+        const cardShell = document.createElement('div');
+        cardShell.className =
+            'pointer-events-none block h-[7.5rem] w-[7.5rem] shrink-0 snap-start rounded-2xl sm:h-[6.5rem] lg:w-[10.5rem]';
+        cardShell.setAttribute('aria-hidden', 'true');
+        cardShell.append(CourseCard());
+        row.append(cardShell);
     }
 }
 
@@ -582,8 +669,7 @@ function handleCourseLinkClick(
 
     const selected = state.selected;
     const isSameSelection =
-        selected?.code === courseCode &&
-        selected.element === courseLink;
+        selected?.code === courseCode && selected.element === courseLink;
     if (isSameSelection) {
         navigateToCoursePage(courseCode);
         return;

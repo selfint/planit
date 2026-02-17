@@ -256,7 +256,7 @@ sequenceDiagram
   SP-->>S: timestamp | undefined
 ```
 
-### Semester Page Load + Course Detail Hydration
+### Semester Page Row-Scoped Hydration
 
 User action: user opens semester page and inspects semester requirements.
 
@@ -271,9 +271,8 @@ sequenceDiagram
   U->>M: Open semester page
   M->>S: userDegree.get()
   M->>S: userPlan.get()
-  M->>S: courses.query({page:1,pageSize:"all"})
-  S->>SP: userDegree.get() / userPlan.get() / courses.query(...)
-  SP->>DB: read selection + plan + all courses
+  S->>SP: userDegree.get() / userPlan.get()
+  SP->>DB: read selection + plan metadata
   DB-->>SP: data
   SP-->>S: data
   M->>S: requirements.get(programId)
@@ -281,12 +280,19 @@ sequenceDiagram
   SP->>DB: getRequirement(programId)
   DB-->>SP: requirement record | undefined
   SP-->>S: requirement record | undefined
-  loop Missing course records in requirement tree
+  loop Requirement/current rows hydrate independently
     M->>S: courses.get(code)
     S->>SP: courses.get(code)
     SP->>DB: getCourse(code)
     DB-->>SP: course record | undefined
     SP-->>S: course record | undefined
+  end
+  loop Free-elective rows hydrate independently by faculty
+    M->>S: courses.query({faculty,page:1,pageSize:"all"})
+    S->>SP: courses.query(...)
+    SP->>DB: queryCourses(...)
+    DB-->>SP: paged course results
+    SP-->>S: paged course results
   end
 ```
 

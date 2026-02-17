@@ -16,18 +16,23 @@ semester selected by the `number` query parameter.
   the course page.
 - Cancel button in the current semester panel clears pending move selection.
 - Horizontal scroll rows on mobile and denser row/grid behavior on wider screens.
+- Row-level skeleton placeholders render before each row hydrates (up to 10 cards
+  per row) and are non-interactive until data is loaded.
 - Error state message when local data reads fail.
 
 ## Data Flow
 
 1. `SemesterPage()` parses `?number=<n>` from URL and defaults to semester 1.
-2. `hydratePage()` reads plan state, active requirement
-   selection, and full local courses list through global `state` getters.
-3. Current semester courses are loaded from plan codes and rendered separately.
+2. `hydratePage()` reads plan state and active requirement selection through
+   global `state` getters, then builds row descriptors first.
+3. Current semester row shows skeleton placeholders sized by persisted
+   `courseCodes` count (capped at 10), then hydrates via `state.courses.get(code)`.
 4. Requirement groups are derived from `state.requirements.get(programId)` and
-   `filterRequirementsByPath(...)`, then current-semester courses are excluded.
-5. Remaining non-catalog and non-semester courses are grouped into
-   free-elective sections by faculty.
+   `filterRequirementsByPath(...)`; each requirement row hydrates its own course
+   codes independently with row-local skeletons.
+5. Free-elective rows are built from `state.courses.faculties()` and each
+   faculty row hydrates independently via `state.courses.query({ faculty, pageSize: 'all' })`,
+   excluding requirement and current-semester codes.
 6. All course entries render as `CourseCard` links with semester move behavior:
    select on first click, navigate to `/course?code=<code>` on second click of
    the same card.
