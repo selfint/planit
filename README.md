@@ -38,3 +38,18 @@ Notes:
 
 - Optimized videos are written to `public/tutorials/` so Vite serves them as static assets.
 - You can tweak encoding with env vars: `PW_VIDEO_WIDTH`, `PW_VIDEO_CRF`, `PW_VIDEO_AUDIO_BITRATE`.
+
+## Lighthouse CI
+
+Run Lighthouse CI locally (report-only):
+
+```bash
+pnpm build
+pnpm lhci:ci
+```
+
+Notes:
+
+- The run audits all route pages under `/planit/`, including deep links used by the app.
+- Results are written to `.lighthouseci/`.
+- GitHub Actions uploads `.lighthouseci/` as workflow artifacts in both CI and Pages workflows.
