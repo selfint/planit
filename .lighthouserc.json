@@ -1,0 +1,29 @@
+{
+    "ci": {
+        "collect": {
+            "numberOfRuns": 1,
+            "startServerCommand": "pnpm preview --port 4173",
+            "startServerReadyPattern": "Local",
+            "url": [
+                "http://localhost:4173/planit/",
+                "http://localhost:4173/planit/plan",
+                "http://localhost:4173/planit/catalog",
+                "http://localhost:4173/planit/course?code=00140003",
+                "http://localhost:4173/planit/search",
+                "http://localhost:4173/planit/semester?number=1"
+            ],
+            "settings": {
+                "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
+            }
+        },
+        "assert": {
+            "assertions": {
+                "categories:performance": "off",
+                "categories:accessibility": "off",
+                "categories:best-practices": "off",
+                "categories:seo": "off",
+                "categories:pwa": "off"
+            }
+        }
+    }
+}

@@ -21,6 +21,7 @@
         "pw:codegen": "playwright codegen http://localhost:5173",
         "optimize:videos": "node scripts/optimize-playwright-videos.mjs",
         "test": "pnpm run unittest && pnpm run integtest",
+        "lhci:ci": "node scripts/run-lhci.mjs collect",
         "vibe": "PORT=9999 vibe-kanban",
         "fix-webp-asset": "pnpx sharp-cli -i"
     },
@@ -30,6 +31,7 @@
         "@eslint/markdown": "^7.5.1",
         "@html-eslint/eslint-plugin": "^0.54.2",
         "@html-eslint/parser": "^0.54.0",
+        "@lhci/cli": "^0.15.1",
         "@playwright/test": "^1.58.2",
         "@storybook/addon-a11y": "^8.6.14",
         "@storybook/addon-essentials": "^8.6.14",
