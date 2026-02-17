@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/html';
 import { type StateProvider, state } from '$lib/stateManagement';
-import { createStoryStateProvider } from '$lib/test-utils/storyStateProvider';
 import type { CourseRecord } from '$lib/indexeddb';
+import { createStoryStateProvider } from '$lib/test-utils/storyStateProvider';
 
 import { PlanPage } from './plan_page';
 
