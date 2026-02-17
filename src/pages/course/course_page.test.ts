@@ -62,8 +62,8 @@ describe('course page', () => {
         const message = page.querySelector<HTMLElement>(
             "[data-role='not-found-message']"
         );
-        const headings = Array.from(page.querySelectorAll('h2')).map(
-            (heading) => heading.textContent?.trim() ?? ''
+        const headings = Array.from(page.querySelectorAll('h2')).map((heading) =>
+            heading.textContent.trim()
         );
 
         expect(notFoundState?.classList.contains('hidden')).toBe(false);
