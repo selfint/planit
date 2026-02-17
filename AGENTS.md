@@ -78,6 +78,7 @@ sequenceDiagram
 
 - Favor incremental changes and avoid blocking the UI when parsing or writing large datasets.
 - Keep data update paths resilient to partial failures (e.g., retry or resume logic).
+- Every .ts file should have a collocated .md file explaining it. Always keeps these two in sync.
 
 ## Style guide
 
