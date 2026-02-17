@@ -44,18 +44,6 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Lighthouse CI (report-only)
-        run: pnpm lhci:ci
-
-      - name: Upload Lighthouse reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouse-reports-pages
-          path: .lighthouseci
-          if-no-files-found: ignore
-          include-hidden-files: true
-
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v4
         with:
