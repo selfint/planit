@@ -530,7 +530,7 @@ function createDeferred<T>(): {
 
     return {
         promise,
-        resolve: (value: T) => {
+        resolve: (value: T): void => {
             resolve?.(value);
         },
     };
