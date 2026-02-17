@@ -2,7 +2,7 @@
     <section class="text-text min-h-screen w-full" data-page="course">
         <div data-console-nav></div>
         <main
-            class="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 pt-6 pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:px-8"
+            class="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-3 pt-4 pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-4 lg:px-6"
             data-role="course-page-root"
         >
             <header class="flex w-full flex-col gap-3">
@@ -30,7 +30,11 @@
                     <dl
                         class="grid w-full grid-cols-2 gap-3 text-xs sm:grid-cols-4"
                     >
-                        <div class="bg-surface-2/70 rounded-2xl p-3">
+                        <div
+                            class="bg-surface-2/70 data-[loading=true]:skeleton-shimmer rounded-2xl p-3 data-[loading=true]:text-transparent"
+                            data-loading="false"
+                            data-role="course-points-card"
+                        >
                             <dt class="text-text-muted">נק"ז</dt>
                             <dd
                                 class="text-sm font-medium"
@@ -39,7 +43,11 @@
                                 —
                             </dd>
                         </div>
-                        <div class="bg-surface-2/70 rounded-2xl p-3">
+                        <div
+                            class="bg-surface-2/70 data-[loading=true]:skeleton-shimmer rounded-2xl p-3 data-[loading=true]:text-transparent"
+                            data-loading="false"
+                            data-role="course-median-card"
+                        >
                             <dt class="text-text-muted">חציון</dt>
                             <dd
                                 class="text-sm font-medium"
@@ -48,7 +56,11 @@
                                 —
                             </dd>
                         </div>
-                        <div class="bg-surface-2/70 rounded-2xl p-3">
+                        <div
+                            class="bg-surface-2/70 data-[loading=true]:skeleton-shimmer rounded-2xl p-3 data-[loading=true]:text-transparent"
+                            data-loading="false"
+                            data-role="course-faculty-card"
+                        >
                             <dt class="text-text-muted">פקולטה</dt>
                             <dd
                                 class="text-sm font-medium"
@@ -57,7 +69,11 @@
                                 —
                             </dd>
                         </div>
-                        <div class="bg-surface-2/70 rounded-2xl p-3">
+                        <div
+                            class="bg-surface-2/70 data-[loading=true]:skeleton-shimmer rounded-2xl p-3 data-[loading=true]:text-transparent"
+                            data-loading="false"
+                            data-role="course-seasons-card"
+                        >
                             <dt class="text-text-muted">סמסטרים</dt>
                             <dd
                                 class="text-sm font-medium"
@@ -92,18 +108,6 @@
                 </div>
             </header>
 
-            <section
-                class="flex w-full items-center gap-3 py-4"
-                data-state="loading"
-            >
-                <span
-                    class="bg-accent/20 inline-block h-2.5 w-2.5 rounded-full"
-                ></span>
-                <p class="text-text-muted text-sm">
-                    טוען פרטי קורס מהמאגר המקומי...
-                </p>
-            </section>
-
             <section class="hidden w-full py-4" data-state="not-found">
                 <h2 class="text-lg font-medium">לא נמצא קורס תואם</h2>
                 <p
@@ -114,21 +118,122 @@
                 </p>
             </section>
 
-            <section class="hidden w-full flex-col gap-8" data-state="found">
+            <section class="w-full flex-col gap-8" data-role="relations-root">
                 <article class="flex w-full flex-col gap-3">
                     <div class="flex items-center justify-between gap-2">
                         <h2 class="text-lg font-medium">קורסי קדם</h2>
                         <p
-                            class="text-text-muted text-xs"
+                            class="text-text-muted skeleton-shimmer inline-block h-3 w-16 rounded-md text-xs text-transparent"
                             data-role="dependencies-count"
-                        >
-                            0 קורסים
-                        </p>
+                        ></p>
                     </div>
                     <div
                         class="flex flex-col gap-4"
                         data-role="dependencies-grid"
-                    ></div>
+                    >
+                        <section class="flex flex-col gap-3">
+                            <div
+                                class="grid w-fit max-w-full grid-cols-[repeat(auto-fit,minmax(5rem,1fr))] justify-start gap-2 md:grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] lg:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]"
+                            >
+                                <article
+                                    aria-busy="true"
+                                    class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                                    data-component="CourseCard"
+                                    data-skeleton="true"
+                                >
+                                    <div
+                                        class="text-text-muted flex items-center justify-between text-xs/4"
+                                    >
+                                        <span
+                                            class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                        ></span>
+                                        <span
+                                            class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                        >
+                                            <span
+                                                class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                            ></span>
+                                            <span
+                                                class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                            ></span>
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <p
+                                            class="skeleton-shimmer block h-12 w-full rounded-md"
+                                        ></p>
+                                        <p
+                                            class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                        ></p>
+                                    </div>
+                                </article>
+                                <article
+                                    aria-busy="true"
+                                    class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                                    data-component="CourseCard"
+                                    data-skeleton="true"
+                                >
+                                    <div
+                                        class="text-text-muted flex items-center justify-between text-xs/4"
+                                    >
+                                        <span
+                                            class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                        ></span>
+                                        <span
+                                            class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                        >
+                                            <span
+                                                class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                            ></span>
+                                            <span
+                                                class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                            ></span>
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <p
+                                            class="skeleton-shimmer block h-12 w-full rounded-md"
+                                        ></p>
+                                        <p
+                                            class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                        ></p>
+                                    </div>
+                                </article>
+                                <article
+                                    aria-busy="true"
+                                    class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                                    data-component="CourseCard"
+                                    data-skeleton="true"
+                                >
+                                    <div
+                                        class="text-text-muted flex items-center justify-between text-xs/4"
+                                    >
+                                        <span
+                                            class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                        ></span>
+                                        <span
+                                            class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                        >
+                                            <span
+                                                class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                            ></span>
+                                            <span
+                                                class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                            ></span>
+                                        </span>
+                                    </div>
+                                    <div class="flex flex-col gap-1">
+                                        <p
+                                            class="skeleton-shimmer block h-12 w-full rounded-md"
+                                        ></p>
+                                        <p
+                                            class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                        ></p>
+                                    </div>
+                                </article>
+                            </div>
+                        </section>
+                    </div>
                     <p
                         class="text-text-muted text-xs"
                         data-role="dependencies-empty"
@@ -141,16 +246,111 @@
                     <div class="flex items-center justify-between gap-2">
                         <h2 class="text-lg font-medium">קורסים תלויים</h2>
                         <p
-                            class="text-text-muted text-xs"
+                            class="text-text-muted skeleton-shimmer inline-block h-3 w-16 rounded-md text-xs text-transparent"
                             data-role="dependants-count"
-                        >
-                            0 קורסים
-                        </p>
+                        ></p>
                     </div>
                     <div
-                        class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3"
+                        class="grid w-fit max-w-full grid-cols-[repeat(auto-fit,minmax(5rem,1fr))] justify-start gap-2 md:grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] lg:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]"
                         data-role="dependants-grid"
-                    ></div>
+                    >
+                        <article
+                            aria-busy="true"
+                            class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                            data-component="CourseCard"
+                            data-skeleton="true"
+                        >
+                            <div
+                                class="text-text-muted flex items-center justify-between text-xs/4"
+                            >
+                                <span
+                                    class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                ></span>
+                                <span
+                                    class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                >
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                    ></span>
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                    ></span>
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="skeleton-shimmer block h-12 w-full rounded-md"
+                                ></p>
+                                <p
+                                    class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                ></p>
+                            </div>
+                        </article>
+                        <article
+                            aria-busy="true"
+                            class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                            data-component="CourseCard"
+                            data-skeleton="true"
+                        >
+                            <div
+                                class="text-text-muted flex items-center justify-between text-xs/4"
+                            >
+                                <span
+                                    class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                ></span>
+                                <span
+                                    class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                >
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                    ></span>
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                    ></span>
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="skeleton-shimmer block h-12 w-full rounded-md"
+                                ></p>
+                                <p
+                                    class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                ></p>
+                            </div>
+                        </article>
+                        <article
+                            aria-busy="true"
+                            class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                            data-component="CourseCard"
+                            data-skeleton="true"
+                        >
+                            <div
+                                class="text-text-muted flex items-center justify-between text-xs/4"
+                            >
+                                <span
+                                    class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                ></span>
+                                <span
+                                    class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                >
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                    ></span>
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                    ></span>
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="skeleton-shimmer block h-12 w-full rounded-md"
+                                ></p>
+                                <p
+                                    class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                ></p>
+                            </div>
+                        </article>
+                    </div>
                     <p
                         class="text-text-muted text-xs"
                         data-role="dependants-empty"
@@ -163,16 +363,111 @@
                     <div class="flex items-center justify-between gap-2">
                         <h2 class="text-lg font-medium">קורסים צמודים</h2>
                         <p
-                            class="text-text-muted text-xs"
+                            class="text-text-muted skeleton-shimmer inline-block h-3 w-16 rounded-md text-xs text-transparent"
                             data-role="adjacent-count"
-                        >
-                            0 קורסים
-                        </p>
+                        ></p>
                     </div>
                     <div
-                        class="grid grid-cols-3 gap-3"
+                        class="grid w-fit max-w-full grid-cols-[repeat(auto-fit,minmax(5rem,1fr))] justify-start gap-2 md:grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] lg:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]"
                         data-role="adjacent-grid"
-                    ></div>
+                    >
+                        <article
+                            aria-busy="true"
+                            class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                            data-component="CourseCard"
+                            data-skeleton="true"
+                        >
+                            <div
+                                class="text-text-muted flex items-center justify-between text-xs/4"
+                            >
+                                <span
+                                    class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                ></span>
+                                <span
+                                    class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                >
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                    ></span>
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                    ></span>
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="skeleton-shimmer block h-12 w-full rounded-md"
+                                ></p>
+                                <p
+                                    class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                ></p>
+                            </div>
+                        </article>
+                        <article
+                            aria-busy="true"
+                            class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                            data-component="CourseCard"
+                            data-skeleton="true"
+                        >
+                            <div
+                                class="text-text-muted flex items-center justify-between text-xs/4"
+                            >
+                                <span
+                                    class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                ></span>
+                                <span
+                                    class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                >
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                    ></span>
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                    ></span>
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="skeleton-shimmer block h-12 w-full rounded-md"
+                                ></p>
+                                <p
+                                    class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                ></p>
+                            </div>
+                        </article>
+                        <article
+                            aria-busy="true"
+                            class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                            data-component="CourseCard"
+                            data-skeleton="true"
+                        >
+                            <div
+                                class="text-text-muted flex items-center justify-between text-xs/4"
+                            >
+                                <span
+                                    class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                ></span>
+                                <span
+                                    class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                >
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                    ></span>
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                    ></span>
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="skeleton-shimmer block h-12 w-full rounded-md"
+                                ></p>
+                                <p
+                                    class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                ></p>
+                            </div>
+                        </article>
+                    </div>
                     <p
                         class="text-text-muted text-xs"
                         data-role="adjacent-empty"
@@ -185,16 +480,111 @@
                     <div class="flex items-center justify-between gap-2">
                         <h2 class="text-lg font-medium">ללא זיכוי נוסף</h2>
                         <p
-                            class="text-text-muted text-xs"
+                            class="text-text-muted skeleton-shimmer inline-block h-3 w-16 rounded-md text-xs text-transparent"
                             data-role="exclusive-count"
-                        >
-                            0 קורסים
-                        </p>
+                        ></p>
                     </div>
                     <div
-                        class="grid grid-cols-3 gap-3"
+                        class="grid w-fit max-w-full grid-cols-[repeat(auto-fit,minmax(5rem,1fr))] justify-start gap-2 md:grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] lg:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]"
                         data-role="exclusive-grid"
-                    ></div>
+                    >
+                        <article
+                            aria-busy="true"
+                            class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                            data-component="CourseCard"
+                            data-skeleton="true"
+                        >
+                            <div
+                                class="text-text-muted flex items-center justify-between text-xs/4"
+                            >
+                                <span
+                                    class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                ></span>
+                                <span
+                                    class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                >
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                    ></span>
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                    ></span>
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="skeleton-shimmer block h-12 w-full rounded-md"
+                                ></p>
+                                <p
+                                    class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                ></p>
+                            </div>
+                        </article>
+                        <article
+                            aria-busy="true"
+                            class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                            data-component="CourseCard"
+                            data-skeleton="true"
+                        >
+                            <div
+                                class="text-text-muted flex items-center justify-between text-xs/4"
+                            >
+                                <span
+                                    class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                ></span>
+                                <span
+                                    class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                >
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                    ></span>
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                    ></span>
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="skeleton-shimmer block h-12 w-full rounded-md"
+                                ></p>
+                                <p
+                                    class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                ></p>
+                            </div>
+                        </article>
+                        <article
+                            aria-busy="true"
+                            class="border-border/60 bg-surface-1/80 text-text group flex h-full w-full min-w-fit flex-col gap-2 overflow-hidden rounded-2xl border p-3 text-xs shadow-sm"
+                            data-component="CourseCard"
+                            data-skeleton="true"
+                        >
+                            <div
+                                class="text-text-muted flex items-center justify-between text-xs/4"
+                            >
+                                <span
+                                    class="skeleton-shimmer me-2.5 size-3 min-h-3 min-w-3 shrink-0 rounded-none"
+                                ></span>
+                                <span
+                                    class="shrink-0 leading-none whitespace-nowrap tabular-nums"
+                                >
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[2.5ch] rounded-md"
+                                    ></span>
+                                    <span
+                                        class="skeleton-shimmer inline-block h-3 w-[3.5ch] rounded-md"
+                                    ></span>
+                                </span>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <p
+                                    class="skeleton-shimmer block h-12 w-full rounded-md"
+                                ></p>
+                                <p
+                                    class="skeleton-shimmer block h-3 w-[70%] rounded-md"
+                                ></p>
+                            </div>
+                        </article>
+                    </div>
                     <p
                         class="text-text-muted text-xs"
                         data-role="exclusive-empty"

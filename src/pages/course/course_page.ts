@@ -14,6 +14,15 @@ const EMPTY_VALUE = '—';
 const UNKNOWN_COURSE_LABEL = 'קורס לא זמין במאגר';
 const COURSES_BATCH_SIZE = 300;
 
+const COUNT_SKELETON_CLASS = [
+    'skeleton-shimmer',
+    'inline-block',
+    'h-3',
+    'w-16',
+    'rounded-md',
+    'text-transparent',
+] as const;
+
 type CoursePageElements = {
     courseName: HTMLElement;
     courseAbout: HTMLElement;
@@ -21,11 +30,13 @@ type CoursePageElements = {
     courseMedian: HTMLElement;
     courseFaculty: HTMLElement;
     courseSeasons: HTMLElement;
+    coursePointsCard: HTMLElement;
+    courseMedianCard: HTMLElement;
+    courseFacultyCard: HTMLElement;
+    courseSeasonsCard: HTMLElement;
     searchLink: HTMLAnchorElement;
-    loadingState: HTMLElement;
     notFoundState: HTMLElement;
     notFoundMessage: HTMLElement;
-    foundState: HTMLElement;
     dependenciesGrid: HTMLElement;
     dependenciesCount: HTMLElement;
     dependenciesEmpty: HTMLElement;
@@ -74,7 +85,6 @@ export function CoursePage(): HTMLElement {
         return root;
     }
 
-    showLoading(elements);
     void loadAndRenderCourse(elements, requestedCode);
 
     window.addEventListener(COURSE_SYNC_EVENT, () => {
@@ -83,6 +93,28 @@ export function CoursePage(): HTMLElement {
         }
         void loadAndRenderCourse(elements, requestedCode);
     });
+
+    return root;
+}
+
+export function CoursePageSkeletonPreview(): HTMLElement {
+    const template = document.createElement('template');
+    template.innerHTML = templateHtml;
+    const templateElement = template.content.firstElementChild;
+    if (!(templateElement instanceof HTMLTemplateElement)) {
+        throw new Error('CoursePage template element not found');
+    }
+
+    const root = templateElement.content.firstElementChild?.cloneNode(true);
+    if (!(root instanceof HTMLElement)) {
+        throw new Error('CoursePage template root not found');
+    }
+
+    const consoleNavHost =
+        root.querySelector<HTMLElement>('[data-console-nav]');
+    if (consoleNavHost !== null) {
+        consoleNavHost.replaceWith(ConsoleNav({ activePath: '/course' }));
+    }
 
     return root;
 }
@@ -106,11 +138,20 @@ function queryElements(root: HTMLElement): CoursePageElements {
     const courseSeasons = root.querySelector<HTMLElement>(
         "[data-role='course-seasons']"
     );
+    const coursePointsCard = root.querySelector<HTMLElement>(
+        "[data-role='course-points-card']"
+    );
+    const courseMedianCard = root.querySelector<HTMLElement>(
+        "[data-role='course-median-card']"
+    );
+    const courseFacultyCard = root.querySelector<HTMLElement>(
+        "[data-role='course-faculty-card']"
+    );
+    const courseSeasonsCard = root.querySelector<HTMLElement>(
+        "[data-role='course-seasons-card']"
+    );
     const searchLink = root.querySelector<HTMLAnchorElement>(
         "[data-role='search-link']"
-    );
-    const loadingState = root.querySelector<HTMLElement>(
-        "[data-state='loading']"
     );
     const notFoundState = root.querySelector<HTMLElement>(
         "[data-state='not-found']"
@@ -118,7 +159,6 @@ function queryElements(root: HTMLElement): CoursePageElements {
     const notFoundMessage = root.querySelector<HTMLElement>(
         "[data-role='not-found-message']"
     );
-    const foundState = root.querySelector<HTMLElement>("[data-state='found']");
     const dependenciesGrid = root.querySelector<HTMLElement>(
         "[data-role='dependencies-grid']"
     );
@@ -163,11 +203,13 @@ function queryElements(root: HTMLElement): CoursePageElements {
         courseMedian === null ||
         courseFaculty === null ||
         courseSeasons === null ||
+        coursePointsCard === null ||
+        courseMedianCard === null ||
+        courseFacultyCard === null ||
+        courseSeasonsCard === null ||
         searchLink === null ||
-        loadingState === null ||
         notFoundState === null ||
         notFoundMessage === null ||
-        foundState === null ||
         dependenciesGrid === null ||
         dependenciesCount === null ||
         dependenciesEmpty === null ||
@@ -191,11 +233,13 @@ function queryElements(root: HTMLElement): CoursePageElements {
         courseMedian,
         courseFaculty,
         courseSeasons,
+        coursePointsCard,
+        courseMedianCard,
+        courseFacultyCard,
+        courseSeasonsCard,
         searchLink,
-        loadingState,
         notFoundState,
         notFoundMessage,
-        foundState,
         dependenciesGrid,
         dependenciesCount,
         dependenciesEmpty,
@@ -238,23 +282,72 @@ function updateSearchLink(
     link.href = `/search?q=${encodeURIComponent(code)}`;
 }
 
-function showLoading(elements: CoursePageElements): void {
-    elements.loadingState.classList.remove('hidden');
-    elements.notFoundState.classList.add('hidden');
-    elements.foundState.classList.add('hidden');
-}
-
 function showNotFound(elements: CoursePageElements, message: string): void {
-    elements.loadingState.classList.add('hidden');
     elements.notFoundState.classList.remove('hidden');
-    elements.foundState.classList.add('hidden');
     elements.notFoundMessage.textContent = message;
+    setPrimaryStatsLoading(elements, false);
+    resetRelationSectionsToEmpty(elements);
 }
 
 function showCourseFound(elements: CoursePageElements): void {
-    elements.loadingState.classList.add('hidden');
     elements.notFoundState.classList.add('hidden');
-    elements.foundState.classList.remove('hidden');
+    setPrimaryStatsLoading(elements, false);
+}
+
+function setPrimaryStatsLoading(
+    elements: CoursePageElements,
+    loading: boolean
+): void {
+    setStatTileSkeleton(elements.coursePointsCard, loading);
+    setStatTileSkeleton(elements.courseMedianCard, loading);
+    setStatTileSkeleton(elements.courseFacultyCard, loading);
+    setStatTileSkeleton(elements.courseSeasonsCard, loading);
+}
+
+function setStatTileSkeleton(element: HTMLElement, loading: boolean): void {
+    if (loading) {
+        element.dataset.loading = 'true';
+        return;
+    }
+
+    element.dataset.loading = 'false';
+}
+
+function setCountSkeleton(element: HTMLElement, loading: boolean): void {
+    if (loading) {
+        element.textContent = '';
+        element.classList.add(...COUNT_SKELETON_CLASS);
+        return;
+    }
+
+    element.classList.remove(...COUNT_SKELETON_CLASS);
+}
+
+function resetRelationSectionsToEmpty(elements: CoursePageElements): void {
+    renderDependencyGroups(
+        elements.dependenciesGrid,
+        elements.dependenciesCount,
+        elements.dependenciesEmpty,
+        []
+    );
+    renderRelatedCourseCards(
+        elements.dependantsGrid,
+        elements.dependantsCount,
+        elements.dependantsEmpty,
+        []
+    );
+    renderRelatedCourseCards(
+        elements.adjacentGrid,
+        elements.adjacentCount,
+        elements.adjacentEmpty,
+        []
+    );
+    renderRelatedCourseCards(
+        elements.exclusiveGrid,
+        elements.exclusiveCount,
+        elements.exclusiveEmpty,
+        []
+    );
 }
 
 async function loadAndRenderCourse(
@@ -547,6 +640,7 @@ function renderDependencyGroups(
     groups: RelatedCourseGroups
 ): void {
     container.replaceChildren();
+    setCountSkeleton(count, false);
     const groupCount = groups.length;
     const courseCount = groups.reduce(
         (total, group) => total + group.length,
@@ -571,7 +665,8 @@ function renderDependencyGroups(
         groupSection.className = 'flex flex-col gap-3';
 
         const groupGrid = document.createElement('div');
-        groupGrid.className = 'grid grid-cols-3 gap-3';
+        groupGrid.className =
+            'grid w-fit max-w-full grid-cols-[repeat(auto-fit,minmax(5rem,1fr))] justify-start gap-2 md:grid-cols-[repeat(auto-fit,minmax(7rem,1fr))] lg:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]';
 
         for (const course of groupCourses) {
             const link = createCourseCardLink(course);
@@ -609,6 +704,7 @@ function renderRelatedCourseCards(
     courses: CourseRecord[]
 ): void {
     grid.replaceChildren();
+    setCountSkeleton(count, false);
     count.textContent = `${String(courses.length)} קורסים`;
     if (courses.length === 0) {
         emptyLabel.classList.remove('hidden');

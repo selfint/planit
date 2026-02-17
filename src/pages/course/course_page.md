@@ -10,7 +10,7 @@ navigation and is rendered by the client-side router.
 
 - Header card with course name and description.
 - Key stats tiles for points, median, faculty, and seasons.
-- Loading state, query validation state, and course-not-found state.
+- Loading skeleton state, query validation state, and course-not-found state.
 - Related course sections for dependencies, dependants (inverse dependency
   lookup), adjacent courses, and exclusive courses.
 - Related courses rendered as `CourseCard` components linked to
@@ -20,16 +20,28 @@ navigation and is rendered by the client-side router.
 
 1. The page reads `code` from `window.location.search` (`?code=...`).
 2. It loads the course from IndexedDB through `getCourse`.
-3. It triggers `initCourseSync` to refresh local data when online and re-renders
-   on sync callbacks.
+3. It subscribes to `COURSE_SYNC_EVENT` and re-renders when course data is
+   refreshed.
 4. It resolves connection codes (dependencies/adjacent/exclusive) and fetches
    each related course from IndexedDB.
 5. It scans the courses store in batches to find dependants (courses whose
    dependency groups include the current course code).
 6. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
    `חורף`, `spring`/`B` -> `אביב`, `summer`/`C` -> `קיץ`).
-7. The UI updates between loading, found, and not-found states, and related
-   course cards are rendered in dedicated grids.
+7. Section headers are always visible to keep layout stable.
+8. During loading, each relation grid starts with 3 pre-rendered `CourseCard`
+   skeletons from the HTML template, and section counts use shimmer
+   placeholders (without loading text).
+9. During loading, the full points/median/faculty/seasons stat cards use
+   shimmer placeholders via `data-loading="true"` on each stat tile.
+10. After data resolves, grids are replaced with real cards and empty labels are
+    shown only for empty result sets.
+
+## Storybook
+
+- `src/pages/course/course_page.stories.ts` includes a dedicated `Skeleton`
+  story that renders `CoursePageSkeletonPreview()` so the loading layout can be
+  reviewed directly from template defaults without waiting for async data.
 
 ## Unit Tests
 
@@ -64,18 +76,18 @@ assert 'נדרש פרמטר code' in text('[data-role="not-found-message"]')
 
 WHAT: Verifies happy-path render with related-course sections.
 WHY: Ensures dependency, dependant, adjacent, and exclusive groups remain accurate.
-HOW: Deep-links to `CS101`, mocks course graph and course pages, then asserts found state, relation counts, `או` labels, and sync init call.
+HOW: Deep-links to `CS101`, asserts the initial loading skeleton cards, flushes async work, then verifies resolved relation counts and `או` labels.
 
 ```python
 window.history.set('/course?code=CS101')
 mock_course_graph_for_cs101()
 page = CoursePage()
+assert count('[data-component="CourseCard"][data-skeleton="true"]') == 12
 flush_promises()
 assert text('[data-role="course-name"]') == 'Intro to CS'
-assert visible('[data-state="found"]')
 assert count('[data-role="dependencies-grid"] section') == 2
 assert count('[data-role="dependants-grid"] [data-component="CourseCard"]') == 2
-assert initCourseSync.called_once()
+assert count('[data-component="CourseCard"][data-skeleton="true"]') == 0
 ```
 
 ## Integration Tests

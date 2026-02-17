@@ -62,9 +62,13 @@ describe('course page', () => {
         const message = page.querySelector<HTMLElement>(
             "[data-role='not-found-message']"
         );
+        const headings = Array.from(page.querySelectorAll('h2')).map(
+            (heading) => heading.textContent?.trim() ?? ''
+        );
 
         expect(notFoundState?.classList.contains('hidden')).toBe(false);
         expect(message?.textContent).toContain('נדרש פרמטר code');
+        expect(headings).toContain('קורסי קדם');
     });
 
     it('renders fetched course and related course cards', async () => {
@@ -134,13 +138,16 @@ describe('course page', () => {
         );
 
         const page = CoursePage();
+        const loadingSkeletonCards = page.querySelectorAll(
+            "[data-component='CourseCard'][data-skeleton='true']"
+        );
         await flushPromises();
 
         const courseName = page.querySelector<HTMLElement>(
             "[data-role='course-name']"
         );
-        const foundState = page.querySelector<HTMLElement>(
-            "[data-state='found']"
+        const resolvedSkeletonCards = page.querySelectorAll(
+            "[data-component='CourseCard'][data-skeleton='true']"
         );
         const dependencyCards = page.querySelectorAll(
             "[data-role='dependencies-grid'] [data-component='CourseCard']"
@@ -162,7 +169,8 @@ describe('course page', () => {
         );
 
         expect(courseName?.textContent).toBe('Intro to CS');
-        expect(foundState?.classList.contains('hidden')).toBe(false);
+        expect(loadingSkeletonCards).toHaveLength(12);
+        expect(resolvedSkeletonCards).toHaveLength(0);
         expect(dependencyGroups).toHaveLength(2);
         expect(dependencyCards).toHaveLength(3);
         expect(

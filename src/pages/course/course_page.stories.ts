@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html';
 
-import { CoursePage } from './course_page';
+import { CoursePage, CoursePageSkeletonPreview } from './course_page';
 
 type CoursePageStoryArgs = {
     courseCode: string;
@@ -48,6 +48,15 @@ export const Dark: Story = {
         backgrounds: {
             default: 'dark',
         },
+    },
+};
+
+export const Skeleton: Story = {
+    render: () => {
+        return CoursePageSkeletonPreview();
+    },
+    globals: {
+        theme: 'light',
     },
 };
 
