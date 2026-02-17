@@ -17,10 +17,10 @@ semester selected by the `number` query parameter.
 ## Data Flow
 
 1. `SemesterPage()` parses `?number=<n>` from URL and defaults to semester 1.
-2. `hydratePage()` reads plan meta (`planPageState`), active requirement
-   selection, and full local courses list.
+2. `hydratePage()` reads plan state, active requirement
+   selection, and full local courses list through global `state` getters.
 3. Current semester courses are loaded from plan codes and rendered separately.
-4. Requirement groups are derived from `getRequirement(programId)` and
+4. Requirement groups are derived from `state.requirements.get(programId)` and
    `filterRequirementsByPath(...)`, then current-semester courses are excluded.
 5. Remaining non-catalog and non-semester courses are grouped into
    free-elective sections by faculty.

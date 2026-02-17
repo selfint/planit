@@ -1,6 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/html';
+import { type StateProvider, state } from '$lib/stateManagement';
 
 import { DegreePicker } from './DegreePicker';
+
+const storyProvider = createDegreePickerStoryProvider();
 
 const meta: Meta = {
     title: 'Components/DegreePicker',
@@ -11,14 +14,20 @@ export default meta;
 export type Story = StoryObj;
 
 export const Default: Story = {
-    render: () => DegreePicker(),
+    render: () => {
+        void state.provider.set(storyProvider);
+        return DegreePicker();
+    },
     globals: {
         theme: 'light',
     },
 };
 
 export const Dark: Story = {
-    render: () => DegreePicker(),
+    render: () => {
+        void state.provider.set(storyProvider);
+        return DegreePicker();
+    },
     globals: { theme: 'dark' },
     parameters: {
         backgrounds: {
@@ -26,3 +35,71 @@ export const Dark: Story = {
         },
     },
 };
+
+function createDegreePickerStoryProvider(): StateProvider {
+    return {
+        courses: {
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(undefined),
+            query: () => Promise.resolve({ courses: [], total: 0 }),
+            page: () => Promise.resolve([]),
+            count: () => Promise.resolve(0),
+            faculties: () => Promise.resolve([]),
+            getLastSync: () => Promise.resolve(undefined),
+        },
+        catalogs: {
+            get: () =>
+                Promise.resolve({
+                    '2025_200': {
+                        he: 'קטלוג 2025',
+                        'computer-science': {
+                            he: 'מדעי המחשב',
+                            '0324': {
+                                he: 'מדעי המחשב - ארבע שנתי',
+                            },
+                        },
+                    },
+                }),
+            set: () => Promise.resolve(undefined),
+        },
+        requirements: {
+            get: () =>
+                Promise.resolve({
+                    programId: '0324',
+                    catalogId: '2025_200',
+                    facultyId: 'computer-science',
+                    data: {
+                        name: 'root',
+                        nested: [
+                            {
+                                name: 'software-path',
+                                en: 'Software Path',
+                                nested: [
+                                    {
+                                        name: 'core',
+                                        he: 'חובה',
+                                        courses: ['234114', '236501'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                }),
+            sync: () => Promise.resolve({ status: 'updated' }),
+        },
+        userDegree: {
+            get: () =>
+                Promise.resolve({
+                    catalogId: '2025_200',
+                    facultyId: 'computer-science',
+                    programId: '0324',
+                    path: undefined,
+                }),
+            set: () => Promise.resolve(undefined),
+        },
+        userPlan: {
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(undefined),
+        },
+    };
+}

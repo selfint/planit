@@ -41,6 +41,7 @@ import {
     shouldHandleClickNavigation,
     stripBasePath,
 } from '$lib/router';
+import { createLocalStateProvider, state } from '$lib/stateManagement';
 
 describe('router lib', () => {
     it('normalizes trailing slashes while preserving root', () => {
@@ -126,5 +127,22 @@ describe('router lib', () => {
 
         expect(window.location.pathname).toBe('/semester');
         expect(window.location.search).toBe('?number=3');
+    });
+
+    it('rerenders current route after provider swap', async () => {
+        document.body.innerHTML = '<div id="app"></div>';
+        window.history.replaceState(null, '', '/plan');
+
+        initRouter();
+
+        const app = document.querySelector('#app');
+        const firstPage = app?.firstElementChild;
+
+        await state.provider.set(createLocalStateProvider());
+
+        const secondPage = app?.firstElementChild;
+        expect(firstPage).toBeTruthy();
+        expect(secondPage).toBeTruthy();
+        expect(secondPage).not.toBe(firstPage);
     });
 });

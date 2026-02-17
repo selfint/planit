@@ -1,14 +1,7 @@
-import {
-    type CourseQueryParams,
-    type CourseRecord,
-    getCourseFaculties,
-    getCoursesCount,
-    getMeta,
-    getRequirement,
-    queryCourses,
-} from '$lib/indexeddb';
+import { type CourseQueryParams, type CourseRecord } from '$lib/indexeddb';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
+import { state as appState } from '$lib/stateManagement';
 
 import templateHtml from './search_page.html?raw';
 
@@ -260,7 +253,7 @@ async function hydrateFilterOptions(
 ): Promise<void> {
     try {
         const [faculties, requirementOptions] = await Promise.all([
-            getCourseFaculties(),
+            appState.courses.faculties(),
             readRequirementOptions(),
         ]);
 
@@ -324,7 +317,7 @@ async function runSearch(
     const queryParams = buildQueryParams(state);
 
     try {
-        const result = await queryCourses(queryParams);
+        const result = await appState.courses.query(queryParams);
         if (requestId !== state.requestId) {
             return;
         }
@@ -470,16 +463,13 @@ function renderSelectOptions(
 }
 
 async function readRequirementOptions(): Promise<RequirementOption[]> {
-    const activeProgramMeta = await getMeta('requirementsActiveProgramId');
-    const programId =
-        typeof activeProgramMeta?.value === 'string'
-            ? activeProgramMeta.value
-            : '';
+    const selection = await appState.userDegree.get();
+    const programId = selection?.programId ?? '';
     if (programId.length === 0) {
         return [];
     }
 
-    const requirementRecord = await getRequirement(programId);
+    const requirementRecord = await appState.requirements.get(programId);
     if (requirementRecord === undefined) {
         return [];
     }
@@ -568,8 +558,8 @@ function toRequirementNode(value: unknown): RequirementNode | undefined {
 }
 
 async function updateSyncLabel(target: HTMLParagraphElement): Promise<void> {
-    const meta = await getMeta('courseDataLastSync');
-    if (typeof meta?.value !== 'string' || meta.value.length === 0) {
+    const lastSync = await appState.courses.getLastSync();
+    if (lastSync === undefined || lastSync.length === 0) {
         target.replaceChildren(
             document.createTextNode('עדיין לא בוצע סנכרון נתונים. '),
             createCatalogLink('עברו לקטלוג כדי לבחור מסלול.')
@@ -577,7 +567,7 @@ async function updateSyncLabel(target: HTMLParagraphElement): Promise<void> {
         return;
     }
 
-    const date = new Date(meta.value);
+    const date = new Date(lastSync);
     if (Number.isNaN(date.getTime())) {
         target.textContent = 'סטטוס סנכרון לא זמין.';
         return;
@@ -591,7 +581,7 @@ async function hydrateTotalCourses(
     elements: SearchPageElements
 ): Promise<void> {
     try {
-        state.totalCourses = await getCoursesCount();
+        state.totalCourses = await appState.courses.count();
         void runSearch(elements, state, false);
     } catch {
         state.totalCourses = undefined;

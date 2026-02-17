@@ -1,4 +1,3 @@
-import { type CourseRecord, getCourse, getRequirement } from '$lib/indexeddb';
 import {
     type RequirementNode,
     filterRequirementsByPath,
@@ -7,7 +6,8 @@ import {
 } from '$lib/requirementsUtils';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
-import { getActiveRequirementsSelection } from '$lib/requirementsSync';
+import { type CourseRecord } from '$lib/indexeddb';
+import { state as appState } from '$lib/stateManagement';
 import templateHtml from './catalog_page.html?raw';
 
 import { DegreePicker } from './components/DegreePicker';
@@ -154,7 +154,7 @@ async function refreshCatalogGroups(
 
     context.state.textContent = GROUP_LOADING_MESSAGE;
 
-    const selection = await getActiveRequirementsSelection();
+    const selection = await appState.userDegree.get();
     if (context.refreshVersion !== nextVersion) {
         return;
     }
@@ -183,7 +183,9 @@ async function refreshCatalogGroups(
         return;
     }
 
-    const requirementRecord = await getRequirement(selection.programId);
+    const requirementRecord = await appState.requirements.get(
+        selection.programId
+    );
     if (context.refreshVersion !== nextVersion) {
         return;
     }
@@ -490,7 +492,7 @@ async function loadCourseRecords(
                 return;
             }
 
-            const record = await getCourse(code);
+            const record = await appState.courses.get(code);
             const value = record ?? null;
             cache.set(code, value);
             recordsByCode.set(code, value);

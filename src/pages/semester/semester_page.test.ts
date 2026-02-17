@@ -1,4 +1,5 @@
 /* @vitest-environment jsdom */
+import { type StateProvider, state } from '$lib/stateManagement';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
@@ -27,26 +28,10 @@ vi.mock('$components/ConsoleNav', () => ({
     },
 }));
 
-vi.mock('$lib/indexeddb', () => ({
-    getMeta: (key: string): Promise<unknown> =>
-        mocks.getMetaMock(key) as Promise<unknown>,
-    queryCourses: (): Promise<unknown> =>
-        mocks.queryCoursesMock() as Promise<unknown>,
-    getRequirement: (programId: string): Promise<unknown> =>
-        mocks.getRequirementMock(programId) as Promise<unknown>,
-    getCourse: (code: string): Promise<unknown> =>
-        mocks.getCourseMock(code) as Promise<unknown>,
-}));
-
-vi.mock('$lib/requirementsSync', () => ({
-    getActiveRequirementsSelection: (): Promise<unknown> =>
-        mocks.getActiveRequirementsSelectionMock() as Promise<unknown>,
-}));
-
 import { SemesterPage } from './semester_page';
 
 describe('SemesterPage', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         mocks.getMetaMock.mockReset();
         mocks.queryCoursesMock.mockReset();
         mocks.getRequirementMock.mockReset();
@@ -54,6 +39,7 @@ describe('SemesterPage', () => {
         mocks.getActiveRequirementsSelectionMock.mockReset();
         mocks.getCourseMock.mockResolvedValue(undefined);
         window.history.replaceState(null, '', '/semester');
+        await state.provider.set(createStateProviderMock());
     });
 
     it('uses query param number and shows semester metadata in sticky title', async () => {
@@ -169,4 +155,34 @@ async function flushPromises(): Promise<void> {
     await new Promise((resolve) => {
         window.setTimeout(resolve, 0);
     });
+}
+
+function createStateProviderMock(): StateProvider {
+    return {
+        courses: {
+            get: mocks.getCourseMock,
+            set: vi.fn(),
+            query: mocks.queryCoursesMock,
+            page: vi.fn(),
+            count: vi.fn(),
+            faculties: vi.fn(),
+            getLastSync: vi.fn(),
+        },
+        catalogs: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+        requirements: {
+            get: mocks.getRequirementMock,
+            sync: vi.fn(),
+        },
+        userDegree: {
+            get: mocks.getActiveRequirementsSelectionMock,
+            set: vi.fn(),
+        },
+        userPlan: {
+            get: mocks.getMetaMock,
+            set: vi.fn(),
+        },
+    };
 }

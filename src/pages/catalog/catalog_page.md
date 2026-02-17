@@ -17,11 +17,11 @@ their courses from local IndexedDB data.
 
 1. `CatalogPage()` mounts `DegreePicker()` and immediately renders lightweight
    skeleton rows using `CourseCard` placeholders.
-2. The page reads active selection via `getActiveRequirementsSelection()` and
-   program requirements via `getRequirement(programId)` from IndexedDB.
+2. The page reads active selection via global `state.userDegree.get()` and
+   program requirements via `state.requirements.get(programId)`.
 3. The requirement tree is filtered with `filterRequirementsByPath()` and then
    flattened into course-bearing requirement groups.
-4. Each course code resolves to optional course details using `getCourse(code)`.
+4. Each course code resolves to optional course details using `state.courses.get(code)`.
 5. Courses render as linked `CourseCard` entries (`/course?code=<code>`).
 6. Cards per page are viewport-aware: 3 on mobile widths and 9 on tablet and wider widths.
 7. Cards inside each requirement are sorted by course median (highest first),

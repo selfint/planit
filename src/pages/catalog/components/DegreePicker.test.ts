@@ -1,4 +1,5 @@
 /* @vitest-environment jsdom */
+import { type StateProvider, state } from '$lib/stateManagement';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const getCatalogsMock = vi.fn();
@@ -7,32 +8,14 @@ const getActiveRequirementsSelectionMock = vi.fn();
 const setActiveRequirementsSelectionMock = vi.fn();
 const syncRequirementsMock = vi.fn();
 
-vi.mock('$lib/indexeddb', () => ({
-    getCatalogs: (): Promise<unknown> => getCatalogsMock() as Promise<unknown>,
-    getRequirement: (programId: string): Promise<unknown> =>
-        getRequirementMock(programId) as Promise<unknown>,
-}));
-
 vi.mock('$lib/catalogSync', () => ({
     CATALOG_SYNC_EVENT: 'planit:catalog-sync',
-}));
-
-vi.mock('$lib/requirementsSync', () => ({
-    getActiveRequirementsSelection: (): Promise<unknown> =>
-        getActiveRequirementsSelectionMock() as Promise<unknown>,
-    setActiveRequirementsSelection: (selection: unknown): Promise<void> =>
-        setActiveRequirementsSelectionMock(selection) as Promise<void>,
-    syncRequirements: (
-        selection: unknown,
-        options?: unknown
-    ): Promise<unknown> =>
-        syncRequirementsMock(selection, options) as Promise<unknown>,
 }));
 
 import { DegreePicker } from './DegreePicker';
 
 describe('DegreePicker', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         getCatalogsMock.mockReset();
         getRequirementMock.mockReset();
         getActiveRequirementsSelectionMock.mockReset();
@@ -53,6 +36,7 @@ describe('DegreePicker', () => {
         getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
         syncRequirementsMock.mockResolvedValue({ status: 'updated' });
         setActiveRequirementsSelectionMock.mockResolvedValue(undefined);
+        await state.provider.set(createStateProviderMock());
     });
 
     it('does not persist active selection while path is required but not selected', async () => {
@@ -176,4 +160,34 @@ async function waitForUiWork(): Promise<void> {
     await Promise.resolve();
     await new Promise((resolve) => window.setTimeout(resolve, 0));
     await Promise.resolve();
+}
+
+function createStateProviderMock(): StateProvider {
+    return {
+        courses: {
+            get: vi.fn(),
+            set: vi.fn(),
+            query: vi.fn(),
+            page: vi.fn(),
+            count: vi.fn(),
+            faculties: vi.fn(),
+            getLastSync: vi.fn(),
+        },
+        catalogs: {
+            get: getCatalogsMock,
+            set: vi.fn(),
+        },
+        requirements: {
+            get: getRequirementMock,
+            sync: syncRequirementsMock,
+        },
+        userDegree: {
+            get: getActiveRequirementsSelectionMock,
+            set: setActiveRequirementsSelectionMock,
+        },
+        userPlan: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+    };
 }

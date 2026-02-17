@@ -1,11 +1,4 @@
 import {
-    type CourseRecord,
-    getCourse,
-    getMeta,
-    getRequirement,
-    queryCourses,
-} from '$lib/indexeddb';
-import {
     type RequirementNode,
     filterRequirementsByPath,
     getRequirementId,
@@ -13,10 +6,10 @@ import {
 } from '$lib/requirementsUtils';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
-import { getActiveRequirementsSelection } from '$lib/requirementsSync';
+import { type CourseRecord } from '$lib/indexeddb';
+import { state as appState } from '$lib/stateManagement';
 import templateHtml from './semester_page.html?raw';
 
-const PLAN_META_KEY = 'planPageState';
 const FALLBACK_COURSE_NAME_PREFIX = 'קורס';
 const FALLBACK_FACULTY = 'ללא פקולטה';
 const DEFAULT_SEMESTER_NUMBER = 1;
@@ -135,9 +128,12 @@ async function hydratePage(
     try {
         const [selection, requirementCountEntry, allCoursesResult] =
             await Promise.all([
-                getActiveRequirementsSelection(),
-                getMeta(PLAN_META_KEY),
-                queryCourses({ page: 1, pageSize: 'all' }),
+                appState.userDegree.get(),
+                appState.userPlan.get(),
+                appState.courses.query({
+                    page: 1,
+                    pageSize: 'all',
+                }),
             ]);
 
         const allCourses = allCoursesResult.courses;
@@ -255,7 +251,7 @@ async function loadCoursesForCodes(
                 return;
             }
 
-            const loaded = await getCourse(code);
+            const loaded = await appState.courses.get(code);
             if (loaded !== undefined) {
                 courseMap.set(code, loaded);
                 courses[index] = loaded;
@@ -285,7 +281,7 @@ async function loadRequirementCourseGroups(
     courseMap: Map<string, CourseRecord>,
     semesterCodeSet: Set<string>
 ): Promise<CourseGroup[]> {
-    const requirementRecord = await getRequirement(programId);
+    const requirementRecord = await appState.requirements.get(programId);
     const requirementRoot = toRequirementNode(requirementRecord?.data);
     if (requirementRoot === undefined) {
         return [];

@@ -1,4 +1,5 @@
 /* @vitest-environment jsdom */
+import { type StateProvider, state } from '$lib/stateManagement';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const {
@@ -16,14 +17,6 @@ const {
         getRequirementMock: vi.fn(),
     };
 });
-
-vi.mock('$lib/indexeddb', () => ({
-    queryCourses: queryCoursesMock,
-    getMeta: getMetaMock,
-    getCourseFaculties: getCourseFacultiesMock,
-    getCoursesCount: getCoursesCountMock,
-    getRequirement: getRequirementMock,
-}));
 
 vi.mock('$components/CourseCard', () => ({
     CourseCard: (course?: { code?: string }): HTMLElement => {
@@ -47,7 +40,7 @@ vi.mock('$components/ConsoleNav', () => ({
 import { SearchPage } from './search_page';
 
 describe('SearchPage', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         queryCoursesMock.mockReset();
         getMetaMock.mockReset();
         getCourseFacultiesMock.mockReset();
@@ -58,14 +51,10 @@ describe('SearchPage', () => {
         getCourseFacultiesMock.mockResolvedValue(['CS', 'Math']);
         getCoursesCountMock.mockResolvedValue(10);
         getRequirementMock.mockResolvedValue(undefined);
-        getMetaMock.mockImplementation((key: string) => {
-            if (key === 'courseDataLastSync') {
-                return { key, value: '' };
-            }
-            return { key, value: '' };
-        });
+        getMetaMock.mockResolvedValue(undefined);
 
         window.history.replaceState(null, '', '/search');
+        await state.provider.set(createStateProviderMock());
     });
 
     afterEach(() => {
@@ -157,3 +146,33 @@ describe('SearchPage', () => {
         expect(emptyMessage?.classList.contains('hidden')).toBe(true);
     });
 });
+
+function createStateProviderMock(): StateProvider {
+    return {
+        courses: {
+            get: vi.fn(),
+            set: vi.fn(),
+            query: queryCoursesMock,
+            page: vi.fn(),
+            count: getCoursesCountMock,
+            faculties: getCourseFacultiesMock,
+            getLastSync: () => Promise.resolve(undefined),
+        },
+        catalogs: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+        requirements: {
+            get: getRequirementMock,
+            sync: vi.fn(),
+        },
+        userDegree: {
+            get: () => Promise.resolve(undefined),
+            set: vi.fn(),
+        },
+        userPlan: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+    };
+}

@@ -1,11 +1,7 @@
-import {
-    type CourseRecord,
-    getCoursesPage,
-    getMeta,
-    setMeta,
-} from '$lib/indexeddb';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
+import { type CourseRecord } from '$lib/indexeddb';
+import { state as appState } from '$lib/stateManagement';
 
 import templateHtml from './plan_page.html?raw';
 
@@ -35,7 +31,6 @@ type PersistedPlan = {
     exemptionsCourseCodes?: string[];
 };
 
-const PLAN_META_KEY = 'planPageState';
 const PLAN_META_VERSION = 2;
 const MIN_SEMESTERS = 3;
 const DEFAULT_SEMESTER_COUNT = 6;
@@ -316,8 +311,8 @@ async function hydratePlan(
     semesterCountInput: HTMLInputElement
 ): Promise<void> {
     const [meta, courses] = await Promise.all([
-        getMeta(PLAN_META_KEY).catch(() => undefined),
-        getCoursesPage(18, 0).catch(() => []),
+        appState.userPlan.get().catch(() => undefined),
+        appState.courses.page(18, 0).catch(() => []),
     ]);
 
     const usableCourses = dedupeCourses(
@@ -1129,8 +1124,5 @@ async function persistPlanState(state: PlanState): Promise<void> {
         exemptionsCourseCodes: state.exemptions.map((course) => course.code),
     };
 
-    await setMeta({
-        key: PLAN_META_KEY,
-        value: payload,
-    }).catch(() => undefined);
+    await appState.userPlan.set(payload).catch(() => undefined);
 }

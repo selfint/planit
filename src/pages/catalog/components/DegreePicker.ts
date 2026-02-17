@@ -7,13 +7,8 @@ import {
     getRequirementId,
     getRequirementLabel,
 } from '$lib/requirementsUtils';
-import {
-    getActiveRequirementsSelection,
-    setActiveRequirementsSelection,
-    syncRequirements,
-} from '$lib/requirementsSync';
-import { getCatalogs, getRequirement } from '$lib/indexeddb';
 import { CATALOG_SYNC_EVENT } from '$lib/catalogSync';
+import { state as appState } from '$lib/stateManagement';
 import templateHtml from './DegreePicker.html?raw';
 
 type CatalogMap = Record<string, unknown>;
@@ -226,8 +221,8 @@ async function loadCatalogs(
     requirementRows: HTMLTableSectionElement,
     status: HTMLParagraphElement
 ): Promise<void> {
-    state.catalogs = await getCatalogs();
-    const storedSelection = await getActiveRequirementsSelection();
+    state.catalogs = await appState.catalogs.get();
+    const storedSelection = await appState.userDegree.get();
     if (storedSelection !== undefined) {
         state.selection = {
             catalogId: storedSelection.catalogId,
@@ -362,7 +357,7 @@ async function loadRequirements(
     programSelect.disabled = true;
     updateStatus(status, 'טוען דרישות...');
 
-    const result = await syncRequirements(selection, {
+    const result = await appState.requirements.sync(selection, {
         persistActiveSelection: false,
     });
 
@@ -405,7 +400,7 @@ async function hydrateRequirements(
         return;
     }
 
-    const stored = await getRequirement(programId);
+    const stored = await appState.requirements.get(programId);
     state.requirement = toRequirementNode(stored?.data);
 
     const pathOptions = buildPathOptions(state.requirement);
@@ -674,5 +669,5 @@ async function persistActiveSelectionIfComplete(
     if (!isSelectionComplete(state) || state.selection === undefined) {
         return;
     }
-    await setActiveRequirementsSelection(state.selection);
+    await appState.userDegree.set(state.selection);
 }

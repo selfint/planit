@@ -1,4 +1,5 @@
 /* @vitest-environment jsdom */
+import { type StateProvider, state } from '$lib/stateManagement';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => {
@@ -8,12 +9,6 @@ const mocks = vi.hoisted(() => {
         setMetaMock: vi.fn(),
     };
 });
-
-vi.mock('$lib/indexeddb', () => ({
-    getCoursesPage: mocks.getCoursesPageMock,
-    getMeta: mocks.getMetaMock,
-    setMeta: mocks.setMetaMock,
-}));
 
 vi.mock('$components/ConsoleNav', () => ({
     ConsoleNav: (): HTMLElement => {
@@ -37,7 +32,7 @@ vi.mock('$components/CourseCard', () => ({
 import { PlanPage } from './plan_page';
 
 describe('plan page', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         if (typeof window.CSS === 'undefined') {
             Object.defineProperty(window, 'CSS', {
                 configurable: true,
@@ -69,6 +64,7 @@ describe('plan page', () => {
             },
         ]);
         mocks.setMetaMock.mockResolvedValue(undefined);
+        await state.provider.set(createStateProviderMock());
     });
 
     afterEach(() => {
@@ -197,4 +193,37 @@ async function flushPromises(): Promise<void> {
     await new Promise((resolve) => {
         window.setTimeout(resolve, 0);
     });
+}
+
+function createStateProviderMock(): StateProvider {
+    return {
+        courses: {
+            get: vi.fn(),
+            set: vi.fn(),
+            query: vi.fn(),
+            page: mocks.getCoursesPageMock,
+            count: vi.fn(),
+            faculties: vi.fn(),
+            getLastSync: vi.fn(),
+        },
+        catalogs: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+        requirements: {
+            get: vi.fn(),
+            sync: vi.fn(),
+        },
+        userDegree: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+        userPlan: {
+            get: mocks.getMetaMock,
+            set: (value: unknown): Promise<void> => {
+                mocks.setMetaMock({ key: 'planPageState', value });
+                return Promise.resolve();
+            },
+        },
+    };
 }

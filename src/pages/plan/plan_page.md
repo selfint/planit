@@ -21,16 +21,16 @@ It is designed as a row-based board that avoids horizontal scrolling and keeps m
 ## Data Flow
 
 1. `PlanPage()` clones the template and mounts `ConsoleNav`.
-2. On hydrate, the page fetches IndexedDB data through `$lib/indexeddb`:
-    - `getMeta('planPageState')`
-    - `getCoursesPage(...)`
+2. On hydrate, the page fetches persisted/local data through global state:
+    - `state.userPlan.get()`
+    - `state.courses.page(...)`
 3. The page restores persisted placement when available (semesters + wishlist + exemptions), otherwise distributes courses into semester rows.
 4. User actions update in-memory state immediately:
     - select course
     - move to target row
     - clear selection
     - resize semester count
-5. Persisted state is updated with `setMeta(...)` after move/resize operations.
+5. Persisted state is updated with `state.userPlan.set(...)` after move/resize operations.
 6. The UI rerenders row content and updates derived metrics + schedule problems from semester rows.
 
 ## Unit Tests

@@ -1,4 +1,5 @@
 /* @vitest-environment jsdom */
+import { type StateProvider, state as appState } from '$lib/stateManagement';
 import { describe, expect, it, vi } from 'vitest';
 
 vi.mock('$components/CourseCard', () => ({
@@ -38,20 +39,7 @@ vi.mock('./components/DegreePicker', () => ({
 
 const getRequirementMock = vi.fn();
 const getCourseMock = vi.fn();
-
-vi.mock('$lib/indexeddb', () => ({
-    getRequirement: (programId: string): Promise<unknown> =>
-        getRequirementMock(programId) as Promise<unknown>,
-    getCourse: (courseCode: string): Promise<unknown> =>
-        getCourseMock(courseCode) as Promise<unknown>,
-}));
-
 const getActiveRequirementsSelectionMock = vi.fn();
-
-vi.mock('$lib/requirementsSync', () => ({
-    getActiveRequirementsSelection: (): Promise<unknown> =>
-        getActiveRequirementsSelectionMock() as Promise<unknown>,
-}));
 
 import { CatalogPage } from './catalog_page';
 
@@ -59,6 +47,7 @@ describe('CatalogPage', () => {
     it('renders waiting state when no active selection exists', async () => {
         setViewportWidth(620);
         getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
+        await appState.provider.set(createStateProviderMock());
 
         const page = CatalogPage();
         await waitForUiWork();
@@ -136,6 +125,7 @@ describe('CatalogPage', () => {
             });
         });
 
+        await appState.provider.set(createStateProviderMock());
         const page = CatalogPage();
         await waitForUiWork();
 
@@ -211,6 +201,7 @@ describe('CatalogPage', () => {
             })
         );
 
+        await appState.provider.set(createStateProviderMock());
         const page = CatalogPage();
         await waitForUiWork();
 
@@ -276,6 +267,7 @@ describe('CatalogPage', () => {
             })
         );
 
+        await appState.provider.set(createStateProviderMock());
         const page = CatalogPage();
         await waitForUiWork();
 
@@ -338,6 +330,7 @@ describe('CatalogPage', () => {
             })
         );
 
+        await appState.provider.set(createStateProviderMock());
         const page = CatalogPage();
         await waitForUiWork();
 
@@ -363,4 +356,34 @@ async function waitForUiWork(): Promise<void> {
     await Promise.resolve();
     await new Promise((resolve) => window.setTimeout(resolve, 0));
     await Promise.resolve();
+}
+
+function createStateProviderMock(): StateProvider {
+    return {
+        courses: {
+            get: getCourseMock,
+            set: vi.fn(),
+            query: vi.fn(),
+            page: vi.fn(),
+            count: vi.fn(),
+            faculties: vi.fn(),
+            getLastSync: vi.fn(),
+        },
+        catalogs: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+        requirements: {
+            get: getRequirementMock,
+            sync: vi.fn(),
+        },
+        userDegree: {
+            get: getActiveRequirementsSelectionMock,
+            set: vi.fn(),
+        },
+        userPlan: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+    };
 }
