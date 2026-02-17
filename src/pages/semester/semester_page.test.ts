@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => ({
     getMetaMock: vi.fn(),
+    setMetaMock: vi.fn(),
     queryCoursesMock: vi.fn(),
     getRequirementMock: vi.fn(),
     getCourseMock: vi.fn(),
@@ -33,11 +34,13 @@ import { SemesterPage } from './semester_page';
 describe('SemesterPage', () => {
     beforeEach(async () => {
         mocks.getMetaMock.mockReset();
+        mocks.setMetaMock.mockReset();
         mocks.queryCoursesMock.mockReset();
         mocks.getRequirementMock.mockReset();
         mocks.getCourseMock.mockReset();
         mocks.getActiveRequirementsSelectionMock.mockReset();
         mocks.getCourseMock.mockResolvedValue(undefined);
+        mocks.setMetaMock.mockResolvedValue(undefined);
         window.history.replaceState(null, '', '/semester');
         await state.provider.set(createStateProviderMock());
     });
@@ -147,6 +150,189 @@ describe('SemesterPage', () => {
         expect(freeTitles).toContain('בחירה חופשית: מתמטיקה');
         expect(freeTitles).toContain('בחירה חופשית: פיזיקה');
     });
+
+    it('selects a course and adds it into current semester panel', async () => {
+        window.history.replaceState(null, '', '/semester?number=2');
+        mocks.getMetaMock.mockResolvedValue({
+            value: {
+                version: 2,
+                semesterCount: 2,
+                semesters: [
+                    { id: 'אביב-2026-0', courseCodes: [] },
+                    { id: 'קיץ-2026-1', courseCodes: ['A100'] },
+                ],
+                wishlistCourseCodes: [],
+                exemptionsCourseCodes: [],
+            },
+        });
+        mocks.queryCoursesMock.mockResolvedValue({
+            courses: [
+                {
+                    code: 'A100',
+                    name: 'A100',
+                    faculty: 'מדעי המחשב',
+                    median: 90,
+                },
+                {
+                    code: 'B200',
+                    name: 'B200',
+                    faculty: 'מדעי המחשב',
+                    median: 80,
+                },
+            ],
+            total: 2,
+        });
+        mocks.getActiveRequirementsSelectionMock.mockResolvedValue({
+            catalogId: '2025_200',
+            facultyId: 'computer-science',
+            programId: '0324',
+            path: 'software',
+        });
+        mocks.getRequirementMock.mockResolvedValue({
+            data: {
+                name: 'root',
+                nested: [
+                    {
+                        name: 'software',
+                        en: 'Software Path',
+                        nested: [{ name: 'core', courses: ['A100', 'B200'] }],
+                    },
+                ],
+            },
+        });
+
+        const page = SemesterPage();
+        await flushPromises();
+
+        const b200 = page.querySelector<HTMLAnchorElement>(
+            '[data-role="groups-root"] a[data-course-code="B200"]'
+        );
+        const currentSemester = page.querySelector<HTMLElement>(
+            '[data-role="current-semester"]'
+        );
+        expect(b200).toBeTruthy();
+        expect(currentSemester).toBeTruthy();
+
+        b200?.click();
+        expect(b200?.classList.contains('ring-2')).toBe(true);
+
+        currentSemester?.click();
+        await flushPromises();
+
+        const currentCodes = Array.from(
+            page.querySelectorAll(
+                '[data-role="current-semester-courses"] a[data-course-code]'
+            )
+        ).map((node) => node.getAttribute('data-course-code'));
+        expect(currentCodes).toEqual(['A100', 'B200']);
+        expect(mocks.setMetaMock).toHaveBeenCalled();
+
+        const payload = mocks.setMetaMock.mock.calls.at(-1)?.[0] as
+            | { semesters?: { courseCodes?: string[] }[] }
+            | undefined;
+        expect(payload?.semesters?.[1]?.courseCodes).toEqual(['A100', 'B200']);
+    });
+
+    it('opens course page when clicking same selected course twice', async () => {
+        window.history.replaceState(null, '', '/semester?number=2');
+        mocks.getMetaMock.mockResolvedValue({
+            value: {
+                semesters: [
+                    { id: 'אביב-2026-0', courseCodes: [] },
+                    { id: 'קיץ-2026-1', courseCodes: [] },
+                ],
+            },
+        });
+        mocks.queryCoursesMock.mockResolvedValue({
+            courses: [{ code: 'B200', name: 'B200', faculty: 'מדעי המחשב' }],
+            total: 1,
+        });
+        mocks.getActiveRequirementsSelectionMock.mockResolvedValue({
+            catalogId: '2025_200',
+            facultyId: 'computer-science',
+            programId: '0324',
+            path: 'software',
+        });
+        mocks.getRequirementMock.mockResolvedValue({
+            data: {
+                name: 'root',
+                nested: [
+                    {
+                        name: 'software',
+                        nested: [{ name: 'core', courses: ['B200'] }],
+                    },
+                ],
+            },
+        });
+
+        const page = SemesterPage();
+        await flushPromises();
+
+        const b200 = page.querySelector<HTMLAnchorElement>(
+            '[data-role="groups-root"] a[data-course-code="B200"]'
+        );
+        expect(b200).toBeTruthy();
+
+        b200?.click();
+        b200?.click();
+
+        expect(window.location.pathname).toBe('/course');
+        expect(new URLSearchParams(window.location.search).get('code')).toBe(
+            'B200'
+        );
+    });
+
+    it('shows cancel button while selected and clears selection on cancel', async () => {
+        window.history.replaceState(null, '', '/semester?number=2');
+        mocks.getMetaMock.mockResolvedValue({
+            value: {
+                semesters: [
+                    { id: 'אביב-2026-0', courseCodes: [] },
+                    { id: 'קיץ-2026-1', courseCodes: [] },
+                ],
+            },
+        });
+        mocks.queryCoursesMock.mockResolvedValue({
+            courses: [{ code: 'B200', name: 'B200', faculty: 'מדעי המחשב' }],
+            total: 1,
+        });
+        mocks.getActiveRequirementsSelectionMock.mockResolvedValue({
+            catalogId: '2025_200',
+            facultyId: 'computer-science',
+            programId: '0324',
+            path: 'software',
+        });
+        mocks.getRequirementMock.mockResolvedValue({
+            data: {
+                name: 'root',
+                nested: [
+                    {
+                        name: 'software',
+                        nested: [{ name: 'core', courses: ['B200'] }],
+                    },
+                ],
+            },
+        });
+
+        const page = SemesterPage();
+        await flushPromises();
+
+        const b200 = page.querySelector<HTMLAnchorElement>(
+            '[data-role="groups-root"] a[data-course-code="B200"]'
+        );
+        const cancelButton = page.querySelector<HTMLButtonElement>(
+            '[data-role="current-semester-cancel"]'
+        );
+        expect(b200).toBeTruthy();
+        expect(cancelButton).toBeTruthy();
+
+        b200?.click();
+        expect(cancelButton?.classList.contains('invisible')).toBe(false);
+
+        cancelButton?.click();
+        expect(b200?.classList.contains('ring-2')).toBe(false);
+        expect(cancelButton?.classList.contains('invisible')).toBe(true);
+    });
 });
 
 async function flushPromises(): Promise<void> {
@@ -182,7 +368,7 @@ function createStateProviderMock(): StateProvider {
         },
         userPlan: {
             get: mocks.getMetaMock,
-            set: vi.fn(),
+            set: mocks.setMetaMock,
         },
     };
 }
