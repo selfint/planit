@@ -10,7 +10,7 @@ test.describe('first-time-user-experience', () => {
     }) => {
         test.setTimeout(120_000);
 
-        await page.goto('http://localhost:5173/planit/');
+        await page.goto('');
         await page.waitForLoadState('networkidle');
         await page.waitForTimeout(1200);
         await resetClientCache(page);
@@ -241,12 +241,15 @@ async function humanClick(page: Page, locator: Locator): Promise<void> {
     const x = box.x + box.width / 2;
     const y = box.y + box.height / 2;
 
-    await page.mouse.move(x, y, { steps: 40 });
+    await page.mouse.move(x, y, { steps: 55 });
     await page.waitForTimeout(250);
 
+    await setDemoCursorPressed(page, true);
     await page.mouse.down();
     await page.waitForTimeout(80);
     await page.mouse.up();
+    await setDemoCursorPressed(page, false);
+    await page.waitForTimeout(120);
 }
 
 async function humanMove(page: Page, locator: Locator): Promise<void> {
@@ -258,7 +261,7 @@ async function humanMove(page: Page, locator: Locator): Promise<void> {
     const x = box.x + box.width / 2;
     const y = box.y + box.height / 2;
 
-    await page.mouse.move(x, y, { steps: 35 });
+    await page.mouse.move(x, y, { steps: 45 });
     await page.waitForTimeout(200);
 }
 
@@ -269,14 +272,43 @@ async function installDemoCursor(page: Page): Promise<void> {
 
     .demo-cursor {
       position: fixed;
-      width: 20px;
-      height: 20px;
-      border: 2px solid black;
+      width: 24px;
+      height: 24px;
+      border: 2px solid rgb(15 23 42 / 0.92);
       border-radius: 50%;
-      background: white;
+      background: rgb(255 255 255 / 0.9);
+      box-shadow:
+        0 0 0 1px rgb(255 255 255 / 0.35) inset,
+        0 8px 22px rgb(2 6 23 / 0.28);
+      backdrop-filter: blur(1px);
       pointer-events: none;
       z-index: 999999;
       transform: translate(-50%, -50%);
+      transition: transform 140ms ease-out, box-shadow 140ms ease-out,
+        background-color 140ms ease-out;
+    }
+
+    .demo-cursor::after {
+      content: '';
+      position: absolute;
+      inset: 7px;
+      border-radius: 50%;
+      background: rgb(15 23 42 / 0.85);
+      opacity: 0.26;
+      transition: opacity 120ms ease-out, transform 120ms ease-out;
+    }
+
+    .demo-cursor[data-pressed='true'] {
+      transform: translate(-50%, -50%) scale(0.88);
+      box-shadow:
+        0 0 0 1px rgb(255 255 255 / 0.3) inset,
+        0 4px 10px rgb(2 6 23 / 0.22);
+      background: rgb(255 255 255 / 0.98);
+    }
+
+    .demo-cursor[data-pressed='true']::after {
+      opacity: 0.5;
+      transform: scale(0.84);
     }
   `,
     });
@@ -291,6 +323,16 @@ async function installDemoCursor(page: Page): Promise<void> {
             cursor.style.top = `${String(e.clientY)}px`;
         });
     });
+}
+
+async function setDemoCursorPressed(page: Page, pressed: boolean): Promise<void> {
+    await page.evaluate((nextPressed) => {
+        const cursor = document.querySelector('.demo-cursor');
+        if (!(cursor instanceof HTMLElement)) {
+            return;
+        }
+        cursor.dataset.pressed = nextPressed ? 'true' : 'false';
+    }, pressed);
 }
 
 async function resetClientCache(page: Page): Promise<void> {
