@@ -8,15 +8,102 @@
 
             <section class="mt-20 flex flex-col">
                 <div
-                    class="border-border/60 bg-surface-2/70 relative flex aspect-video items-center justify-center overflow-hidden rounded-2xl border"
+                    class="border-border/60 bg-surface-2/70 relative flex items-center justify-center overflow-hidden rounded-2xl border"
                     data-video-placeholder
                     data-skeleton="true"
                 >
+                    <video
+                        class="h-auto w-full object-contain opacity-0 transition duration-300 ease-out dark:hidden md:hidden"
+                        data-landing-demo-video="mobile-light"
+                        aria-label="הדגמת משתמש חדשה - מובייל בהיר"
+                        width="430"
+                        height="932"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                        controls
+                    >
+                        <track
+                            kind="captions"
+                            srclang="he"
+                            label="כתוביות"
+                            src="data:text/vtt;charset=utf-8,WEBVTT"
+                        />
+                    </video>
+                    <video
+                        class="hidden h-auto w-full object-contain opacity-0 transition duration-300 ease-out dark:block md:hidden!"
+                        data-landing-demo-video="mobile-dark"
+                        aria-label="הדגמת משתמש חדשה - מובייל כהה"
+                        width="430"
+                        height="932"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                        controls
+                    >
+                        <track
+                            kind="captions"
+                            srclang="he"
+                            label="כתוביות"
+                            src="data:text/vtt;charset=utf-8,WEBVTT"
+                        />
+                    </video>
+                    <video
+                        class="hidden h-auto w-full object-contain opacity-0 transition duration-300 ease-out md:block dark:md:hidden"
+                        data-landing-demo-video="desktop-light"
+                        aria-label="הדגמת משתמש חדשה - דסקטופ בהיר"
+                        width="1400"
+                        height="1050"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                        controls
+                    >
+                        <track
+                            kind="captions"
+                            srclang="he"
+                            label="כתוביות"
+                            src="data:text/vtt;charset=utf-8,WEBVTT"
+                        />
+                    </video>
+                    <video
+                        class="hidden h-auto w-full object-contain opacity-0 transition duration-300 ease-out dark:md:block"
+                        data-landing-demo-video="desktop-dark"
+                        aria-label="הדגמת משתמש חדשה - דסקטופ כהה"
+                        width="1400"
+                        height="1050"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                        controls
+                    >
+                        <track
+                            kind="captions"
+                            srclang="he"
+                            label="כתוביות"
+                            src="data:text/vtt;charset=utf-8,WEBVTT"
+                        />
+                    </video>
                     <span
                         class="skeleton-shimmer absolute inset-0"
                         aria-hidden="true"
                         data-skeleton-layer
                     ></span>
+                    <div
+                        class="text-text-muted bg-surface-1/75 border-border/60 absolute inset-x-6 bottom-6 hidden rounded-xl border px-4 py-3 text-xs"
+                        data-video-fallback
+                    >
+                        ההדגמה תיטען כשיהיה חיבור יציב. אפשר להמשיך לקטלוג כבר
+                        עכשיו.
+                    </div>
                 </div>
             </section>
 
@@ -42,7 +129,7 @@
                 <div class="flex flex-wrap gap-3">
                     <a
                         class="bg-accent text-accent-contrast rounded-full px-5 py-2 text-xs font-medium shadow-sm"
-                        href="/plan"
+                        href="/catalog"
                     >
                         התחילו עכשיו
                     </a>

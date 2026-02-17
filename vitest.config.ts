@@ -27,8 +27,10 @@ export default defineConfig({
     plugins: [virtualPwaRegister()],
     resolve: {
         alias: {
+            // Keep aliases in sync with vite.config.ts (manual).
             $lib: resolve('src/lib'),
             $components: resolve('src/components'),
+            $assets: resolve('src/assets'),
         },
     },
     test: {

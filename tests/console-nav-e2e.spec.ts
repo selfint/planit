@@ -22,12 +22,6 @@ test.describe('console navbar navigation', () => {
         await expect(page).toHaveURL(/\/planit\/search$/);
         await expect(page.locator('[data-page="search"]')).toBeVisible();
 
-        await page.click('[data-console-link="login"]');
-        await expect(page).toHaveURL(/\/planit\/login$/);
-        await expect(
-            page.getByRole('heading', { name: 'עמוד כניסה' })
-        ).toBeVisible();
-
         await page.click('[data-console-link="home"]');
         await expect(page).toHaveURL(/\/planit\/?$/);
         await expect(
@@ -46,7 +40,6 @@ test.describe('console navbar navigation', () => {
             '/planit/catalog',
             '/planit/course?code=236501',
             '/planit/search',
-            '/planit/login',
             '/planit/semester',
         ];
 

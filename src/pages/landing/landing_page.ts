@@ -1,7 +1,18 @@
 import { LandingFeatureCard } from './components/LandingFeatureCard';
 import { LandingHero } from './components/LandingHero';
 import { LandingNav } from './components/LandingNav';
+import landingDemoDesktopDarkVideoUrl from '$assets/demos/first-time-user-experience-desktop-chrome-dark.webm';
+import landingDemoDesktopLightVideoUrl from '$assets/demos/first-time-user-experience-desktop-chrome-light.webm';
+import landingDemoMobileDarkVideoUrl from '$assets/demos/first-time-user-experience-mobile-chrome-dark.webm';
+import landingDemoMobileLightVideoUrl from '$assets/demos/first-time-user-experience-mobile-chrome-light.webm';
 import templateHtml from './landing_page.html?raw';
+
+const LANDING_DEMO_VIDEO_URL_BY_VARIANT = {
+    'desktop-dark': landingDemoDesktopDarkVideoUrl,
+    'desktop-light': landingDemoDesktopLightVideoUrl,
+    'mobile-dark': landingDemoMobileDarkVideoUrl,
+    'mobile-light': landingDemoMobileLightVideoUrl,
+} as const;
 
 export function LandingPage(): HTMLElement {
     const template = document.createElement('template');
@@ -105,5 +116,69 @@ export function LandingPage(): HTMLElement {
         container.dataset.videoReady = 'false';
     });
 
+    setupLandingDemoVideo(root);
+
     return root;
+}
+
+function setupLandingDemoVideo(root: HTMLElement): void {
+    const placeholder = root.querySelector<HTMLElement>(
+        '[data-video-placeholder]'
+    );
+    const videos = root.querySelectorAll<HTMLVideoElement>(
+        '[data-landing-demo-video]'
+    );
+    const skeletonLayer = root.querySelector<HTMLElement>(
+        '[data-skeleton-layer]'
+    );
+    const fallback = root.querySelector<HTMLElement>('[data-video-fallback]');
+    if (placeholder === null || videos.length === 0 || skeletonLayer === null) {
+        return;
+    }
+
+    const resolvedPlaceholder = placeholder;
+    const resolvedSkeletonLayer = skeletonLayer;
+    const resolvedVideos = Array.from(videos);
+    resolvedVideos.forEach((video) => {
+        const variant = video.dataset.landingDemoVideo;
+        if (variant === undefined) {
+            return;
+        }
+        video.src = getLandingDemoVideoUrl(variant);
+    });
+
+    function revealVideo(): void {
+        resolvedVideos.forEach((video) => {
+            video.classList.remove('opacity-0');
+        });
+        resolvedPlaceholder.dataset.skeleton = 'false';
+        resolvedSkeletonLayer.classList.add('hidden');
+        fallback?.classList.add('hidden');
+    }
+
+    function handleVideoFailure(): void {
+        resolvedSkeletonLayer.classList.remove('skeleton-shimmer');
+        resolvedSkeletonLayer.classList.add('bg-surface-2/70');
+        fallback?.classList.remove('hidden');
+    }
+
+    if (resolvedVideos.some((video) => video.readyState >= 2)) {
+        revealVideo();
+        return;
+    }
+
+    resolvedVideos.forEach((video) => {
+        video.addEventListener('loadeddata', revealVideo, { once: true });
+        video.addEventListener('error', handleVideoFailure, { once: true });
+    });
+}
+
+function getLandingDemoVideoUrl(variant: string): string {
+    if (variant in LANDING_DEMO_VIDEO_URL_BY_VARIANT) {
+        return LANDING_DEMO_VIDEO_URL_BY_VARIANT[
+            variant as keyof typeof LANDING_DEMO_VIDEO_URL_BY_VARIANT
+        ];
+    }
+
+    throw new Error(`Unsupported landing demo variant: "${variant}"`);
 }
