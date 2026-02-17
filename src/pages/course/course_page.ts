@@ -12,8 +12,6 @@ import templateHtml from './course_page.html?raw';
 
 const EMPTY_VALUE = '—';
 const UNKNOWN_COURSE_LABEL = 'קורס לא זמין במאגר';
-const LOADING_LABEL = 'טוען פרטי קורס...';
-const NOT_FOUND_LABEL = 'קורס לא נמצא במאגר המקומי';
 const COURSES_BATCH_SIZE = 300;
 
 type CoursePageElements = {
@@ -23,7 +21,6 @@ type CoursePageElements = {
     courseMedian: HTMLElement;
     courseFaculty: HTMLElement;
     courseSeasons: HTMLElement;
-    syncState: HTMLElement;
     searchLink: HTMLAnchorElement;
     loadingState: HTMLElement;
     notFoundState: HTMLElement;
@@ -109,9 +106,6 @@ function queryElements(root: HTMLElement): CoursePageElements {
     const courseSeasons = root.querySelector<HTMLElement>(
         "[data-role='course-seasons']"
     );
-    const syncState = root.querySelector<HTMLElement>(
-        "[data-role='sync-state']"
-    );
     const searchLink = root.querySelector<HTMLAnchorElement>(
         "[data-role='search-link']"
     );
@@ -169,7 +163,6 @@ function queryElements(root: HTMLElement): CoursePageElements {
         courseMedian === null ||
         courseFaculty === null ||
         courseSeasons === null ||
-        syncState === null ||
         searchLink === null ||
         loadingState === null ||
         notFoundState === null ||
@@ -198,7 +191,6 @@ function queryElements(root: HTMLElement): CoursePageElements {
         courseMedian,
         courseFaculty,
         courseSeasons,
-        syncState,
         searchLink,
         loadingState,
         notFoundState,
@@ -250,7 +242,6 @@ function showLoading(elements: CoursePageElements): void {
     elements.loadingState.classList.remove('hidden');
     elements.notFoundState.classList.add('hidden');
     elements.foundState.classList.add('hidden');
-    setSyncStateText(elements.syncState, LOADING_LABEL);
 }
 
 function showNotFound(elements: CoursePageElements, message: string): void {
@@ -258,25 +249,12 @@ function showNotFound(elements: CoursePageElements, message: string): void {
     elements.notFoundState.classList.remove('hidden');
     elements.foundState.classList.add('hidden');
     elements.notFoundMessage.textContent = message;
-    setSyncStateText(elements.syncState, NOT_FOUND_LABEL);
 }
 
 function showCourseFound(elements: CoursePageElements): void {
     elements.loadingState.classList.add('hidden');
     elements.notFoundState.classList.add('hidden');
     elements.foundState.classList.remove('hidden');
-    elements.syncState.classList.add('hidden');
-}
-
-function setSyncStateText(element: HTMLElement, message: string): void {
-    const normalized = message.trim();
-    element.textContent = normalized;
-    if (normalized.length === 0) {
-        element.classList.add('hidden');
-        return;
-    }
-
-    element.classList.remove('hidden');
 }
 
 async function loadAndRenderCourse(
