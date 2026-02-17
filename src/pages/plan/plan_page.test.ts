@@ -212,7 +212,6 @@ function createStateProviderMock(): StateProvider {
         },
         requirements: {
             get: vi.fn(),
-            set: vi.fn(),
             sync: vi.fn(),
         },
         userDegree: {

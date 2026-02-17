@@ -67,7 +67,6 @@ function createPlanStoryProvider(): StateProvider {
         },
         requirements: {
             get: () => Promise.resolve(undefined),
-            set: () => Promise.resolve(undefined),
             sync: () => Promise.resolve({ status: 'updated' }),
         },
         userDegree: {

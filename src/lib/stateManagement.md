@@ -38,7 +38,6 @@ This file should be treated as a context dump for future work on state.
     - `state.catalogs.get()`
     - `state.catalogs.set(catalogs)`
     - `state.requirements.get(programId)`
-    - `state.requirements.set(record, previousProgramId?, persistActiveSelection?)`
     - `state.requirements.sync(selection, options?)`
     - `state.userDegree.get()`
     - `state.userDegree.set(selection)`
@@ -83,7 +82,6 @@ Current local provider methods map to existing modules as follows:
 - `catalogs.get` -> `indexeddb.getCatalogs`
 - `catalogs.set` -> `indexeddb.putCatalogs`
 - `requirements.get` -> `indexeddb.getRequirement`
-- `requirements.set` -> `indexeddb.replaceRequirementsWithCow`
 - `requirements.sync` -> `requirementsSync.syncRequirements`
 - `userDegree.get` -> `requirementsSync.getActiveRequirementsSelection`
 - `userDegree.set` -> `requirementsSync.setActiveRequirementsSelection`
@@ -181,23 +179,6 @@ sequenceDiagram
   Provider-->>State: { status: "updated" }
 ```
 
-### Direct Requirements Set (Currently Not Used by Runtime Pages)
-
-```mermaid
-sequenceDiagram
-  participant Caller as Import/Admin/Tooling (future)
-  participant State as state
-  participant Provider as active StateProvider
-  participant DB as indexeddb
-
-  Note over Caller,DB: As of now, runtime pages do not call this path.
-  Caller->>State: state.requirements.set(record, previousProgramId?, persistActiveSelection?)
-  State->>Provider: requirements.set(record,...)
-  Provider->>DB: replaceRequirementsWithCow(record,...)
-  DB-->>Provider: ok
-  Provider-->>State: Promise<void>
-```
-
 ## Conventions and Pitfalls
 
 - Always use `state` from pages; do not bypass into `indexeddb.ts` from page
@@ -205,8 +186,6 @@ sequenceDiagram
 - Keep provider methods Promise-based, even for immediate values.
 - Story/test providers should return `Promise.resolve(...)` for sync data to
   avoid lints about async-without-await.
-- `state.requirements.set(...)` is a direct persistence API and is currently not
-  used by runtime page flows; runtime updates use `state.requirements.sync(...)`.
 - Avoid relying on object identity of provider internals; treat provider as
   opaque.
 - Provider swap rerenders current route; page-local transient UI state may be

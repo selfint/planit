@@ -179,7 +179,6 @@ function createStateProviderMock(): StateProvider {
         },
         requirements: {
             get: getRequirementMock,
-            set: vi.fn(),
             sync: syncRequirementsMock,
         },
         userDegree: {

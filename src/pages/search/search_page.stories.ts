@@ -92,7 +92,6 @@ function createSearchStoryStateManagement(): StateProvider {
                         ],
                     },
                 }),
-            set: () => Promise.resolve(undefined),
             sync: () => Promise.resolve({ status: 'updated' }),
         },
         userDegree: {

@@ -14,7 +14,6 @@ import {
     putCatalogs,
     putCourses,
     queryCourses,
-    replaceRequirementsWithCow,
     setMeta,
 } from '$lib/indexeddb';
 import {
@@ -44,11 +43,6 @@ export type StateProvider = {
     };
     requirements: {
         get(programId: string): Promise<RequirementRecord | undefined>;
-        set(
-            record: RequirementRecord,
-            previousProgramId?: string,
-            persistActiveSelection?: boolean
-        ): Promise<void>;
         sync(
             selection: RequirementsSelection,
             options?: { persistActiveSelection?: boolean }
@@ -109,17 +103,6 @@ export const state: GlobalState = {
     requirements: {
         get(programId: string): Promise<RequirementRecord | undefined> {
             return provider.requirements.get(programId);
-        },
-        set(
-            record: RequirementRecord,
-            previousProgramId?: string,
-            persistActiveSelection?: boolean
-        ): Promise<void> {
-            return provider.requirements.set(
-                record,
-                previousProgramId,
-                persistActiveSelection
-            );
         },
         sync(
             selection: RequirementsSelection,
@@ -184,7 +167,6 @@ export function createLocalStateProvider(): StateProvider {
         },
         requirements: {
             get: getRequirement,
-            set: replaceRequirementsWithCow,
             sync: syncRequirements,
         },
         userDegree: {

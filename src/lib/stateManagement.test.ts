@@ -93,7 +93,6 @@ describe('stateManagement', () => {
             },
             requirements: {
                 get: vi.fn(),
-                set: vi.fn(),
                 sync: vi.fn(),
             },
             userDegree: {
