@@ -54,6 +54,7 @@ jobs:
           name: lighthouse-reports-pages
           path: .lighthouseci
           if-no-files-found: ignore
+          include-hidden-files: true
 
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v4
