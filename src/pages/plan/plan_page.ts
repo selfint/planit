@@ -1,9 +1,5 @@
-import {
-    type CourseRecord,
-    getCoursesPage,
-    getMeta,
-    setMeta,
-} from '$lib/indexeddb';
+import { type CourseRecord } from '$lib/indexeddb';
+import type { StateManagement } from '$lib/stateManagement';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
 
@@ -35,7 +31,6 @@ type PersistedPlan = {
     exemptionsCourseCodes?: string[];
 };
 
-const PLAN_META_KEY = 'planPageState';
 const PLAN_META_VERSION = 2;
 const MIN_SEMESTERS = 3;
 const DEFAULT_SEMESTER_COUNT = 6;
@@ -180,7 +175,7 @@ function buildSemesterBlueprints(count: number): SemesterBlueprint[] {
     return semesters;
 }
 
-export function PlanPage(): HTMLElement {
+export function PlanPage(stateManagement: StateManagement): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -232,7 +227,7 @@ export function PlanPage(): HTMLElement {
         );
         semesterCountInput.value = nextCount.toString();
         resizeSemesters(state, nextCount);
-        void persistPlanState(state);
+        void persistPlanState(stateManagement, state);
         renderPlan(
             state,
             rail,
@@ -284,7 +279,7 @@ export function PlanPage(): HTMLElement {
             return;
         }
 
-        void handleRowClick(state, targetRowId, rail);
+        void handleRowClick(stateManagement, state, targetRowId, rail);
     });
 
     renderPlan(
@@ -296,6 +291,7 @@ export function PlanPage(): HTMLElement {
         semesterCountInput
     );
     void hydratePlan(
+        stateManagement,
         state,
         rail,
         warning,
@@ -308,6 +304,7 @@ export function PlanPage(): HTMLElement {
 }
 
 async function hydratePlan(
+    stateManagement: StateManagement,
     state: PlanState,
     rail: HTMLElement,
     warning: HTMLElement,
@@ -316,8 +313,8 @@ async function hydratePlan(
     semesterCountInput: HTMLInputElement
 ): Promise<void> {
     const [meta, courses] = await Promise.all([
-        getMeta(PLAN_META_KEY).catch(() => undefined),
-        getCoursesPage(18, 0).catch(() => []),
+        stateManagement.plan.getPlanState().catch(() => undefined),
+        stateManagement.courses.getCoursesPage(18, 0).catch(() => []),
     ]);
 
     const usableCourses = dedupeCourses(
@@ -930,6 +927,7 @@ function getRowById(state: PlanState, rowId: string): PlanRow | undefined {
 }
 
 async function handleRowClick(
+    stateManagement: StateManagement,
     state: PlanState,
     targetRowId: string,
     rail: HTMLElement
@@ -980,7 +978,7 @@ async function handleRowClick(
     state.selected = undefined;
     toggleMoveTargets(rail, undefined);
 
-    await persistPlanState(state);
+    await persistPlanState(stateManagement, state);
 }
 
 function navigateToCoursePage(courseCode: string): void {
@@ -1117,7 +1115,10 @@ function normalizeDuplicateCourses(
     return `זוהו ${String(removed)} כפילויות בתכנית והן אוחדו למיקום יחיד.`;
 }
 
-async function persistPlanState(state: PlanState): Promise<void> {
+async function persistPlanState(
+    stateManagement: StateManagement,
+    state: PlanState
+): Promise<void> {
     const payload: PersistedPlan = {
         version: PLAN_META_VERSION,
         semesterCount: state.semesterCount,
@@ -1129,8 +1130,5 @@ async function persistPlanState(state: PlanState): Promise<void> {
         exemptionsCourseCodes: state.exemptions.map((course) => course.code),
     };
 
-    await setMeta({
-        key: PLAN_META_KEY,
-        value: payload,
-    }).catch(() => undefined);
+    await stateManagement.plan.setPlanState(payload).catch(() => undefined);
 }

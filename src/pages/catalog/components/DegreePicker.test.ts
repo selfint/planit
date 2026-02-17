@@ -1,5 +1,6 @@
 /* @vitest-environment jsdom */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { StateManagement } from '$lib/stateManagement';
 
 const getCatalogsMock = vi.fn();
 const getRequirementMock = vi.fn();
@@ -7,26 +8,8 @@ const getActiveRequirementsSelectionMock = vi.fn();
 const setActiveRequirementsSelectionMock = vi.fn();
 const syncRequirementsMock = vi.fn();
 
-vi.mock('$lib/indexeddb', () => ({
-    getCatalogs: (): Promise<unknown> => getCatalogsMock() as Promise<unknown>,
-    getRequirement: (programId: string): Promise<unknown> =>
-        getRequirementMock(programId) as Promise<unknown>,
-}));
-
 vi.mock('$lib/catalogSync', () => ({
     CATALOG_SYNC_EVENT: 'planit:catalog-sync',
-}));
-
-vi.mock('$lib/requirementsSync', () => ({
-    getActiveRequirementsSelection: (): Promise<unknown> =>
-        getActiveRequirementsSelectionMock() as Promise<unknown>,
-    setActiveRequirementsSelection: (selection: unknown): Promise<void> =>
-        setActiveRequirementsSelectionMock(selection) as Promise<void>,
-    syncRequirements: (
-        selection: unknown,
-        options?: unknown
-    ): Promise<unknown> =>
-        syncRequirementsMock(selection, options) as Promise<unknown>,
 }));
 
 import { DegreePicker } from './DegreePicker';
@@ -75,7 +58,7 @@ describe('DegreePicker', () => {
             },
         });
 
-        const picker = DegreePicker();
+        const picker = DegreePicker(createStateManagementMock());
         await waitForUiWork();
 
         const catalogSelect = querySelect(picker, '[data-degree-catalog]');
@@ -134,7 +117,7 @@ describe('DegreePicker', () => {
             },
         });
 
-        const picker = DegreePicker();
+        const picker = DegreePicker(createStateManagementMock());
         await waitForUiWork();
 
         const catalogSelect = querySelect(picker, '[data-degree-catalog]');
@@ -176,4 +159,33 @@ async function waitForUiWork(): Promise<void> {
     await Promise.resolve();
     await new Promise((resolve) => window.setTimeout(resolve, 0));
     await Promise.resolve();
+}
+
+function createStateManagementMock(): StateManagement {
+    return {
+        courses: {
+            getCourse: vi.fn(),
+            queryCourses: vi.fn(),
+            getCoursesPage: vi.fn(),
+            getCoursesCount: vi.fn(),
+            getCourseFaculties: vi.fn(),
+        },
+        catalogs: {
+            getCatalogs: getCatalogsMock,
+        },
+        requirements: {
+            getRequirement: getRequirementMock,
+            getActiveSelection: getActiveRequirementsSelectionMock,
+            setActiveSelection: setActiveRequirementsSelectionMock,
+            sync: syncRequirementsMock,
+        },
+        plan: {
+            getPlanState: vi.fn(),
+            setPlanState: vi.fn(),
+        },
+        meta: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+    };
 }

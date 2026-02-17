@@ -1,12 +1,5 @@
-import {
-    type CourseQueryParams,
-    type CourseRecord,
-    getCourseFaculties,
-    getCoursesCount,
-    getMeta,
-    getRequirement,
-    queryCourses,
-} from '$lib/indexeddb';
+import { type CourseQueryParams, type CourseRecord } from '$lib/indexeddb';
+import type { StateManagement } from '$lib/stateManagement';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
 
@@ -57,7 +50,7 @@ type RequirementOption = {
     courseCodes: string[];
 };
 
-export function SearchPage(): HTMLElement {
+export function SearchPage(stateManagement: StateManagement): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -80,12 +73,12 @@ export function SearchPage(): HTMLElement {
     const state = parseStateFromUrl();
 
     hydrateFormFromState(elements, state);
-    bindEvents(elements, state);
+    bindEvents(elements, state, stateManagement);
 
-    void updateSyncLabel(elements.sync);
-    void hydrateFilterOptions(elements, state);
-    void hydrateTotalCourses(state, elements);
-    void runSearch(elements, state, false);
+    void updateSyncLabel(elements.sync, stateManagement);
+    void hydrateFilterOptions(elements, state, stateManagement);
+    void hydrateTotalCourses(state, elements, stateManagement);
+    void runSearch(elements, state, false, stateManagement);
 
     return root;
 }
@@ -186,13 +179,14 @@ function hydrateFormFromState(
 
 function bindEvents(
     elements: SearchPageElements,
-    state: SearchPageState
+    state: SearchPageState,
+    stateManagement: StateManagement
 ): void {
     elements.form.addEventListener('submit', (event) => {
         event.preventDefault();
         state.query = normalizeText(elements.input.value);
         cancelDebounce(state);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, true, stateManagement);
     });
 
     elements.input.addEventListener('input', () => {
@@ -200,7 +194,7 @@ function bindEvents(
         cancelDebounce(state);
         state.debounceId = window.setTimeout(() => {
             state.debounceId = undefined;
-            void runSearch(elements, state, true);
+            void runSearch(elements, state, true, stateManagement);
         }, SEARCH_DEBOUNCE_MS);
     });
 
@@ -212,37 +206,37 @@ function bindEvents(
         state.query = '';
         elements.input.value = '';
         cancelDebounce(state);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, true, stateManagement);
     });
 
     elements.available.addEventListener('change', () => {
         state.availableOnly = elements.available.checked;
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, true, stateManagement);
     });
 
     elements.faculty.addEventListener('change', () => {
         state.faculty = normalizeText(elements.faculty.value);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, true, stateManagement);
     });
 
     elements.requirement.addEventListener('change', () => {
         state.requirement = normalizeText(elements.requirement.value);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, true, stateManagement);
     });
 
     elements.pointsMin.addEventListener('input', () => {
         state.pointsMin = normalizeText(elements.pointsMin.value);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, true, stateManagement);
     });
 
     elements.pointsMax.addEventListener('input', () => {
         state.pointsMax = normalizeText(elements.pointsMax.value);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, true, stateManagement);
     });
 
     elements.medianMin.addEventListener('input', () => {
         state.medianMin = normalizeText(elements.medianMin.value);
-        void runSearch(elements, state, true);
+        void runSearch(elements, state, true, stateManagement);
     });
 }
 
@@ -256,12 +250,13 @@ function cancelDebounce(state: SearchPageState): void {
 
 async function hydrateFilterOptions(
     elements: SearchPageElements,
-    state: SearchPageState
+    state: SearchPageState,
+    stateManagement: StateManagement
 ): Promise<void> {
     try {
         const [faculties, requirementOptions] = await Promise.all([
-            getCourseFaculties(),
-            readRequirementOptions(),
+            stateManagement.courses.getCourseFaculties(),
+            readRequirementOptions(stateManagement),
         ]);
 
         renderSelectOptions(elements.faculty, 'כל הפקולטות', faculties);
@@ -308,7 +303,8 @@ async function hydrateFilterOptions(
 async function runSearch(
     elements: SearchPageElements,
     state: SearchPageState,
-    syncUrl: boolean
+    syncUrl: boolean,
+    stateManagement: StateManagement
 ): Promise<void> {
     const requestId = state.requestId + 1;
     state.requestId = requestId;
@@ -324,7 +320,7 @@ async function runSearch(
     const queryParams = buildQueryParams(state);
 
     try {
-        const result = await queryCourses(queryParams);
+        const result = await stateManagement.courses.queryCourses(queryParams);
         if (requestId !== state.requestId) {
             return;
         }
@@ -469,8 +465,12 @@ function renderSelectOptions(
     }
 }
 
-async function readRequirementOptions(): Promise<RequirementOption[]> {
-    const activeProgramMeta = await getMeta('requirementsActiveProgramId');
+async function readRequirementOptions(
+    stateManagement: StateManagement
+): Promise<RequirementOption[]> {
+    const activeProgramMeta = await stateManagement.meta.get(
+        'requirementsActiveProgramId'
+    );
     const programId =
         typeof activeProgramMeta?.value === 'string'
             ? activeProgramMeta.value
@@ -479,7 +479,8 @@ async function readRequirementOptions(): Promise<RequirementOption[]> {
         return [];
     }
 
-    const requirementRecord = await getRequirement(programId);
+    const requirementRecord =
+        await stateManagement.requirements.getRequirement(programId);
     if (requirementRecord === undefined) {
         return [];
     }
@@ -567,8 +568,11 @@ function toRequirementNode(value: unknown): RequirementNode | undefined {
     return value as RequirementNode;
 }
 
-async function updateSyncLabel(target: HTMLParagraphElement): Promise<void> {
-    const meta = await getMeta('courseDataLastSync');
+async function updateSyncLabel(
+    target: HTMLParagraphElement,
+    stateManagement: StateManagement
+): Promise<void> {
+    const meta = await stateManagement.meta.get('courseDataLastSync');
     if (typeof meta?.value !== 'string' || meta.value.length === 0) {
         target.replaceChildren(
             document.createTextNode('עדיין לא בוצע סנכרון נתונים. '),
@@ -588,11 +592,12 @@ async function updateSyncLabel(target: HTMLParagraphElement): Promise<void> {
 
 async function hydrateTotalCourses(
     state: SearchPageState,
-    elements: SearchPageElements
+    elements: SearchPageElements,
+    stateManagement: StateManagement
 ): Promise<void> {
     try {
-        state.totalCourses = await getCoursesCount();
-        void runSearch(elements, state, false);
+        state.totalCourses = await stateManagement.courses.getCoursesCount();
+        void runSearch(elements, state, false, stateManagement);
     } catch {
         state.totalCourses = undefined;
     }

@@ -16,11 +16,11 @@ from IndexedDB without network blocking.
 
 ## Data Flow
 
-1. The page reads initial query/filter parameters from the browser URL.
-2. User input is normalized and debounced, then the page calls `queryCourses` from `$lib/indexeddb`.
-3. Requirement filter options are derived from the active requirements record (`requirementsActiveProgramId` + `getRequirement`).
+1. `SearchPage(stateManagement)` reads initial query/filter parameters from the browser URL.
+2. User input is normalized and debounced, then the page queries through `stateManagement.courses.queryCourses(...)`.
+3. Requirement filter options are derived from `stateManagement.meta.get('requirementsActiveProgramId')` and `stateManagement.requirements.getRequirement(...)`.
 4. Matching `CourseRecord` items are rendered into linked `CourseCard` nodes in the results grid.
-5. Current query/filter state is written back to the URL with `history.replaceState`, and sync metadata is read from `getMeta('courseDataLastSync')`.
+5. Current query/filter state is written back to the URL with `history.replaceState`, and sync metadata is read through `stateManagement.meta.get('courseDataLastSync')`.
 6. Pressing `Escape` in the search input clears the query and reruns the search.
 
 ## Unit Tests

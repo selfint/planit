@@ -1,5 +1,6 @@
 /* @vitest-environment jsdom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { StateManagement } from '$lib/stateManagement';
 
 const mocks = vi.hoisted(() => {
     return {
@@ -8,12 +9,6 @@ const mocks = vi.hoisted(() => {
         setMetaMock: vi.fn(),
     };
 });
-
-vi.mock('$lib/indexeddb', () => ({
-    getCoursesPage: mocks.getCoursesPageMock,
-    getMeta: mocks.getMetaMock,
-    setMeta: mocks.setMetaMock,
-}));
 
 vi.mock('$components/ConsoleNav', () => ({
     ConsoleNav: (): HTMLElement => {
@@ -76,7 +71,7 @@ describe('plan page', () => {
     });
 
     it('renders planner rows including wishlist and exemptions', async () => {
-        const page = PlanPage();
+        const page = PlanPage(createStateManagementMock());
         await flushPromises();
 
         expect(page).toBeInstanceOf(HTMLElement);
@@ -106,7 +101,7 @@ describe('plan page', () => {
     });
 
     it('shows row move controls and clears selection with row cancel', async () => {
-        const page = PlanPage();
+        const page = PlanPage(createStateManagementMock());
         await flushPromises();
 
         const courseButton = page.querySelector<HTMLElement>(
@@ -168,7 +163,7 @@ describe('plan page', () => {
             },
         });
 
-        const page = PlanPage();
+        const page = PlanPage(createStateManagementMock());
         await flushPromises();
 
         const input = page.querySelector<HTMLInputElement>(
@@ -197,4 +192,34 @@ async function flushPromises(): Promise<void> {
     await new Promise((resolve) => {
         window.setTimeout(resolve, 0);
     });
+}
+
+function createStateManagementMock(): StateManagement {
+    return {
+        courses: {
+            getCourse: vi.fn(),
+            queryCourses: vi.fn(),
+            getCoursesPage: mocks.getCoursesPageMock,
+            getCoursesCount: vi.fn(),
+            getCourseFaculties: vi.fn(),
+        },
+        catalogs: {
+            getCatalogs: vi.fn(),
+        },
+        requirements: {
+            getRequirement: vi.fn(),
+            getActiveSelection: vi.fn(),
+            setActiveSelection: vi.fn(),
+            sync: vi.fn(),
+        },
+        plan: {
+            getPlanState: mocks.getMetaMock,
+            setPlanState: async (value: unknown) =>
+                mocks.setMetaMock({ key: 'planPageState', value }),
+        },
+        meta: {
+            get: mocks.getMetaMock,
+            set: mocks.setMetaMock,
+        },
+    };
 }

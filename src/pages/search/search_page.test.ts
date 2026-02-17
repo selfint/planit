@@ -1,5 +1,6 @@
 /* @vitest-environment jsdom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { StateManagement } from '$lib/stateManagement';
 
 const {
     queryCoursesMock,
@@ -16,14 +17,6 @@ const {
         getRequirementMock: vi.fn(),
     };
 });
-
-vi.mock('$lib/indexeddb', () => ({
-    queryCourses: queryCoursesMock,
-    getMeta: getMetaMock,
-    getCourseFaculties: getCourseFacultiesMock,
-    getCoursesCount: getCoursesCountMock,
-    getRequirement: getRequirementMock,
-}));
 
 vi.mock('$components/CourseCard', () => ({
     CourseCard: (course?: { code?: string }): HTMLElement => {
@@ -73,7 +66,7 @@ describe('SearchPage', () => {
     });
 
     it('renders result grid and filter controls', async () => {
-        const page = SearchPage();
+        const page = SearchPage(createStateManagementMock());
         await new Promise((resolve) => {
             window.setTimeout(resolve, 0);
         });
@@ -113,7 +106,7 @@ describe('SearchPage', () => {
             total: 2,
         });
 
-        const page = SearchPage();
+        const page = SearchPage(createStateManagementMock());
         await new Promise((resolve) => {
             window.setTimeout(resolve, 0);
         });
@@ -146,7 +139,7 @@ describe('SearchPage', () => {
         queryCoursesMock.mockResolvedValue({ courses: [], total: 0 });
         getCoursesCountMock.mockResolvedValue(0);
 
-        const page = SearchPage();
+        const page = SearchPage(createStateManagementMock());
         await new Promise((resolve) => {
             window.setTimeout(resolve, 0);
         });
@@ -157,3 +150,32 @@ describe('SearchPage', () => {
         expect(emptyMessage?.classList.contains('hidden')).toBe(true);
     });
 });
+
+function createStateManagementMock(): StateManagement {
+    return {
+        courses: {
+            getCourse: vi.fn(),
+            queryCourses: queryCoursesMock,
+            getCoursesPage: vi.fn(),
+            getCoursesCount: getCoursesCountMock,
+            getCourseFaculties: getCourseFacultiesMock,
+        },
+        catalogs: {
+            getCatalogs: vi.fn(),
+        },
+        requirements: {
+            getRequirement: getRequirementMock,
+            getActiveSelection: vi.fn(),
+            setActiveSelection: vi.fn(),
+            sync: vi.fn(),
+        },
+        plan: {
+            getPlanState: vi.fn(),
+            setPlanState: vi.fn(),
+        },
+        meta: {
+            get: getMetaMock,
+            set: vi.fn(),
+        },
+    };
+}

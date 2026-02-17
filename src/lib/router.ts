@@ -6,21 +6,22 @@ import { NotFoundPage } from '../pages/404/not_found_page';
 import { PlanPage } from '../pages/plan/plan_page';
 import { SearchPage } from '../pages/search/search_page';
 import { SemesterPage } from '../pages/semester/semester_page';
+import type { StateManagement } from '$lib/stateManagement';
 
-type PageFactory = () => HTMLElement;
+type PageFactory = (stateManagement: StateManagement) => HTMLElement;
 
 export const REDIRECT_SESSION_KEY = 'planit:redirect-path';
 
 const APP_BASE_PATH = normalizeBasePath(import.meta.env.BASE_URL);
 
 const routes: Partial<Record<string, PageFactory>> = {
-    '/': LandingPage,
-    '/plan': PlanPage,
-    '/catalog': CatalogPage,
-    '/course': CoursePage,
-    '/search': SearchPage,
-    '/semester': SemesterPage,
-    '/login': LoginPage,
+    '/': () => LandingPage(),
+    '/plan': (stateManagement) => PlanPage(stateManagement),
+    '/catalog': (stateManagement) => CatalogPage(stateManagement),
+    '/course': () => CoursePage(),
+    '/search': (stateManagement) => SearchPage(stateManagement),
+    '/semester': (stateManagement) => SemesterPage(stateManagement),
+    '/login': () => LoginPage(),
 };
 
 export function normalizePath(pathname: string): string {
@@ -90,7 +91,11 @@ function resolvePage(pathname: string): PageFactory | null {
     return page;
 }
 
-function renderRoute(pathname: string, replaceState = false): void {
+function renderRoute(
+    stateManagement: StateManagement,
+    pathname: string,
+    replaceState = false
+): void {
     const app = document.querySelector<HTMLDivElement>('#app');
     if (app === null) {
         throw new Error('Missing #app element');
@@ -102,7 +107,7 @@ function renderRoute(pathname: string, replaceState = false): void {
     if (page === null) {
         app.replaceChildren(NotFoundPage(routePath));
     } else {
-        app.replaceChildren(page());
+        app.replaceChildren(page(stateManagement));
     }
 
     const currentUrl = new URL(window.location.href);
@@ -114,7 +119,7 @@ function renderRoute(pathname: string, replaceState = false): void {
     }
 }
 
-function navigate(url: URL): void {
+function navigate(stateManagement: StateManagement, url: URL): void {
     const nextUrl = new URL(url.href);
     const nextRoutePath = stripBasePath(nextUrl.pathname, APP_BASE_PATH);
     nextUrl.pathname = addBasePath(nextRoutePath, APP_BASE_PATH);
@@ -128,7 +133,7 @@ function navigate(url: URL): void {
     }
 
     window.history.pushState(null, '', nextUrl);
-    renderRoute(nextUrl.pathname);
+    renderRoute(stateManagement, nextUrl.pathname);
 }
 
 export function shouldHandleClickNavigation(event: MouseEvent): boolean {
@@ -199,12 +204,12 @@ function restoreRedirectFromSession(): void {
     window.history.replaceState(null, '', redirectUrl);
 }
 
-export function initRouter(): void {
+export function initRouter(stateManagement: StateManagement): void {
     restoreRedirectFromSession();
-    renderRoute(window.location.pathname, true);
+    renderRoute(stateManagement, window.location.pathname, true);
 
     window.addEventListener('popstate', () => {
-        renderRoute(window.location.pathname, true);
+        renderRoute(stateManagement, window.location.pathname, true);
     });
 
     document.addEventListener('click', (event) => {
@@ -228,6 +233,6 @@ export function initRouter(): void {
         }
 
         event.preventDefault();
-        navigate(url);
+        navigate(stateManagement, url);
     });
 }

@@ -7,13 +7,8 @@ import {
     getRequirementId,
     getRequirementLabel,
 } from '$lib/requirementsUtils';
-import {
-    getActiveRequirementsSelection,
-    setActiveRequirementsSelection,
-    syncRequirements,
-} from '$lib/requirementsSync';
-import { getCatalogs, getRequirement } from '$lib/indexeddb';
 import { CATALOG_SYNC_EVENT } from '$lib/catalogSync';
+import type { StateManagement } from '$lib/stateManagement';
 import templateHtml from './DegreePicker.html?raw';
 
 type CatalogMap = Record<string, unknown>;
@@ -38,7 +33,7 @@ const REQUIREMENTS_MISSING_MESSAGE = 'לא נמצאו דרישות לתכנית 
 const REQUIREMENTS_PATH_MESSAGE = 'בחר מסלול כדי להציג דרישות.';
 const REQUIREMENTS_PATH_EMPTY_MESSAGE = 'אין דרישות במסלול זה.';
 
-export function DegreePicker(): HTMLElement {
+export function DegreePicker(stateManagement: StateManagement): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -156,6 +151,7 @@ export function DegreePicker(): HTMLElement {
         state.requirement = undefined;
         state.pathOptions = [];
         void loadRequirements(
+            stateManagement,
             state,
             programSelect,
             pathSelect,
@@ -175,7 +171,7 @@ export function DegreePicker(): HTMLElement {
             ...state.selection,
             path: path.length > 0 ? path : undefined,
         };
-        void persistActiveSelectionIfComplete(state);
+        void persistActiveSelectionIfComplete(stateManagement, state);
         renderRequirementsTable(state, requirementRows, state.selection.path);
 
         if (
@@ -191,6 +187,7 @@ export function DegreePicker(): HTMLElement {
             return;
         }
         void loadCatalogs(
+            stateManagement,
             state,
             catalogSelect,
             facultySelect,
@@ -203,6 +200,7 @@ export function DegreePicker(): HTMLElement {
     });
 
     void loadCatalogs(
+        stateManagement,
         state,
         catalogSelect,
         facultySelect,
@@ -217,6 +215,7 @@ export function DegreePicker(): HTMLElement {
 }
 
 async function loadCatalogs(
+    stateManagement: StateManagement,
     state: PickerState,
     catalogSelect: HTMLSelectElement,
     facultySelect: HTMLSelectElement,
@@ -226,8 +225,9 @@ async function loadCatalogs(
     requirementRows: HTMLTableSectionElement,
     status: HTMLParagraphElement
 ): Promise<void> {
-    state.catalogs = await getCatalogs();
-    const storedSelection = await getActiveRequirementsSelection();
+    state.catalogs = await stateManagement.catalogs.getCatalogs();
+    const storedSelection =
+        await stateManagement.requirements.getActiveSelection();
     if (storedSelection !== undefined) {
         state.selection = {
             catalogId: storedSelection.catalogId,
@@ -242,6 +242,7 @@ async function loadCatalogs(
     const storedProgramId = state.selection?.programId;
     if (storedProgramId !== undefined && storedProgramId.length > 0) {
         await hydrateRequirements(
+            stateManagement,
             state,
             pathSelect,
             pathEmpty,
@@ -347,6 +348,7 @@ function updateProgramOptions(
 }
 
 async function loadRequirements(
+    stateManagement: StateManagement,
     state: PickerState,
     programSelect: HTMLSelectElement,
     pathSelect: HTMLSelectElement,
@@ -362,13 +364,14 @@ async function loadRequirements(
     programSelect.disabled = true;
     updateStatus(status, 'טוען דרישות...');
 
-    const result = await syncRequirements(selection, {
+    const result = await stateManagement.requirements.sync(selection, {
         persistActiveSelection: false,
     });
 
     programSelect.disabled = false;
 
     await hydrateRequirements(
+        stateManagement,
         state,
         pathSelect,
         pathEmpty,
@@ -393,6 +396,7 @@ async function loadRequirements(
 }
 
 async function hydrateRequirements(
+    stateManagement: StateManagement,
     state: PickerState,
     pathSelect: HTMLSelectElement,
     pathEmpty: HTMLParagraphElement,
@@ -405,7 +409,7 @@ async function hydrateRequirements(
         return;
     }
 
-    const stored = await getRequirement(programId);
+    const stored = await stateManagement.requirements.getRequirement(programId);
     state.requirement = toRequirementNode(stored?.data);
 
     const pathOptions = buildPathOptions(state.requirement);
@@ -419,7 +423,7 @@ async function hydrateRequirements(
         return;
     }
 
-    void persistActiveSelectionIfComplete(state);
+    void persistActiveSelectionIfComplete(stateManagement, state);
 
     renderRequirementsTable(state, requirementRows, selectedPath);
     if (state.requirement === undefined) {
@@ -669,10 +673,11 @@ function isSelectionComplete(state: PickerState): boolean {
 }
 
 async function persistActiveSelectionIfComplete(
+    stateManagement: StateManagement,
     state: PickerState
 ): Promise<void> {
     if (!isSelectionComplete(state) || state.selection === undefined) {
         return;
     }
-    await setActiveRequirementsSelection(state.selection);
+    await stateManagement.requirements.setActiveSelection(state.selection);
 }

@@ -12,20 +12,21 @@ Provides client-side SPA route rendering and internal link interception.
 - `addBasePath(pathname, basePath)`: Converts app route pathname back to browser pathname.
 - `shouldHandleClickNavigation(event)`: Decides if a click should be handled by the SPA router.
 - `REDIRECT_SESSION_KEY`: Session storage key used for GitHub Pages deep-link recovery.
-- `initRouter()`: Initializes initial render, history handling, and delegated link navigation.
+- `initRouter(stateManagement)`: Initializes initial render, history handling, delegated link navigation, and passes explicit state dependencies to pages.
 
 ## Data Flow
 
 - Reads `window.location.pathname` on startup.
 - Uses `import.meta.env.BASE_URL` as router basename when app is deployed under subpaths.
 - Restores deep-link route from session storage when arriving through `404.html` fallback.
-- Resolves route path to a page factory and renders into `#app`.
+- Resolves route path to a page factory and renders into `#app` with the provided `StateManagement` instance.
 - Uses `history.pushState` and `popstate` to keep URL and rendered page in sync.
 - Renders `NotFoundPage` for unknown routes.
 
 ## Dependencies
 
 - Page modules under `src/pages/*`.
+- `src/lib/stateManagement.ts`.
 - `NotFoundPage` from `src/pages/404/not_found_page`.
 - Browser APIs: `history`, `location`, and DOM event delegation.
 

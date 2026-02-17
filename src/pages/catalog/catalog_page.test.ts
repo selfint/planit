@@ -1,5 +1,6 @@
 /* @vitest-environment jsdom */
 import { describe, expect, it, vi } from 'vitest';
+import type { StateManagement } from '$lib/stateManagement';
 
 vi.mock('$components/CourseCard', () => ({
     CourseCard: (course?: { code?: string; name?: string }): HTMLElement => {
@@ -38,20 +39,7 @@ vi.mock('./components/DegreePicker', () => ({
 
 const getRequirementMock = vi.fn();
 const getCourseMock = vi.fn();
-
-vi.mock('$lib/indexeddb', () => ({
-    getRequirement: (programId: string): Promise<unknown> =>
-        getRequirementMock(programId) as Promise<unknown>,
-    getCourse: (courseCode: string): Promise<unknown> =>
-        getCourseMock(courseCode) as Promise<unknown>,
-}));
-
 const getActiveRequirementsSelectionMock = vi.fn();
-
-vi.mock('$lib/requirementsSync', () => ({
-    getActiveRequirementsSelection: (): Promise<unknown> =>
-        getActiveRequirementsSelectionMock() as Promise<unknown>,
-}));
 
 import { CatalogPage } from './catalog_page';
 
@@ -60,7 +48,7 @@ describe('CatalogPage', () => {
         setViewportWidth(620);
         getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
 
-        const page = CatalogPage();
+        const page = CatalogPage(createStateManagementMock());
         await waitForUiWork();
 
         const state = page.querySelector<HTMLElement>('[data-catalog-state]');
@@ -136,7 +124,7 @@ describe('CatalogPage', () => {
             });
         });
 
-        const page = CatalogPage();
+        const page = CatalogPage(createStateManagementMock());
         await waitForUiWork();
 
         const cards = page.querySelectorAll<HTMLElement>(
@@ -211,7 +199,7 @@ describe('CatalogPage', () => {
             })
         );
 
-        const page = CatalogPage();
+        const page = CatalogPage(createStateManagementMock());
         await waitForUiWork();
 
         const programSelect = page.querySelector<HTMLSelectElement>(
@@ -276,7 +264,7 @@ describe('CatalogPage', () => {
             })
         );
 
-        const page = CatalogPage();
+        const page = CatalogPage(createStateManagementMock());
         await waitForUiWork();
 
         const links = page.querySelectorAll<HTMLAnchorElement>(
@@ -338,7 +326,7 @@ describe('CatalogPage', () => {
             })
         );
 
-        const page = CatalogPage();
+        const page = CatalogPage(createStateManagementMock());
         await waitForUiWork();
 
         const links = page.querySelectorAll<HTMLAnchorElement>(
@@ -363,4 +351,33 @@ async function waitForUiWork(): Promise<void> {
     await Promise.resolve();
     await new Promise((resolve) => window.setTimeout(resolve, 0));
     await Promise.resolve();
+}
+
+function createStateManagementMock(): StateManagement {
+    return {
+        courses: {
+            getCourse: getCourseMock,
+            queryCourses: vi.fn(),
+            getCoursesPage: vi.fn(),
+            getCoursesCount: vi.fn(),
+            getCourseFaculties: vi.fn(),
+        },
+        catalogs: {
+            getCatalogs: vi.fn(),
+        },
+        requirements: {
+            getRequirement: getRequirementMock,
+            getActiveSelection: getActiveRequirementsSelectionMock,
+            setActiveSelection: vi.fn(),
+            sync: vi.fn(),
+        },
+        plan: {
+            getPlanState: vi.fn(),
+            setPlanState: vi.fn(),
+        },
+        meta: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+    };
 }

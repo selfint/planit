@@ -1,5 +1,6 @@
 /* @vitest-environment jsdom */
 import { describe, expect, it, vi } from 'vitest';
+import type { StateManagement } from '$lib/stateManagement';
 
 function mockPage(): HTMLElement {
     const page = document.createElement('div');
@@ -110,7 +111,7 @@ describe('router lib', () => {
             '/search?q=test#top'
         );
 
-        initRouter();
+        initRouter(createRouterStateManagementMock());
 
         expect(window.location.pathname).toBe('/search');
         expect(window.location.search).toBe('?q=test');
@@ -122,9 +123,38 @@ describe('router lib', () => {
         document.body.innerHTML = '<div id="app"></div>';
         window.history.replaceState(null, '', '/semester?number=3');
 
-        initRouter();
+        initRouter(createRouterStateManagementMock());
 
         expect(window.location.pathname).toBe('/semester');
         expect(window.location.search).toBe('?number=3');
     });
 });
+
+function createRouterStateManagementMock(): StateManagement {
+    return {
+        courses: {
+            getCourse: vi.fn(),
+            queryCourses: vi.fn(),
+            getCoursesPage: vi.fn(),
+            getCoursesCount: vi.fn(),
+            getCourseFaculties: vi.fn(),
+        },
+        catalogs: {
+            getCatalogs: vi.fn(),
+        },
+        requirements: {
+            getRequirement: vi.fn(),
+            getActiveSelection: vi.fn(),
+            setActiveSelection: vi.fn(),
+            sync: vi.fn(),
+        },
+        plan: {
+            getPlanState: vi.fn(),
+            setPlanState: vi.fn(),
+        },
+        meta: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+    };
+}
