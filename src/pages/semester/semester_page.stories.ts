@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import { state } from '$lib/stateManagement';
+import { type StateProvider, state } from '$lib/stateManagement';
 import { createStoryStateProvider } from '$lib/test-utils/storyStateProvider';
 
 import { SemesterPage } from './semester_page';
@@ -65,7 +65,7 @@ function buildSemesterUrl(semesterNumber: number): string {
     return `/semester?number=${String(semesterNumber)}`;
 }
 
-function createSemesterStoryProvider() {
+function createSemesterStoryProvider(): StateProvider {
     return createStoryStateProvider({
         courses: {
             query: () =>

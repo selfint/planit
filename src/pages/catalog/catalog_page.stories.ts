@@ -1,8 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import { state } from '$lib/stateManagement';
-import { createStoryStateProvider } from '$lib/test-utils/storyStateProvider';
-
+import { type StateProvider, state } from '$lib/stateManagement';
 import { CatalogPage } from './catalog_page';
+import { createStoryStateProvider } from '$lib/test-utils/storyStateProvider';
 
 const storyProvider = createCatalogStoryProvider();
 
@@ -42,7 +41,7 @@ export const Dark: Story = {
     },
 };
 
-function createCatalogStoryProvider() {
+function createCatalogStoryProvider(): StateProvider {
     return createStoryStateProvider({
         courses: {
             get: (code: string) =>
