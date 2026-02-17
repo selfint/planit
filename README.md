@@ -2,6 +2,19 @@
 
 ## Playwright workflow
 
+Free mobile confidence (no paid device cloud):
+
+```bash
+# Full desktop suite
+pnpm integtest:desktop
+
+# Mobile smoke suite using Playwright's Pixel 5 emulation
+pnpm integtest:mobile
+```
+
+CI runs both suites and uploads Playwright artifacts (`test-results`,
+`playwright-report`) automatically when a test fails.
+
 Recording tests (codegen):
 
 ```bash
