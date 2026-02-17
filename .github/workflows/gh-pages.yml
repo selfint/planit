@@ -32,17 +32,32 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check formatting
+      - name: Build
+        run: pnpm build
+
+      - name: Lint check
         run: pnpm lint:check
+
+      - name: Run unit tests
+        run: pnpm unittest
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps
 
-      - name: Run tests
-        run: pnpm test
+      - name: Run integration tests
+        run: pnpm integtest
 
-      - name: Build
-        run: pnpm build
+      - name: Upload Playwright artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-artifacts
+          path: |
+            test-results
+            playwright-report
+
+      - name: Lighthouse CI (report-only)
+        run: pnpm lhci:ci
 
       - name: Upload Artifacts
         uses: actions/upload-pages-artifact@v4
