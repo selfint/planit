@@ -88,96 +88,282 @@ Current local provider methods map to existing modules as follows:
 - `userPlan.get` -> `indexeddb.getMeta('planPageState')`
 - `userPlan.set` -> `indexeddb.setMeta({ key: 'planPageState', ... })`
 
-## Sequence Diagrams
+## Method Usage Coverage
 
-### Read Path (Page -> State -> Active Provider)
+All provider methods mapped to current uses in runtime pages (plus test/story
+only cases where relevant):
+
+| Method | Runtime call sites | User flow diagram |
+| --- | --- | --- |
+| `courses.get` | `semester_page.ts`, `catalog_page.ts` | [Catalog Groups](#catalog-groups-view-requirement-table), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration) |
+| `courses.set` | Not called in runtime/tests/stories | [Planned Data Sync Import (currently unused methods)](#planned-data-sync-import-currently-unused-methods) |
+| `courses.query` | `search_page.ts`, `semester_page.ts` | [Search Courses](#search-courses-search-page-interactions), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration) |
+| `courses.page` | `plan_page.ts` | [Plan Page Load + Drag/Move Persist](#plan-page-load--dragmove-persist) |
+| `courses.count` | `search_page.ts` | [Search Courses](#search-courses-search-page-interactions) |
+| `courses.faculties` | `search_page.ts` | [Search Courses](#search-courses-search-page-interactions) |
+| `courses.getLastSync` | `search_page.ts` | [Search Courses](#search-courses-search-page-interactions) |
+| `catalogs.get` | `DegreePicker.ts` | [Degree Picker Load](#degree-picker-load-open-catalog-page) |
+| `catalogs.set` | Not called in runtime/tests/stories | [Planned Data Sync Import (currently unused methods)](#planned-data-sync-import-currently-unused-methods) |
+| `requirements.get` | `DegreePicker.ts`, `catalog_page.ts`, `search_page.ts`, `semester_page.ts` | [Degree Picker Load](#degree-picker-load-open-catalog-page), [Catalog Groups](#catalog-groups-view-requirement-table), [Search Courses](#search-courses-search-page-interactions), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration) |
+| `requirements.sync` | `DegreePicker.ts` | [Degree Selection Update](#degree-selection-update-choose-programpath) |
+| `userDegree.get` | `DegreePicker.ts`, `catalog_page.ts`, `search_page.ts`, `semester_page.ts` | [Degree Picker Load](#degree-picker-load-open-catalog-page), [Catalog Groups](#catalog-groups-view-requirement-table), [Search Courses](#search-courses-search-page-interactions), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration) |
+| `userDegree.set` | `DegreePicker.ts` | [Degree Selection Update](#degree-selection-update-choose-programpath) |
+| `userPlan.get` | `plan_page.ts`, `semester_page.ts` | [Plan Page Load + Drag/Move Persist](#plan-page-load--dragmove-persist), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration) |
+| `userPlan.set` | `plan_page.ts` | [Plan Page Load + Drag/Move Persist](#plan-page-load--dragmove-persist) |
+| `provider.get` | Test only (`stateManagement.test.ts`) | [Provider Swap + Router Rerender (test/dev flow)](#provider-swap--router-rerender-testdev-flow) |
+| `provider.set` | Test/story only | [Provider Swap + Router Rerender (test/dev flow)](#provider-swap--router-rerender-testdev-flow) |
+
+## User-Action Diagrams
+
+### Degree Picker Load (open catalog page)
+
+User action: user opens catalog flow and sees previous selection + available
+catalogs.
 
 ```mermaid
 sequenceDiagram
-  participant Page as Page (e.g. SearchPage)
-  participant State as state
-  participant Provider as active StateProvider
-  participant DB as IndexedDB/Sync modules
+  participant U as User
+  participant P as DegreePicker
+  participant S as state
+  participant SP as active StateProvider
+  participant DB as IndexedDB/requirementsSync
 
-  Page->>State: state.courses.query(params)
-  State->>Provider: courses.query(params)
-  Provider->>DB: queryCourses(params)
-  DB-->>Provider: CourseQueryResult
-  Provider-->>State: CourseQueryResult
-  State-->>Page: CourseQueryResult
+  U->>P: Open catalog page
+  P->>S: catalogs.get()
+  S->>SP: catalogs.get()
+  SP->>DB: getCatalogs()
+  DB-->>SP: catalogs blob
+  SP-->>S: catalogs
+  P->>S: userDegree.get()
+  S->>SP: userDegree.get()
+  SP->>DB: getActiveRequirementsSelection()
+  DB-->>SP: saved selection | undefined
+  SP-->>S: selection
+  P->>S: requirements.get(programId) (if selection exists)
+  S->>SP: requirements.get(programId)
+  SP->>DB: getRequirement(programId)
+  DB-->>SP: requirement record | undefined
+  SP-->>S: requirement record
 ```
 
-### Write Path (Page -> State -> Persist)
+### Degree Selection Update (choose program/path)
+
+User action: user chooses a catalog/faculty/program/path and applies it.
 
 ```mermaid
 sequenceDiagram
-  participant Page as Page (e.g. PlanPage)
-  participant State as state
-  participant Provider as active StateProvider
+  participant U as User
+  participant P as DegreePicker
+  participant S as state
+  participant SP as active StateProvider
+  participant Sync as requirementsSync
   participant DB as IndexedDB
 
-  Page->>State: state.userPlan.set(nextPlan)
-  State->>Provider: userPlan.set(nextPlan)
-  Provider->>DB: setMeta({ key: "planPageState", value: nextPlan })
-  DB-->>Provider: ok
-  Provider-->>State: Promise<void>
-  State-->>Page: Promise<void>
-```
-
-### Provider Swap + Rerender
-
-```mermaid
-sequenceDiagram
-  participant UI as Runtime (settings/debug action)
-  participant State as state.provider
-  participant Router as router
-  participant Page as Current page
-
-  UI->>State: set(nextProvider)
-  State->>State: replace active provider reference
-  State->>Router: providerChangeHandler()
-  Router->>Router: renderRoute(currentPath)
-  Router->>Page: new page instance mounts
-  Page->>State: reads via state.* from new provider
-```
-
-### Degree Selection Update
-
-```mermaid
-sequenceDiagram
-  participant Picker as DegreePicker
-  participant State as state
-  participant Provider as active StateProvider
-  participant Sync as requirementsSync/indexeddb
-
-  Picker->>State: requirements.sync(selection)
-  State->>Provider: requirements.sync(selection)
-  Provider->>Sync: syncRequirements(selection)
-  Sync-->>Provider: status
-  Provider-->>State: status
-  Picker->>State: userDegree.set(selection)
-  State->>Provider: userDegree.set(selection)
-  Provider->>Sync: setActiveRequirementsSelection(selection)
-```
-
-### Requirements Sync Write (Used in App Flow)
-
-```mermaid
-sequenceDiagram
-  participant Picker as DegreePicker
-  participant State as state
-  participant Provider as active StateProvider
-  participant Sync as requirementsSync
-  participant DB as indexeddb
-
-  Picker->>State: state.requirements.sync(selection)
-  State->>Provider: requirements.sync(selection)
-  Provider->>Sync: syncRequirements(selection)
-  Sync->>DB: replaceRequirementsWithCow(record,...)
+  U->>P: Change degree selection
+  P->>S: requirements.sync(selection, {persistActiveSelection:false})
+  S->>SP: requirements.sync(selection, options)
+  SP->>Sync: syncRequirements(selection, options)
+  Sync->>DB: write requirement payload
   DB-->>Sync: ok
-  Sync-->>Provider: { status: "updated" }
-  Provider-->>State: { status: "updated" }
+  Sync-->>SP: sync status
+  SP-->>S: sync status
+  P->>S: requirements.get(programId)
+  S->>SP: requirements.get(programId)
+  SP->>DB: getRequirement(programId)
+  DB-->>SP: requirement record
+  SP-->>S: requirement record
+  P->>S: userDegree.set(selection)
+  S->>SP: userDegree.set(selection)
+  SP->>Sync: setActiveRequirementsSelection(selection)
 ```
+
+### Catalog Groups (view requirement table)
+
+User action: user opens catalog page and expands requirement groups for the
+currently selected degree.
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant C as Catalog Page
+  participant S as state
+  participant SP as active StateProvider
+  participant DB as IndexedDB/requirementsSync
+
+  U->>C: Open catalog requirements table
+  C->>S: userDegree.get()
+  S->>SP: userDegree.get()
+  SP->>DB: getActiveRequirementsSelection()
+  DB-->>SP: selection
+  SP-->>S: selection
+  C->>S: requirements.get(programId)
+  S->>SP: requirements.get(programId)
+  SP->>DB: getRequirement(programId)
+  DB-->>SP: requirement record
+  SP-->>S: requirement record
+  loop For each listed course code
+    C->>S: courses.get(code)
+    S->>SP: courses.get(code)
+    SP->>DB: getCourse(code)
+    DB-->>SP: course record | undefined
+    SP-->>S: course record | undefined
+  end
+```
+
+### Search Courses (search page interactions)
+
+User action: user opens search page, filters courses, and runs queries.
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant Q as Search Page
+  participant S as state
+  participant SP as active StateProvider
+  participant DB as IndexedDB/requirementsSync
+
+  U->>Q: Open search page
+  Q->>S: courses.faculties()
+  S->>SP: courses.faculties()
+  SP->>DB: getCourseFaculties()
+  DB-->>SP: faculties
+  SP-->>S: faculties
+  Q->>S: userDegree.get()
+  S->>SP: userDegree.get()
+  SP->>DB: getActiveRequirementsSelection()
+  DB-->>SP: selection | undefined
+  SP-->>S: selection | undefined
+  Q->>S: requirements.get(programId) (if selected)
+  S->>SP: requirements.get(programId)
+  SP->>DB: getRequirement(programId)
+  DB-->>SP: requirement record | undefined
+  SP-->>S: requirement record | undefined
+  U->>Q: Change query/filter values
+  Q->>S: courses.query(params)
+  S->>SP: courses.query(params)
+  SP->>DB: queryCourses(params)
+  DB-->>SP: paged course results
+  SP-->>S: paged course results
+  Q->>S: courses.count()
+  S->>SP: courses.count()
+  SP->>DB: getCoursesCount()
+  DB-->>SP: total count
+  SP-->>S: total count
+  Q->>S: courses.getLastSync()
+  S->>SP: courses.getLastSync()
+  SP->>DB: getMeta("courseDataLastSync")
+  DB-->>SP: timestamp | undefined
+  SP-->>S: timestamp | undefined
+```
+
+### Semester Page Load + Course Detail Hydration
+
+User action: user opens semester page and inspects semester requirements.
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant M as Semester Page
+  participant S as state
+  participant SP as active StateProvider
+  participant DB as IndexedDB/requirementsSync
+
+  U->>M: Open semester page
+  M->>S: userDegree.get()
+  M->>S: userPlan.get()
+  M->>S: courses.query({page:1,pageSize:"all"})
+  S->>SP: userDegree.get() / userPlan.get() / courses.query(...)
+  SP->>DB: read selection + plan + all courses
+  DB-->>SP: data
+  SP-->>S: data
+  M->>S: requirements.get(programId)
+  S->>SP: requirements.get(programId)
+  SP->>DB: getRequirement(programId)
+  DB-->>SP: requirement record | undefined
+  SP-->>S: requirement record | undefined
+  loop Missing course records in requirement tree
+    M->>S: courses.get(code)
+    S->>SP: courses.get(code)
+    SP->>DB: getCourse(code)
+    DB-->>SP: course record | undefined
+    SP-->>S: course record | undefined
+  end
+```
+
+### Plan Page Load + Drag/Move Persist
+
+User action: user opens planner, moves courses between semesters, then state is
+persisted.
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant P as Plan Page
+  participant S as state
+  participant SP as active StateProvider
+  participant DB as IndexedDB
+
+  U->>P: Open plan page
+  P->>S: userPlan.get()
+  P->>S: courses.page(18, 0)
+  S->>SP: userPlan.get() / courses.page(...)
+  SP->>DB: getMeta("planPageState") + getCoursesPage(18, 0)
+  DB-->>SP: saved plan + seed courses
+  SP-->>S: saved plan + seed courses
+  U->>P: Move course between semester rows
+  P->>S: userPlan.set(nextPlanPayload)
+  S->>SP: userPlan.set(payload)
+  SP->>DB: setMeta({key:"planPageState", value:payload})
+  DB-->>SP: ok
+  SP-->>S: Promise<void>
+```
+
+### Provider Swap + Router Rerender (test/dev flow)
+
+User action: developer/test harness swaps provider implementation.
+
+```mermaid
+sequenceDiagram
+  participant D as Dev/Test
+  participant S as state.provider
+  participant R as router
+  participant Pg as current page
+
+  D->>S: set(nextProvider)
+  S->>S: replace active provider reference
+  S->>R: providerChangeHandler()
+  R->>R: renderRoute(currentPath)
+  R->>Pg: mount page against new provider
+  D->>S: get() (test assertion)
+```
+
+### Planned Data Sync Import (currently unused methods)
+
+User action: user launches app while online and sync manager imports fresh JSON
+into local DB (target flow; not currently wired to provider API).
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant App as App startup + Sync manager
+  participant S as state
+  participant SP as active StateProvider
+  participant DB as IndexedDB
+
+  U->>App: Open app with connectivity
+  App->>App: Fetch catalogs.json + courseData.json
+  App->>S: catalogs.set(catalogsBlob) (planned)
+  S->>SP: catalogs.set(catalogsBlob)
+  SP->>DB: putCatalogs(catalogsBlob)
+  App->>S: courses.set(courses) (planned)
+  S->>SP: courses.set(courses)
+  SP->>DB: putCourses(courses)
+```
+
+Unused today:
+
+- `state.courses.set(...)` has no call site in `src/**/*.ts`.
+- `state.catalogs.set(...)` has no call site in `src/**/*.ts`.
 
 ## Conventions and Pitfalls
 

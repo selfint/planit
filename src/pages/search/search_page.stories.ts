@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import { type StateProvider, state } from '$lib/stateManagement';
+import { state } from '$lib/stateManagement';
+import { createStoryStateProvider } from '$lib/test-utils/storyStateProvider';
 
 import { SearchPage } from './search_page';
 
@@ -41,11 +42,9 @@ export const Dark: Story = {
     },
 };
 
-function createSearchStoryStateManagement(): StateProvider {
-    return {
+function createSearchStoryStateManagement() {
+    return createStoryStateProvider({
         courses: {
-            get: () => Promise.resolve(undefined),
-            set: () => Promise.resolve(undefined),
             query: () =>
                 Promise.resolve({
                     total: 3,
@@ -74,7 +73,6 @@ function createSearchStoryStateManagement(): StateProvider {
         },
         catalogs: {
             get: () => Promise.resolve({}),
-            set: () => Promise.resolve(undefined),
         },
         requirements: {
             get: () =>
@@ -102,11 +100,6 @@ function createSearchStoryStateManagement(): StateProvider {
                     programId: '0324',
                     path: undefined,
                 }),
-            set: () => Promise.resolve(undefined),
         },
-        userPlan: {
-            get: () => Promise.resolve(undefined),
-            set: () => Promise.resolve(undefined),
-        },
-    };
+    });
 }
