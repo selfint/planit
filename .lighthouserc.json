@@ -8,7 +8,7 @@
                 "http://localhost:4173/planit/",
                 "http://localhost:4173/planit/plan",
                 "http://localhost:4173/planit/catalog",
-                "http://localhost:4173/planit/course?code=104031",
+                "http://localhost:4173/planit/course?code=00140003",
                 "http://localhost:4173/planit/search",
                 "http://localhost:4173/planit/semester?number=1"
             ],
