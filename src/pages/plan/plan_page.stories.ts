@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html';
 import { type StateProvider, state } from '$lib/stateManagement';
+import { createStoryStateProvider } from '$lib/storyStateProvider';
 
 import { PlanPage } from './plan_page';
 
@@ -42,10 +43,8 @@ export const Dark: Story = {
 };
 
 function createPlanStoryProvider(): StateProvider {
-    return {
+    return createStoryStateProvider({
         courses: {
-            get: () => Promise.resolve(undefined),
-            set: () => Promise.resolve(undefined),
             query: () => Promise.resolve({ courses: [], total: 0 }),
             page: () =>
                 Promise.resolve([
@@ -59,23 +58,9 @@ function createPlanStoryProvider(): StateProvider {
                 ]),
             count: () => Promise.resolve(2),
             faculties: () => Promise.resolve([]),
-            getLastSync: () => Promise.resolve(undefined),
-        },
-        catalogs: {
-            get: () => Promise.resolve({}),
-            set: () => Promise.resolve(undefined),
         },
         requirements: {
-            get: () => Promise.resolve(undefined),
             sync: () => Promise.resolve({ status: 'updated' }),
         },
-        userDegree: {
-            get: () => Promise.resolve(undefined),
-            set: () => Promise.resolve(undefined),
-        },
-        userPlan: {
-            get: () => Promise.resolve(undefined),
-            set: () => Promise.resolve(undefined),
-        },
-    };
+    });
 }
