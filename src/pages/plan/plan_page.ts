@@ -206,13 +206,17 @@ export function PlanPage(): HTMLElement {
     const semesterCountInput = root.querySelector<HTMLInputElement>(
         '[data-semester-count]'
     );
+    const rowCourseListTemplate = root.querySelector<HTMLTemplateElement>(
+        "[data-role='row-course-list-template']"
+    );
 
     if (
         rail === null ||
         warning === null ||
         problemsList === null ||
         problemsCount === null ||
-        semesterCountInput === null
+        semesterCountInput === null ||
+        rowCourseListTemplate === null
     ) {
         throw new Error('PlanPage required elements not found');
     }
@@ -235,7 +239,8 @@ export function PlanPage(): HTMLElement {
             warning,
             problemsList,
             problemsCount,
-            semesterCountInput
+            semesterCountInput,
+            rowCourseListTemplate
         );
     });
 
@@ -289,7 +294,8 @@ export function PlanPage(): HTMLElement {
         warning,
         problemsList,
         problemsCount,
-        semesterCountInput
+        semesterCountInput,
+        rowCourseListTemplate
     );
     void hydratePlan(
         state,
@@ -297,7 +303,8 @@ export function PlanPage(): HTMLElement {
         warning,
         problemsList,
         problemsCount,
-        semesterCountInput
+        semesterCountInput,
+        rowCourseListTemplate
     );
 
     return root;
@@ -309,7 +316,8 @@ async function hydratePlan(
     warning: HTMLElement,
     problemsList: HTMLElement,
     problemsCount: HTMLElement,
-    semesterCountInput: HTMLInputElement
+    semesterCountInput: HTMLInputElement,
+    rowCourseListTemplate: HTMLTemplateElement
 ): Promise<void> {
     const [meta, courses] = await Promise.all([
         appState.userPlan.get().catch(() => undefined),
@@ -345,7 +353,8 @@ async function hydratePlan(
         warning,
         problemsList,
         problemsCount,
-        semesterCountInput
+        semesterCountInput,
+        rowCourseListTemplate
     );
 }
 
@@ -355,7 +364,8 @@ function renderPlan(
     warning: HTMLElement,
     problemsList: HTMLElement,
     problemsCount: HTMLElement,
-    semesterCountInput: HTMLInputElement
+    semesterCountInput: HTMLInputElement,
+    rowCourseListTemplate: HTMLTemplateElement
 ): void {
     semesterCountInput.min = getMinimumSemesterCount(state).toString();
     semesterCountInput.value = state.semesterCount.toString();
@@ -374,7 +384,7 @@ function renderPlan(
     rail.replaceChildren();
 
     for (const row of getPlanRows(state)) {
-        const rowElement = createPlanRow(state, row);
+        const rowElement = createPlanRow(state, row, rowCourseListTemplate);
         rail.append(rowElement);
     }
 
@@ -408,7 +418,11 @@ function getPlanRows(state: PlanState): PlanRow[] {
     ];
 }
 
-function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
+function createPlanRow(
+    state: PlanState,
+    row: PlanRow,
+    rowCourseListTemplate: HTMLTemplateElement
+): HTMLElement {
     const rowElement = document.createElement('section');
     rowElement.className =
         'border-border/50 bg-semester-surface flex flex-col gap-3 rounded-2xl border p-3 sm:p-4';
@@ -462,15 +476,21 @@ function createPlanRow(state: PlanState, row: PlanRow): HTMLElement {
     }
     header.append(headingRow, metrics);
 
-    const list = document.createElement('div');
-    list.className = 'flex flex-wrap gap-2';
-    list.dataset.rowCourseList = 'true';
+    const list = cloneRowCourseList(rowCourseListTemplate);
 
     for (const course of row.courses) {
         list.append(createSemesterCourse(state, row, course));
     }
     rowElement.append(header, list);
     return rowElement;
+}
+
+function cloneRowCourseList(template: HTMLTemplateElement): HTMLElement {
+    const list = template.content.firstElementChild?.cloneNode(true);
+    if (!(list instanceof HTMLElement)) {
+        throw new Error('PlanPage row course list template root not found');
+    }
+    return list;
 }
 
 function createSemesterCourse(
@@ -481,7 +501,7 @@ function createSemesterCourse(
     const holder = document.createElement('button');
     holder.type = 'button';
     holder.className =
-        'focus-visible:ring-accent/60 basis-full rounded-2xl text-start transition duration-200 ease-out focus-visible:ring-2 sm:basis-[calc(50%-0.25rem)] lg:basis-[calc(33.333%-0.35rem)]';
+        'focus-visible:ring-accent/60 w-full rounded-2xl text-start transition duration-200 ease-out focus-visible:ring-2';
     holder.dataset.courseAction = 'true';
     holder.dataset.courseCode = course.code;
     holder.dataset.rowId = row.id;
