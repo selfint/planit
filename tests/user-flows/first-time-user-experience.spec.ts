@@ -1,4 +1,10 @@
-import { type Locator, type Page, expect, test } from '@playwright/test';
+import {
+    type Locator,
+    type Page,
+    type TestInfo,
+    expect,
+    test,
+} from '@playwright/test';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -8,12 +14,11 @@ const DEGREE_CATALOG_ID = '2023_201';
 const DEGREE_FACULTY_ID = '00002120';
 const DEGREE_PROGRAM_ID = 'SC00001314_CG00006245';
 const DEGREE_PATH_ID = 'CG00006246';
-const FTUX_VIDEO_OUTPUT_PATH = path.join(
+const FTUX_VIDEO_OUTPUT_DIR = path.join(
     process.cwd(),
     'src',
     'assets',
-    'demos',
-    'first-time-user-experience.webm'
+    'demos'
 );
 const MODERN_CURSOR_ASSET_PATH = fileURLToPath(
     new URL('../../src/assets/demos/modern-cursor.svg', import.meta.url)
@@ -30,7 +35,7 @@ const DEMO_TIME_SCALE =
 test.describe('first-time-user-experience', () => {
     test('completes landing to semester journey with selected catalog course', async ({
         page,
-    }) => {
+    }, testInfo) => {
         test.setTimeout(120_000);
 
         await page.goto('catalog');
@@ -43,21 +48,21 @@ test.describe('first-time-user-experience', () => {
             '[data-degree-catalog]',
             DEGREE_CATALOG_ID
         );
-        await pause(page, 900);
+        await pause(page, 400);
         await selectSpecificOption(
             page,
             '[data-degree-faculty]',
             DEGREE_FACULTY_ID
         );
-        await pause(page, 900);
+        await pause(page, 400);
         await selectSpecificOption(
             page,
             '[data-degree-program]',
             DEGREE_PROGRAM_ID
         );
-        await pause(page, 900);
+        await pause(page, 400);
         await selectSpecificPathIfRequired(page, DEGREE_PATH_ID);
-        await pause(page, 1200);
+        await pause(page, 900);
 
         await expect(page.locator('[data-catalog-groups]')).toBeVisible();
         await pause(page, 1700);
@@ -136,7 +141,7 @@ test.describe('first-time-user-experience', () => {
         }
 
         if (IS_DEMO_MODE) {
-            await saveFtuxVideo(page);
+            await saveFtuxVideo(page, testInfo);
         }
     });
 });
@@ -227,16 +232,16 @@ async function humanClick(page: Page, locator: Locator): Promise<void> {
     const x = box.x + box.width / 2;
     const y = box.y + box.height / 2;
 
-    await page.mouse.move(x, y, { steps: 55 });
+    await page.mouse.move(x, y, { steps: 30 });
     await pause(page, 250);
 
     await setDemoCursorPressed(page, true);
     await page.mouse.down();
     await emitClickPulse(page, x, y);
-    await pause(page, 80);
+    await pause(page, 60);
     await page.mouse.up();
     await setDemoCursorPressed(page, false);
-    await pause(page, 120);
+    await pause(page, 90);
 }
 
 async function installDemoCursor(page: Page): Promise<void> {
@@ -409,32 +414,19 @@ async function smoothScrollToLocator(
     await pause(page, 160);
 }
 
-// async function resetClientCache(page: Page): Promise<void> {
-//     await page.evaluate(async () => {
-//         if ('serviceWorker' in navigator) {
-//             const registrations =
-//                 await navigator.serviceWorker.getRegistrations();
-//             await Promise.all(
-//                 registrations.map((registration) => registration.unregister())
-//             );
-//         }
-
-//         if ('caches' in window) {
-//             const cacheNames = await caches.keys();
-//             await Promise.all(
-//                 cacheNames.map((cacheName) => caches.delete(cacheName))
-//             );
-//         }
-//     });
-// }
-
-async function saveFtuxVideo(page: Page): Promise<void> {
+async function saveFtuxVideo(page: Page, testInfo: TestInfo): Promise<void> {
     const video = page.video();
     if (video === null) {
         return;
     }
 
-    await fs.mkdir(path.dirname(FTUX_VIDEO_OUTPUT_PATH), { recursive: true });
+    const suffix = testInfo.project.name;
+    const outputPath = path.join(
+        FTUX_VIDEO_OUTPUT_DIR,
+        `first-time-user-experience-${suffix}.webm`
+    );
+
+    await fs.mkdir(FTUX_VIDEO_OUTPUT_DIR, { recursive: true });
     await page.close();
-    await video.saveAs(FTUX_VIDEO_OUTPUT_PATH);
+    await video.saveAs(outputPath);
 }

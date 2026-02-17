@@ -20,19 +20,27 @@ video:
 
 - Script: `pnpm demo:ftux`
 - Current command value (from `package.json`):
-  `pnpm build && PW_DEMO=on PW_VIDEO=on PW_SLOWMO=275 PW_DEMO_TIME_SCALE=0.5 PW_VIDEO_WIDTH=1400 PW_VIDEO_HEIGHT=1050 playwright test tests/user-flows/first-time-user-experience.spec.ts`
+  `pnpm build && PW_DEMO=on PW_VIDEO=on PW_SLOWMO=275 PW_DEMO_TIME_SCALE=0.5 playwright test tests/user-flows/first-time-user-experience.spec.ts`
 
 What this means:
 
 - `pnpm build` runs before test.
 - Playwright runs in demo mode (`PW_DEMO=on`) against preview server.
 - Video capture is forced on.
-- Resolution is `1400x1050` (4:3).
+- Demo projects now export four videos:
+  - desktop light project at viewport `1400x1050`, recording `2800x2100`
+  - desktop dark project at viewport `1400x1050`, recording `2800x2100`
+  - mobile light project at viewport `430x932`, recording `860x1864`
+  - mobile dark project at viewport `430x932`, recording `860x1864`
 - Slow motion is reduced from classic demo values (`PW_SLOWMO=275`).
 - Explicit test pauses are globally scaled to half (`PW_DEMO_TIME_SCALE=0.5`).
-- On successful demo run (`PW_DEMO=on`), the spec saves the video directly to
-  `src/assets/demos/first-time-user-experience.webm` via `video.saveAs(...)`.
-  In non-demo mode, it does not export this asset file.
+- On successful demo run (`PW_DEMO=on`), the spec saves all project videos via
+  `video.saveAs(...)`:
+  - `src/assets/demos/first-time-user-experience-desktop-chrome-light.webm`
+  - `src/assets/demos/first-time-user-experience-desktop-chrome-dark.webm`
+  - `src/assets/demos/first-time-user-experience-mobile-chrome-light.webm`
+  - `src/assets/demos/first-time-user-experience-mobile-chrome-dark.webm`
+  In non-demo mode, it does not export these asset files.
 
 ## Playwright environment assumptions
 
@@ -106,7 +114,8 @@ Use these env vars before editing logic:
   - `1` = original pacing
   - `0.5` = half pause duration
 - `PW_SLOWMO`: Playwright interaction slow-motion
-- `PW_VIDEO_WIDTH` and `PW_VIDEO_HEIGHT`: capture/viewport size in demo mode
+- Demo recording size is derived inline as `viewport * 2` per project in
+  `playwright.config.ts`.
 
 ## Editing guardrails
 

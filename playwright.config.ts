@@ -14,14 +14,14 @@ const slowMoMs = Number.parseInt(
     process.env.PW_SLOWMO ?? (demoMode ? '450' : '0'),
     10
 );
-const demoVideoWidth = Number.parseInt(
-    process.env.PW_VIDEO_WIDTH ?? '1920',
-    10
-);
-const demoVideoHeight = Number.parseInt(
-    process.env.PW_VIDEO_HEIGHT ?? '1080',
-    10
-);
+const demoDesktopViewport = {
+    width: 1400,
+    height: 1050,
+};
+const demoMobileViewport = {
+    width: 430,
+    height: 932,
+};
 const traceMode = (process.env.PW_TRACE ??
     (demoMode ? 'off' : 'retain-on-failure')) as
     | 'off'
@@ -40,40 +40,82 @@ export default defineConfig({
         video: demoMode
             ? {
                   mode: 'on',
-                  size: {
-                      width: demoVideoWidth,
-                      height: demoVideoHeight,
-                  },
               }
             : videoMode,
         trace: traceMode,
         screenshot: 'only-on-failure',
-        viewport: demoMode
-            ? {
-                  width: demoVideoWidth,
-                  height: demoVideoHeight,
-              }
-            : undefined,
         launchOptions: {
             slowMo: slowMoMs,
         },
     },
     projects: [
         {
-            name: 'desktop-chrome',
+            name: 'desktop-chrome-light',
             use: {
                 ...devices['Desktop Chrome'],
+                colorScheme: 'light',
+                viewport: demoDesktopViewport,
+                ...(demoMode
+                    ? {
+                          video: {
+                              mode: 'on',
+                              size: demoDesktopViewport,
+                          },
+                      }
+                    : {}),
             },
         },
         {
-            name: 'mobile-chrome',
+            name: 'desktop-chrome-dark',
+            use: {
+                ...devices['Desktop Chrome'],
+                colorScheme: 'dark',
+                viewport: demoDesktopViewport,
+                ...(demoMode
+                    ? {
+                          video: {
+                              mode: 'on',
+                              size: demoDesktopViewport,
+                          },
+                      }
+                    : {}),
+            },
+        },
+        {
+            name: 'mobile-chrome-light',
             use: {
                 ...devices['Pixel 5'],
+                colorScheme: 'light',
+                viewport: demoMobileViewport,
+                ...(demoMode
+                    ? {
+                          video: {
+                              mode: 'on',
+                              size: demoMobileViewport,
+                          },
+                      }
+                    : {}),
+            },
+        },
+        {
+            name: 'mobile-chrome-dark',
+            use: {
+                ...devices['Pixel 5'],
+                colorScheme: 'dark',
+                viewport: demoMobileViewport,
+                ...(demoMode
+                    ? {
+                          video: {
+                              mode: 'on',
+                              size: demoMobileViewport,
+                          },
+                      }
+                    : {}),
             },
         },
     ],
     webServer: {
-        command: `pnpm dev --host ${host} --strictPort --port ${port}`,
+        command: `pnpm preview --host ${host} --strictPort --port ${port}`,
         url: baseURL,
         reuseExistingServer: false,
         timeout: 120000,

@@ -13,16 +13,85 @@
                     data-skeleton="true"
                 >
                     <video
-                        class="h-auto w-full object-contain opacity-0 transition duration-300 ease-out"
-                        data-landing-demo-video
-                        aria-label="הדגמת משתמש חדשה"
+                        class="h-auto w-full object-contain opacity-0 transition duration-300 ease-out dark:hidden md:hidden"
+                        data-landing-demo-video="mobile-light"
+                        aria-label="הדגמת משתמש חדשה - מובייל בהיר"
+                        width="430"
+                        height="932"
                         autoplay
                         muted
                         loop
                         playsinline
                         preload="metadata"
                         controls
-                    ></video>
+                    >
+                        <track
+                            kind="captions"
+                            srclang="he"
+                            label="כתוביות"
+                            src="data:text/vtt;charset=utf-8,WEBVTT"
+                        />
+                    </video>
+                    <video
+                        class="hidden h-auto w-full object-contain opacity-0 transition duration-300 ease-out dark:block md:!hidden"
+                        data-landing-demo-video="mobile-dark"
+                        aria-label="הדגמת משתמש חדשה - מובייל כהה"
+                        width="430"
+                        height="932"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                        controls
+                    >
+                        <track
+                            kind="captions"
+                            srclang="he"
+                            label="כתוביות"
+                            src="data:text/vtt;charset=utf-8,WEBVTT"
+                        />
+                    </video>
+                    <video
+                        class="hidden h-auto w-full object-contain opacity-0 transition duration-300 ease-out md:block dark:md:hidden"
+                        data-landing-demo-video="desktop-light"
+                        aria-label="הדגמת משתמש חדשה - דסקטופ בהיר"
+                        width="1400"
+                        height="1050"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                        controls
+                    >
+                        <track
+                            kind="captions"
+                            srclang="he"
+                            label="כתוביות"
+                            src="data:text/vtt;charset=utf-8,WEBVTT"
+                        />
+                    </video>
+                    <video
+                        class="hidden h-auto w-full object-contain opacity-0 transition duration-300 ease-out dark:md:block"
+                        data-landing-demo-video="desktop-dark"
+                        aria-label="הדגמת משתמש חדשה - דסקטופ כהה"
+                        width="1400"
+                        height="1050"
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        preload="metadata"
+                        controls
+                    >
+                        <track
+                            kind="captions"
+                            srclang="he"
+                            label="כתוביות"
+                            src="data:text/vtt;charset=utf-8,WEBVTT"
+                        />
+                    </video>
                     <span
                         class="skeleton-shimmer absolute inset-0"
                         aria-hidden="true"
