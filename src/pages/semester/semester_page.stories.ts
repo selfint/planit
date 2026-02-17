@@ -1,11 +1,13 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import type { StateManagement } from '$lib/stateManagement';
+import { state, type StateProvider } from '$lib/stateManagement';
 
 import { SemesterPage } from './semester_page';
 
 type SemesterPageStoryArgs = {
     number: number;
 };
+
+const storyProvider = createSemesterStoryProvider();
 
 const meta: Meta<SemesterPageStoryArgs> = {
     title: 'Pages/Semester',
@@ -29,8 +31,9 @@ type Story = StoryObj<SemesterPageStoryArgs>;
 
 export const Default: Story = {
     render: (args) => {
+        void state.provider.set(storyProvider);
         window.history.replaceState(null, '', buildSemesterUrl(args.number));
-        return SemesterPage(createSemesterStoryStateManagement());
+        return SemesterPage();
     },
     globals: {
         theme: 'light',
@@ -39,8 +42,9 @@ export const Default: Story = {
 
 export const Dark: Story = {
     render: (args) => {
+        void state.provider.set(storyProvider);
         window.history.replaceState(null, '', buildSemesterUrl(args.number));
-        return SemesterPage(createSemesterStoryStateManagement());
+        return SemesterPage();
     },
     globals: {
         theme: 'dark',
@@ -60,11 +64,12 @@ function buildSemesterUrl(semesterNumber: number): string {
     return `/semester?number=${String(semesterNumber)}`;
 }
 
-function createSemesterStoryStateManagement(): StateManagement {
+function createSemesterStoryProvider(): StateProvider {
     return {
         courses: {
-            getCourse: async () => undefined,
-            queryCourses: async () => ({
+            get: async () => undefined,
+            set: async () => undefined,
+            query: async () => ({
                 total: 4,
                 courses: [
                     {
@@ -93,19 +98,20 @@ function createSemesterStoryStateManagement(): StateManagement {
                     },
                 ],
             }),
-            getCoursesPage: async () => [],
-            getCoursesCount: async () => 4,
-            getCourseFaculties: async () => [],
+            page: async () => [],
+            count: async () => 4,
+            faculties: async () => [],
+            getLastSync: async () => undefined,
         },
         catalogs: {
-            getCatalogs: async () => ({}),
+            get: async () => ({}),
+            set: async () => undefined,
         },
         requirements: {
-            getRequirement: async () => ({
+            get: async () => ({
                 programId: '0324',
                 catalogId: '2025_200',
                 facultyId: 'computer-science',
-                path: 'software',
                 data: {
                     name: 'root',
                     nested: [
@@ -122,17 +128,20 @@ function createSemesterStoryStateManagement(): StateManagement {
                     ],
                 },
             }),
-            getActiveSelection: async () => ({
+            set: async () => undefined,
+            sync: async () => ({ status: 'updated' }),
+        },
+        userDegree: {
+            get: async () => ({
                 catalogId: '2025_200',
                 facultyId: 'computer-science',
                 programId: '0324',
                 path: 'software',
             }),
-            setActiveSelection: async () => undefined,
-            sync: async () => ({ status: 'updated' }),
+            set: async () => undefined,
         },
-        plan: {
-            getPlanState: async () => ({
+        userPlan: {
+            get: async () => ({
                 key: 'planPageState',
                 value: {
                     semesters: [
@@ -141,10 +150,6 @@ function createSemesterStoryStateManagement(): StateManagement {
                     ],
                 },
             }),
-            setPlanState: async () => undefined,
-        },
-        meta: {
-            get: async () => undefined,
             set: async () => undefined,
         },
     };

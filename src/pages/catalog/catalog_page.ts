@@ -7,7 +7,7 @@ import {
 } from '$lib/requirementsUtils';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
-import type { StateManagement } from '$lib/stateManagement';
+import { state as appState } from '$lib/stateManagement';
 import templateHtml from './catalog_page.html?raw';
 
 import { DegreePicker } from './components/DegreePicker';
@@ -50,7 +50,7 @@ type PickerSelection = {
     path?: string;
 };
 
-export function CatalogPage(stateManagement: StateManagement): HTMLElement {
+export function CatalogPage(): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -89,7 +89,7 @@ export function CatalogPage(stateManagement: StateManagement): HTMLElement {
         throw new Error('CatalogPage required elements not found');
     }
 
-    const degreePicker = DegreePicker(stateManagement);
+    const degreePicker = DegreePicker();
     degreePickerHost.replaceWith(degreePicker);
 
     const context: GroupRenderingContext = {
@@ -111,12 +111,12 @@ export function CatalogPage(stateManagement: StateManagement): HTMLElement {
             context.pickerPending = true;
             context.state.textContent = GROUP_PENDING_MESSAGE;
             renderInfoState(context.root, GROUP_PENDING_MESSAGE);
-            scheduleCatalogGroupsRefresh(context, stateManagement);
+            scheduleCatalogGroupsRefresh(context);
         });
     }
 
     const pickerObserver = new MutationObserver(() => {
-        scheduleCatalogGroupsRefresh(context, stateManagement);
+        scheduleCatalogGroupsRefresh(context);
     });
     pickerObserver.observe(degreePicker, {
         childList: true,
@@ -127,38 +127,34 @@ export function CatalogPage(stateManagement: StateManagement): HTMLElement {
     });
 
     window.addEventListener('resize', () => {
-        scheduleCatalogGroupsRefresh(context, stateManagement);
+        scheduleCatalogGroupsRefresh(context);
     });
 
     renderGroupSkeleton(context.root, 4, getCardsPerPageForViewport());
-    void refreshCatalogGroups(context, stateManagement);
+    void refreshCatalogGroups(context);
 
     return root;
 }
 
-function scheduleCatalogGroupsRefresh(
-    context: GroupRenderingContext,
-    stateManagement: StateManagement
-): void {
+function scheduleCatalogGroupsRefresh(context: GroupRenderingContext): void {
     if (context.refreshTimer !== undefined) {
         window.clearTimeout(context.refreshTimer);
     }
     context.refreshTimer = window.setTimeout(() => {
         context.refreshTimer = undefined;
-        void refreshCatalogGroups(context, stateManagement);
+        void refreshCatalogGroups(context);
     }, 60);
 }
 
 async function refreshCatalogGroups(
-    context: GroupRenderingContext,
-    stateManagement: StateManagement
+    context: GroupRenderingContext
 ): Promise<void> {
     const nextVersion = context.refreshVersion + 1;
     context.refreshVersion = nextVersion;
 
     context.state.textContent = GROUP_LOADING_MESSAGE;
 
-    const selection = await stateManagement.requirements.getActiveSelection();
+    const selection = await appState.userDegree.get();
     if (context.refreshVersion !== nextVersion) {
         return;
     }
@@ -187,7 +183,7 @@ async function refreshCatalogGroups(
         return;
     }
 
-    const requirementRecord = await stateManagement.requirements.getRequirement(
+    const requirementRecord = await appState.requirements.get(
         selection.programId
     );
     if (context.refreshVersion !== nextVersion) {
@@ -215,8 +211,7 @@ async function refreshCatalogGroups(
         context.root,
         groups,
         context.courseCache,
-        cardsPerPage,
-        stateManagement
+        cardsPerPage
     );
 
     const totalCourses = collectUniqueCodes(groups).length;
@@ -289,8 +284,7 @@ function renderRequirementGroups(
     root: HTMLElement,
     groups: RequirementGroup[],
     courseCache: Map<string, CourseRecord | null>,
-    cardsPerPage: number,
-    stateManagement: StateManagement
+    cardsPerPage: number
 ): void {
     root.replaceChildren();
 
@@ -371,8 +365,7 @@ function renderRequirementGroups(
 
             const loadedRecords = await loadCourseRecords(
                 group.courseCodes,
-                courseCache,
-                stateManagement
+                courseCache
             );
             const sorted = sortCourseCodesByMedian(
                 group.courseCodes,
@@ -488,8 +481,7 @@ function getCourseCodesForPage(
 
 async function loadCourseRecords(
     codes: string[],
-    cache: Map<string, CourseRecord | null>,
-    stateManagement: StateManagement
+    cache: Map<string, CourseRecord | null>
 ): Promise<Map<string, CourseRecord | null>> {
     const recordsByCode = new Map<string, CourseRecord | null>();
     await Promise.all(
@@ -500,7 +492,7 @@ async function loadCourseRecords(
                 return;
             }
 
-            const record = await stateManagement.courses.getCourse(code);
+            const record = await appState.courses.get(code);
             const value = record ?? null;
             cache.set(code, value);
             recordsByCode.set(code, value);

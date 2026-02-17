@@ -1,5 +1,5 @@
 import { type CourseRecord } from '$lib/indexeddb';
-import type { StateManagement } from '$lib/stateManagement';
+import { state as appState } from '$lib/stateManagement';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
 
@@ -175,7 +175,7 @@ function buildSemesterBlueprints(count: number): SemesterBlueprint[] {
     return semesters;
 }
 
-export function PlanPage(stateManagement: StateManagement): HTMLElement {
+export function PlanPage(): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -227,7 +227,7 @@ export function PlanPage(stateManagement: StateManagement): HTMLElement {
         );
         semesterCountInput.value = nextCount.toString();
         resizeSemesters(state, nextCount);
-        void persistPlanState(stateManagement, state);
+        void persistPlanState(state);
         renderPlan(
             state,
             rail,
@@ -279,7 +279,7 @@ export function PlanPage(stateManagement: StateManagement): HTMLElement {
             return;
         }
 
-        void handleRowClick(stateManagement, state, targetRowId, rail);
+        void handleRowClick(state, targetRowId, rail);
     });
 
     renderPlan(
@@ -291,7 +291,6 @@ export function PlanPage(stateManagement: StateManagement): HTMLElement {
         semesterCountInput
     );
     void hydratePlan(
-        stateManagement,
         state,
         rail,
         warning,
@@ -304,7 +303,6 @@ export function PlanPage(stateManagement: StateManagement): HTMLElement {
 }
 
 async function hydratePlan(
-    stateManagement: StateManagement,
     state: PlanState,
     rail: HTMLElement,
     warning: HTMLElement,
@@ -313,8 +311,8 @@ async function hydratePlan(
     semesterCountInput: HTMLInputElement
 ): Promise<void> {
     const [meta, courses] = await Promise.all([
-        stateManagement.plan.getPlanState().catch(() => undefined),
-        stateManagement.courses.getCoursesPage(18, 0).catch(() => []),
+        appState.userPlan.get().catch(() => undefined),
+        appState.courses.page(18, 0).catch(() => []),
     ]);
 
     const usableCourses = dedupeCourses(
@@ -927,7 +925,6 @@ function getRowById(state: PlanState, rowId: string): PlanRow | undefined {
 }
 
 async function handleRowClick(
-    stateManagement: StateManagement,
     state: PlanState,
     targetRowId: string,
     rail: HTMLElement
@@ -978,7 +975,7 @@ async function handleRowClick(
     state.selected = undefined;
     toggleMoveTargets(rail, undefined);
 
-    await persistPlanState(stateManagement, state);
+    await persistPlanState(state);
 }
 
 function navigateToCoursePage(courseCode: string): void {
@@ -1115,10 +1112,7 @@ function normalizeDuplicateCourses(
     return `זוהו ${String(removed)} כפילויות בתכנית והן אוחדו למיקום יחיד.`;
 }
 
-async function persistPlanState(
-    stateManagement: StateManagement,
-    state: PlanState
-): Promise<void> {
+async function persistPlanState(state: PlanState): Promise<void> {
     const payload: PersistedPlan = {
         version: PLAN_META_VERSION,
         semesterCount: state.semesterCount,
@@ -1130,5 +1124,5 @@ async function persistPlanState(
         exemptionsCourseCodes: state.exemptions.map((course) => course.code),
     };
 
-    await stateManagement.plan.setPlanState(payload).catch(() => undefined);
+    await appState.userPlan.set(payload).catch(() => undefined);
 }

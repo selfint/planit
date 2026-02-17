@@ -8,7 +8,10 @@ const mocks = vi.hoisted(() => ({
     getCoursesPageMock: vi.fn(),
     getMetaMock: vi.fn(),
     getRequirementMock: vi.fn(),
+    putCatalogsMock: vi.fn(),
+    putCoursesMock: vi.fn(),
     queryCoursesMock: vi.fn(),
+    replaceRequirementsWithCowMock: vi.fn(),
     setMetaMock: vi.fn(),
     getActiveRequirementsSelectionMock: vi.fn(),
     setActiveRequirementsSelectionMock: vi.fn(),
@@ -23,7 +26,10 @@ vi.mock('$lib/indexeddb', () => ({
     getCoursesPage: mocks.getCoursesPageMock,
     getMeta: mocks.getMetaMock,
     getRequirement: mocks.getRequirementMock,
+    putCatalogs: mocks.putCatalogsMock,
+    putCourses: mocks.putCoursesMock,
     queryCourses: mocks.queryCoursesMock,
+    replaceRequirementsWithCow: mocks.replaceRequirementsWithCowMock,
     setMeta: mocks.setMetaMock,
 }));
 
@@ -33,20 +39,25 @@ vi.mock('$lib/requirementsSync', () => ({
     syncRequirements: mocks.syncRequirementsMock,
 }));
 
-import { createStateManagement } from './stateManagement';
+import {
+    createLocalStateProvider,
+    setStateProviderChangeHandler,
+    state,
+} from './stateManagement';
 
 describe('stateManagement', () => {
-    it('proxies course, catalog, and requirements reads', async () => {
-        const state = createStateManagement();
+    it('proxies local provider course and degree getters', async () => {
+        const localProvider = createLocalStateProvider();
 
-        await state.courses.getCourse('236501');
-        await state.courses.queryCourses({ page: 1, pageSize: 'all' });
-        await state.courses.getCoursesPage(10, 0);
-        await state.courses.getCoursesCount();
-        await state.courses.getCourseFaculties();
-        await state.catalogs.getCatalogs();
-        await state.requirements.getRequirement('0324');
-        await state.requirements.getActiveSelection();
+        await localProvider.courses.get('236501');
+        await localProvider.courses.query({ page: 1, pageSize: 'all' });
+        await localProvider.courses.page(10, 0);
+        await localProvider.courses.count();
+        await localProvider.courses.faculties();
+        await localProvider.catalogs.get();
+        await localProvider.requirements.get('0324');
+        await localProvider.userDegree.get();
+        await localProvider.userPlan.get();
 
         expect(mocks.getCourseMock).toHaveBeenCalledWith('236501');
         expect(mocks.queryCoursesMock).toHaveBeenCalledWith({
@@ -59,53 +70,47 @@ describe('stateManagement', () => {
         expect(mocks.getCatalogsMock).toHaveBeenCalled();
         expect(mocks.getRequirementMock).toHaveBeenCalledWith('0324');
         expect(mocks.getActiveRequirementsSelectionMock).toHaveBeenCalled();
+        expect(mocks.getMetaMock).toHaveBeenCalledWith('planPageState');
     });
 
-    it('persists requirements selection and plan state', async () => {
-        const state = createStateManagement();
+    it('swaps provider and notifies rerender handler', async () => {
+        const rerenderHandler = vi.fn();
+        setStateProviderChangeHandler(rerenderHandler);
 
-        await state.requirements.setActiveSelection({
-            catalogId: '2025_200',
-            facultyId: 'computer-science',
-            programId: '0324',
-            path: 'software-path',
-        });
-        await state.requirements.sync(
-            {
-                catalogId: '2025_200',
-                facultyId: 'computer-science',
-                programId: '0324',
+        const customProvider = {
+            courses: {
+                get: vi.fn(),
+                set: vi.fn(),
+                query: vi.fn(),
+                page: vi.fn(),
+                count: vi.fn(),
+                faculties: vi.fn(),
+                getLastSync: vi.fn(),
             },
-            { persistActiveSelection: false }
-        );
-        await state.plan.getPlanState();
-        await state.plan.setPlanState({ version: 2 });
-        await state.meta.get('courseDataLastSync');
-        await state.meta.set({ key: 'x', value: 'y' });
+            catalogs: {
+                get: vi.fn(),
+                set: vi.fn(),
+            },
+            requirements: {
+                get: vi.fn(),
+                set: vi.fn(),
+                sync: vi.fn(),
+            },
+            userDegree: {
+                get: vi.fn(),
+                set: vi.fn(),
+            },
+            userPlan: {
+                get: vi.fn(),
+                set: vi.fn(),
+            },
+        };
 
-        expect(mocks.setActiveRequirementsSelectionMock).toHaveBeenCalledWith({
-            catalogId: '2025_200',
-            facultyId: 'computer-science',
-            programId: '0324',
-            path: 'software-path',
-        });
-        expect(mocks.syncRequirementsMock).toHaveBeenCalledWith(
-            {
-                catalogId: '2025_200',
-                facultyId: 'computer-science',
-                programId: '0324',
-            },
-            { persistActiveSelection: false }
-        );
-        expect(mocks.getMetaMock).toHaveBeenCalledWith('planPageState');
-        expect(mocks.setMetaMock).toHaveBeenCalledWith({
-            key: 'planPageState',
-            value: { version: 2 },
-        });
-        expect(mocks.getMetaMock).toHaveBeenCalledWith('courseDataLastSync');
-        expect(mocks.setMetaMock).toHaveBeenCalledWith({
-            key: 'x',
-            value: 'y',
-        });
+        await state.provider.set(customProvider);
+        expect(state.provider.get()).toBe(customProvider);
+        expect(rerenderHandler).toHaveBeenCalledTimes(1);
+
+        setStateProviderChangeHandler(undefined);
+        await state.provider.set(createLocalStateProvider());
     });
 });

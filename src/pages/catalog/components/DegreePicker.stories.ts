@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import type { StateManagement } from '$lib/stateManagement';
+import { state, type StateProvider } from '$lib/stateManagement';
 
 import { DegreePicker } from './DegreePicker';
 
-const storyStateManagement = createDegreePickerStoryStateManagement();
+const storyProvider = createDegreePickerStoryProvider();
 
 const meta: Meta = {
     title: 'Components/DegreePicker',
@@ -14,14 +14,20 @@ export default meta;
 export type Story = StoryObj;
 
 export const Default: Story = {
-    render: () => DegreePicker(storyStateManagement),
+    render: () => {
+        void state.provider.set(storyProvider);
+        return DegreePicker();
+    },
     globals: {
         theme: 'light',
     },
 };
 
 export const Dark: Story = {
-    render: () => DegreePicker(storyStateManagement),
+    render: () => {
+        void state.provider.set(storyProvider);
+        return DegreePicker();
+    },
     globals: { theme: 'dark' },
     parameters: {
         backgrounds: {
@@ -30,17 +36,19 @@ export const Dark: Story = {
     },
 };
 
-function createDegreePickerStoryStateManagement(): StateManagement {
+function createDegreePickerStoryProvider(): StateProvider {
     return {
         courses: {
-            getCourse: async () => undefined,
-            queryCourses: async () => ({ courses: [], total: 0 }),
-            getCoursesPage: async () => [],
-            getCoursesCount: async () => 0,
-            getCourseFaculties: async () => [],
+            get: async () => undefined,
+            set: async () => undefined,
+            query: async () => ({ courses: [], total: 0 }),
+            page: async () => [],
+            count: async () => 0,
+            faculties: async () => [],
+            getLastSync: async () => undefined,
         },
         catalogs: {
-            getCatalogs: async () => ({
+            get: async () => ({
                 '2025_200': {
                     he: 'קטלוג 2025',
                     'computer-science': {
@@ -51,9 +59,10 @@ function createDegreePickerStoryStateManagement(): StateManagement {
                     },
                 },
             }),
+            set: async () => undefined,
         },
         requirements: {
-            getRequirement: async () => ({
+            get: async () => ({
                 programId: '0324',
                 catalogId: '2025_200',
                 facultyId: 'computer-science',
@@ -74,20 +83,19 @@ function createDegreePickerStoryStateManagement(): StateManagement {
                     ],
                 },
             }),
-            getActiveSelection: async () => ({
+            set: async () => undefined,
+            sync: async () => ({ status: 'updated' }),
+        },
+        userDegree: {
+            get: async () => ({
                 catalogId: '2025_200',
                 facultyId: 'computer-science',
                 programId: '0324',
                 path: undefined,
             }),
-            setActiveSelection: async () => undefined,
-            sync: async () => ({ status: 'updated' }),
+            set: async () => undefined,
         },
-        plan: {
-            getPlanState: async () => undefined,
-            setPlanState: async () => undefined,
-        },
-        meta: {
+        userPlan: {
             get: async () => undefined,
             set: async () => undefined,
         },

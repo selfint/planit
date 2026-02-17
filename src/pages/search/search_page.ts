@@ -1,5 +1,5 @@
 import { type CourseQueryParams, type CourseRecord } from '$lib/indexeddb';
-import type { StateManagement } from '$lib/stateManagement';
+import { state as appState } from '$lib/stateManagement';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
 
@@ -50,7 +50,7 @@ type RequirementOption = {
     courseCodes: string[];
 };
 
-export function SearchPage(stateManagement: StateManagement): HTMLElement {
+export function SearchPage(): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -73,12 +73,12 @@ export function SearchPage(stateManagement: StateManagement): HTMLElement {
     const state = parseStateFromUrl();
 
     hydrateFormFromState(elements, state);
-    bindEvents(elements, state, stateManagement);
+    bindEvents(elements, state);
 
-    void updateSyncLabel(elements.sync, stateManagement);
-    void hydrateFilterOptions(elements, state, stateManagement);
-    void hydrateTotalCourses(state, elements, stateManagement);
-    void runSearch(elements, state, false, stateManagement);
+    void updateSyncLabel(elements.sync);
+    void hydrateFilterOptions(elements, state);
+    void hydrateTotalCourses(state, elements);
+    void runSearch(elements, state, false);
 
     return root;
 }
@@ -179,14 +179,13 @@ function hydrateFormFromState(
 
 function bindEvents(
     elements: SearchPageElements,
-    state: SearchPageState,
-    stateManagement: StateManagement
+    state: SearchPageState
 ): void {
     elements.form.addEventListener('submit', (event) => {
         event.preventDefault();
         state.query = normalizeText(elements.input.value);
         cancelDebounce(state);
-        void runSearch(elements, state, true, stateManagement);
+        void runSearch(elements, state, true);
     });
 
     elements.input.addEventListener('input', () => {
@@ -194,7 +193,7 @@ function bindEvents(
         cancelDebounce(state);
         state.debounceId = window.setTimeout(() => {
             state.debounceId = undefined;
-            void runSearch(elements, state, true, stateManagement);
+            void runSearch(elements, state, true);
         }, SEARCH_DEBOUNCE_MS);
     });
 
@@ -206,37 +205,37 @@ function bindEvents(
         state.query = '';
         elements.input.value = '';
         cancelDebounce(state);
-        void runSearch(elements, state, true, stateManagement);
+        void runSearch(elements, state, true);
     });
 
     elements.available.addEventListener('change', () => {
         state.availableOnly = elements.available.checked;
-        void runSearch(elements, state, true, stateManagement);
+        void runSearch(elements, state, true);
     });
 
     elements.faculty.addEventListener('change', () => {
         state.faculty = normalizeText(elements.faculty.value);
-        void runSearch(elements, state, true, stateManagement);
+        void runSearch(elements, state, true);
     });
 
     elements.requirement.addEventListener('change', () => {
         state.requirement = normalizeText(elements.requirement.value);
-        void runSearch(elements, state, true, stateManagement);
+        void runSearch(elements, state, true);
     });
 
     elements.pointsMin.addEventListener('input', () => {
         state.pointsMin = normalizeText(elements.pointsMin.value);
-        void runSearch(elements, state, true, stateManagement);
+        void runSearch(elements, state, true);
     });
 
     elements.pointsMax.addEventListener('input', () => {
         state.pointsMax = normalizeText(elements.pointsMax.value);
-        void runSearch(elements, state, true, stateManagement);
+        void runSearch(elements, state, true);
     });
 
     elements.medianMin.addEventListener('input', () => {
         state.medianMin = normalizeText(elements.medianMin.value);
-        void runSearch(elements, state, true, stateManagement);
+        void runSearch(elements, state, true);
     });
 }
 
@@ -250,13 +249,12 @@ function cancelDebounce(state: SearchPageState): void {
 
 async function hydrateFilterOptions(
     elements: SearchPageElements,
-    state: SearchPageState,
-    stateManagement: StateManagement
+    state: SearchPageState
 ): Promise<void> {
     try {
         const [faculties, requirementOptions] = await Promise.all([
-            stateManagement.courses.getCourseFaculties(),
-            readRequirementOptions(stateManagement),
+            appState.courses.faculties(),
+            readRequirementOptions(),
         ]);
 
         renderSelectOptions(elements.faculty, 'כל הפקולטות', faculties);
@@ -303,8 +301,7 @@ async function hydrateFilterOptions(
 async function runSearch(
     elements: SearchPageElements,
     state: SearchPageState,
-    syncUrl: boolean,
-    stateManagement: StateManagement
+    syncUrl: boolean
 ): Promise<void> {
     const requestId = state.requestId + 1;
     state.requestId = requestId;
@@ -320,7 +317,7 @@ async function runSearch(
     const queryParams = buildQueryParams(state);
 
     try {
-        const result = await stateManagement.courses.queryCourses(queryParams);
+        const result = await appState.courses.query(queryParams);
         if (requestId !== state.requestId) {
             return;
         }
@@ -465,22 +462,14 @@ function renderSelectOptions(
     }
 }
 
-async function readRequirementOptions(
-    stateManagement: StateManagement
-): Promise<RequirementOption[]> {
-    const activeProgramMeta = await stateManagement.meta.get(
-        'requirementsActiveProgramId'
-    );
-    const programId =
-        typeof activeProgramMeta?.value === 'string'
-            ? activeProgramMeta.value
-            : '';
+async function readRequirementOptions(): Promise<RequirementOption[]> {
+    const selection = await appState.userDegree.get();
+    const programId = selection?.programId ?? '';
     if (programId.length === 0) {
         return [];
     }
 
-    const requirementRecord =
-        await stateManagement.requirements.getRequirement(programId);
+    const requirementRecord = await appState.requirements.get(programId);
     if (requirementRecord === undefined) {
         return [];
     }
@@ -568,12 +557,9 @@ function toRequirementNode(value: unknown): RequirementNode | undefined {
     return value as RequirementNode;
 }
 
-async function updateSyncLabel(
-    target: HTMLParagraphElement,
-    stateManagement: StateManagement
-): Promise<void> {
-    const meta = await stateManagement.meta.get('courseDataLastSync');
-    if (typeof meta?.value !== 'string' || meta.value.length === 0) {
+async function updateSyncLabel(target: HTMLParagraphElement): Promise<void> {
+    const lastSync = await appState.courses.getLastSync();
+    if (lastSync === undefined || lastSync.length === 0) {
         target.replaceChildren(
             document.createTextNode('עדיין לא בוצע סנכרון נתונים. '),
             createCatalogLink('עברו לקטלוג כדי לבחור מסלול.')
@@ -581,7 +567,7 @@ async function updateSyncLabel(
         return;
     }
 
-    const date = new Date(meta.value);
+    const date = new Date(lastSync);
     if (Number.isNaN(date.getTime())) {
         target.textContent = 'סטטוס סנכרון לא זמין.';
         return;
@@ -592,12 +578,11 @@ async function updateSyncLabel(
 
 async function hydrateTotalCourses(
     state: SearchPageState,
-    elements: SearchPageElements,
-    stateManagement: StateManagement
+    elements: SearchPageElements
 ): Promise<void> {
     try {
-        state.totalCourses = await stateManagement.courses.getCoursesCount();
-        void runSearch(elements, state, false, stateManagement);
+        state.totalCourses = await appState.courses.count();
+        void runSearch(elements, state, false);
     } catch {
         state.totalCourses = undefined;
     }

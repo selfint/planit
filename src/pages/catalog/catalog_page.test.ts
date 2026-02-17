@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
 import { describe, expect, it, vi } from 'vitest';
-import type { StateManagement } from '$lib/stateManagement';
+import { state as appState, type StateProvider } from '$lib/stateManagement';
 
 vi.mock('$components/CourseCard', () => ({
     CourseCard: (course?: { code?: string; name?: string }): HTMLElement => {
@@ -47,8 +47,9 @@ describe('CatalogPage', () => {
     it('renders waiting state when no active selection exists', async () => {
         setViewportWidth(620);
         getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
+        await appState.provider.set(createStateProviderMock());
 
-        const page = CatalogPage(createStateManagementMock());
+        const page = CatalogPage();
         await waitForUiWork();
 
         const state = page.querySelector<HTMLElement>('[data-catalog-state]');
@@ -124,7 +125,8 @@ describe('CatalogPage', () => {
             });
         });
 
-        const page = CatalogPage(createStateManagementMock());
+        await appState.provider.set(createStateProviderMock());
+        const page = CatalogPage();
         await waitForUiWork();
 
         const cards = page.querySelectorAll<HTMLElement>(
@@ -199,7 +201,8 @@ describe('CatalogPage', () => {
             })
         );
 
-        const page = CatalogPage(createStateManagementMock());
+        await appState.provider.set(createStateProviderMock());
+        const page = CatalogPage();
         await waitForUiWork();
 
         const programSelect = page.querySelector<HTMLSelectElement>(
@@ -264,7 +267,8 @@ describe('CatalogPage', () => {
             })
         );
 
-        const page = CatalogPage(createStateManagementMock());
+        await appState.provider.set(createStateProviderMock());
+        const page = CatalogPage();
         await waitForUiWork();
 
         const links = page.querySelectorAll<HTMLAnchorElement>(
@@ -326,7 +330,8 @@ describe('CatalogPage', () => {
             })
         );
 
-        const page = CatalogPage(createStateManagementMock());
+        await appState.provider.set(createStateProviderMock());
+        const page = CatalogPage();
         await waitForUiWork();
 
         const links = page.querySelectorAll<HTMLAnchorElement>(
@@ -353,29 +358,31 @@ async function waitForUiWork(): Promise<void> {
     await Promise.resolve();
 }
 
-function createStateManagementMock(): StateManagement {
+function createStateProviderMock(): StateProvider {
     return {
         courses: {
-            getCourse: getCourseMock,
-            queryCourses: vi.fn(),
-            getCoursesPage: vi.fn(),
-            getCoursesCount: vi.fn(),
-            getCourseFaculties: vi.fn(),
+            get: getCourseMock,
+            set: vi.fn(),
+            query: vi.fn(),
+            page: vi.fn(),
+            count: vi.fn(),
+            faculties: vi.fn(),
+            getLastSync: vi.fn(),
         },
         catalogs: {
-            getCatalogs: vi.fn(),
+            get: vi.fn(),
+            set: vi.fn(),
         },
         requirements: {
-            getRequirement: getRequirementMock,
-            getActiveSelection: getActiveRequirementsSelectionMock,
-            setActiveSelection: vi.fn(),
+            get: getRequirementMock,
+            set: vi.fn(),
             sync: vi.fn(),
         },
-        plan: {
-            getPlanState: vi.fn(),
-            setPlanState: vi.fn(),
+        userDegree: {
+            get: getActiveRequirementsSelectionMock,
+            set: vi.fn(),
         },
-        meta: {
+        userPlan: {
             get: vi.fn(),
             set: vi.fn(),
         },

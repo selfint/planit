@@ -1,9 +1,9 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import type { StateManagement } from '$lib/stateManagement';
+import { state, type StateProvider } from '$lib/stateManagement';
 
 import { CatalogPage } from './catalog_page';
 
-const storyStateManagement = createCatalogStoryStateManagement();
+const storyProvider = createCatalogStoryProvider();
 
 const meta: Meta = {
     title: 'Pages/Catalog',
@@ -17,14 +17,20 @@ export default meta;
 export type Story = StoryObj;
 
 export const Default: Story = {
-    render: () => CatalogPage(storyStateManagement),
+    render: () => {
+        void state.provider.set(storyProvider);
+        return CatalogPage();
+    },
     globals: {
         theme: 'light',
     },
 };
 
 export const Dark: Story = {
-    render: () => CatalogPage(storyStateManagement),
+    render: () => {
+        void state.provider.set(storyProvider);
+        return CatalogPage();
+    },
     globals: {
         theme: 'dark',
     },
@@ -35,22 +41,24 @@ export const Dark: Story = {
     },
 };
 
-function createCatalogStoryStateManagement(): StateManagement {
+function createCatalogStoryProvider(): StateProvider {
     return {
         courses: {
-            getCourse: async (code: string) => ({
+            get: async (code: string) => ({
                 code,
                 name: `Course ${code}`,
                 median: 80,
                 current: true,
             }),
-            queryCourses: async () => ({ courses: [], total: 0 }),
-            getCoursesPage: async () => [],
-            getCoursesCount: async () => 0,
-            getCourseFaculties: async () => [],
+            set: async () => undefined,
+            query: async () => ({ courses: [], total: 0 }),
+            page: async () => [],
+            count: async () => 0,
+            faculties: async () => [],
+            getLastSync: async () => undefined,
         },
         catalogs: {
-            getCatalogs: async () => ({
+            get: async () => ({
                 '2025_200': {
                     he: 'קטלוג 2025',
                     'computer-science': {
@@ -61,13 +69,13 @@ function createCatalogStoryStateManagement(): StateManagement {
                     },
                 },
             }),
+            set: async () => undefined,
         },
         requirements: {
-            getRequirement: async () => ({
+            get: async () => ({
                 programId: '0324',
                 catalogId: '2025_200',
                 facultyId: 'computer-science',
-                path: 'software-path',
                 data: {
                     name: 'root',
                     nested: [
@@ -85,20 +93,19 @@ function createCatalogStoryStateManagement(): StateManagement {
                     ],
                 },
             }),
-            getActiveSelection: async () => ({
+            set: async () => undefined,
+            sync: async () => ({ status: 'updated' }),
+        },
+        userDegree: {
+            get: async () => ({
                 catalogId: '2025_200',
                 facultyId: 'computer-science',
                 programId: '0324',
                 path: 'software-path',
             }),
-            setActiveSelection: async () => undefined,
-            sync: async () => ({ status: 'updated' }),
+            set: async () => undefined,
         },
-        plan: {
-            getPlanState: async () => undefined,
-            setPlanState: async () => undefined,
-        },
-        meta: {
+        userPlan: {
             get: async () => undefined,
             set: async () => undefined,
         },

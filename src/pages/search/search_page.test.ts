@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { StateManagement } from '$lib/stateManagement';
+import { state, type StateProvider } from '$lib/stateManagement';
 
 const {
     queryCoursesMock,
@@ -40,7 +40,7 @@ vi.mock('$components/ConsoleNav', () => ({
 import { SearchPage } from './search_page';
 
 describe('SearchPage', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         queryCoursesMock.mockReset();
         getMetaMock.mockReset();
         getCourseFacultiesMock.mockReset();
@@ -51,14 +51,10 @@ describe('SearchPage', () => {
         getCourseFacultiesMock.mockResolvedValue(['CS', 'Math']);
         getCoursesCountMock.mockResolvedValue(10);
         getRequirementMock.mockResolvedValue(undefined);
-        getMetaMock.mockImplementation((key: string) => {
-            if (key === 'courseDataLastSync') {
-                return { key, value: '' };
-            }
-            return { key, value: '' };
-        });
+        getMetaMock.mockResolvedValue(undefined);
 
         window.history.replaceState(null, '', '/search');
+        await state.provider.set(createStateProviderMock());
     });
 
     afterEach(() => {
@@ -66,7 +62,7 @@ describe('SearchPage', () => {
     });
 
     it('renders result grid and filter controls', async () => {
-        const page = SearchPage(createStateManagementMock());
+        const page = SearchPage();
         await new Promise((resolve) => {
             window.setTimeout(resolve, 0);
         });
@@ -106,7 +102,7 @@ describe('SearchPage', () => {
             total: 2,
         });
 
-        const page = SearchPage(createStateManagementMock());
+        const page = SearchPage();
         await new Promise((resolve) => {
             window.setTimeout(resolve, 0);
         });
@@ -139,7 +135,7 @@ describe('SearchPage', () => {
         queryCoursesMock.mockResolvedValue({ courses: [], total: 0 });
         getCoursesCountMock.mockResolvedValue(0);
 
-        const page = SearchPage(createStateManagementMock());
+        const page = SearchPage();
         await new Promise((resolve) => {
             window.setTimeout(resolve, 0);
         });
@@ -151,30 +147,32 @@ describe('SearchPage', () => {
     });
 });
 
-function createStateManagementMock(): StateManagement {
+function createStateProviderMock(): StateProvider {
     return {
         courses: {
-            getCourse: vi.fn(),
-            queryCourses: queryCoursesMock,
-            getCoursesPage: vi.fn(),
-            getCoursesCount: getCoursesCountMock,
-            getCourseFaculties: getCourseFacultiesMock,
+            get: vi.fn(),
+            set: vi.fn(),
+            query: queryCoursesMock,
+            page: vi.fn(),
+            count: getCoursesCountMock,
+            faculties: getCourseFacultiesMock,
+            getLastSync: async () => undefined,
         },
         catalogs: {
-            getCatalogs: vi.fn(),
+            get: vi.fn(),
+            set: vi.fn(),
         },
         requirements: {
-            getRequirement: getRequirementMock,
-            getActiveSelection: vi.fn(),
-            setActiveSelection: vi.fn(),
+            get: getRequirementMock,
+            set: vi.fn(),
             sync: vi.fn(),
         },
-        plan: {
-            getPlanState: vi.fn(),
-            setPlanState: vi.fn(),
+        userDegree: {
+            get: async () => undefined,
+            set: vi.fn(),
         },
-        meta: {
-            get: getMetaMock,
+        userPlan: {
+            get: vi.fn(),
             set: vi.fn(),
         },
     };

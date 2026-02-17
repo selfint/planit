@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { StateManagement } from '$lib/stateManagement';
+import { state, type StateProvider } from '$lib/stateManagement';
 
 const mocks = vi.hoisted(() => {
     return {
@@ -32,7 +32,7 @@ vi.mock('$components/CourseCard', () => ({
 import { PlanPage } from './plan_page';
 
 describe('plan page', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         if (typeof window.CSS === 'undefined') {
             Object.defineProperty(window, 'CSS', {
                 configurable: true,
@@ -64,6 +64,7 @@ describe('plan page', () => {
             },
         ]);
         mocks.setMetaMock.mockResolvedValue(undefined);
+        await state.provider.set(createStateProviderMock());
     });
 
     afterEach(() => {
@@ -71,7 +72,7 @@ describe('plan page', () => {
     });
 
     it('renders planner rows including wishlist and exemptions', async () => {
-        const page = PlanPage(createStateManagementMock());
+        const page = PlanPage();
         await flushPromises();
 
         expect(page).toBeInstanceOf(HTMLElement);
@@ -101,7 +102,7 @@ describe('plan page', () => {
     });
 
     it('shows row move controls and clears selection with row cancel', async () => {
-        const page = PlanPage(createStateManagementMock());
+        const page = PlanPage();
         await flushPromises();
 
         const courseButton = page.querySelector<HTMLElement>(
@@ -163,7 +164,7 @@ describe('plan page', () => {
             },
         });
 
-        const page = PlanPage(createStateManagementMock());
+        const page = PlanPage();
         await flushPromises();
 
         const input = page.querySelector<HTMLInputElement>(
@@ -194,32 +195,34 @@ async function flushPromises(): Promise<void> {
     });
 }
 
-function createStateManagementMock(): StateManagement {
+function createStateProviderMock(): StateProvider {
     return {
         courses: {
-            getCourse: vi.fn(),
-            queryCourses: vi.fn(),
-            getCoursesPage: mocks.getCoursesPageMock,
-            getCoursesCount: vi.fn(),
-            getCourseFaculties: vi.fn(),
+            get: vi.fn(),
+            set: vi.fn(),
+            query: vi.fn(),
+            page: mocks.getCoursesPageMock,
+            count: vi.fn(),
+            faculties: vi.fn(),
+            getLastSync: vi.fn(),
         },
         catalogs: {
-            getCatalogs: vi.fn(),
+            get: vi.fn(),
+            set: vi.fn(),
         },
         requirements: {
-            getRequirement: vi.fn(),
-            getActiveSelection: vi.fn(),
-            setActiveSelection: vi.fn(),
+            get: vi.fn(),
+            set: vi.fn(),
             sync: vi.fn(),
         },
-        plan: {
-            getPlanState: mocks.getMetaMock,
-            setPlanState: async (value: unknown) =>
-                mocks.setMetaMock({ key: 'planPageState', value }),
+        userDegree: {
+            get: vi.fn(),
+            set: vi.fn(),
         },
-        meta: {
+        userPlan: {
             get: mocks.getMetaMock,
-            set: mocks.setMetaMock,
+            set: async (value: unknown) =>
+                mocks.setMetaMock({ key: 'planPageState', value }),
         },
     };
 }

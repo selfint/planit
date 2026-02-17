@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import type { StateManagement } from '$lib/stateManagement';
+import { state, type StateProvider } from '$lib/stateManagement';
 
 import { SearchPage } from './search_page';
 
@@ -17,14 +17,20 @@ export default meta;
 type Story = StoryObj;
 
 export const Default: Story = {
-    render: () => SearchPage(storyStateManagement),
+    render: () => {
+        void state.provider.set(storyStateManagement);
+        return SearchPage();
+    },
     globals: {
         theme: 'light',
     },
 };
 
 export const Dark: Story = {
-    render: () => SearchPage(storyStateManagement),
+    render: () => {
+        void state.provider.set(storyStateManagement);
+        return SearchPage();
+    },
     globals: {
         theme: 'dark',
     },
@@ -35,11 +41,12 @@ export const Dark: Story = {
     },
 };
 
-function createSearchStoryStateManagement(): StateManagement {
+function createSearchStoryStateManagement(): StateProvider {
     return {
         courses: {
-            getCourse: async () => undefined,
-            queryCourses: async () => ({
+            get: async () => undefined,
+            set: async () => undefined,
+            query: async () => ({
                 total: 3,
                 courses: [
                     { code: '234114', name: 'מבוא למדעי המחשב', current: true },
@@ -51,15 +58,17 @@ function createSearchStoryStateManagement(): StateManagement {
                     { code: '236363', name: 'מערכות הפעלה', current: false },
                 ],
             }),
-            getCoursesPage: async () => [],
-            getCoursesCount: async () => 3,
-            getCourseFaculties: async () => ['מדעי המחשב', 'מתמטיקה'],
+            page: async () => [],
+            count: async () => 3,
+            faculties: async () => ['מדעי המחשב', 'מתמטיקה'],
+            getLastSync: async () => new Date().toISOString(),
         },
         catalogs: {
-            getCatalogs: async () => ({}),
+            get: async () => ({}),
+            set: async () => undefined,
         },
         requirements: {
-            getRequirement: async () => ({
+            get: async () => ({
                 programId: '0324',
                 catalogId: '2025_200',
                 facultyId: 'computer-science',
@@ -73,24 +82,20 @@ function createSearchStoryStateManagement(): StateManagement {
                     ],
                 },
             }),
-            getActiveSelection: async () => undefined,
-            setActiveSelection: async () => undefined,
+            set: async () => undefined,
             sync: async () => ({ status: 'updated' }),
         },
-        plan: {
-            getPlanState: async () => undefined,
-            setPlanState: async () => undefined,
+        userDegree: {
+            get: async () => ({
+                catalogId: '2025_200',
+                facultyId: 'computer-science',
+                programId: '0324',
+                path: undefined,
+            }),
+            set: async () => undefined,
         },
-        meta: {
-            get: async (key: string) => {
-                if (key === 'requirementsActiveProgramId') {
-                    return { key, value: '0324' };
-                }
-                if (key === 'courseDataLastSync') {
-                    return { key, value: new Date().toISOString() };
-                }
-                return undefined;
-            },
+        userPlan: {
+            get: async () => undefined,
             set: async () => undefined,
         },
     };

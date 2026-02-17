@@ -2,24 +2,31 @@
 
 ## Overview
 
-Provides one explicit dependency object for page-level data access. The module
-is the app composition root for courses, catalogs, requirements, plan state,
-and generic metadata reads/writes.
+Provides a global `state` object with getter/setter APIs per data domain.
+The active backend is a swappable provider (for example local IndexedDB or
+cloud), and provider replacement can trigger app rerender.
 
 ## Exports
 
-- `StateManagement`: contract used by pages, router wiring, tests, and stories.
-- `createStateManagement()`: production implementation that binds the contract
-  to IndexedDB and requirements sync modules.
+- `state`: global state object with domain APIs:
+    - `state.courses.get/set/query/page/count/faculties/getLastSync`
+    - `state.catalogs.get/set`
+    - `state.requirements.get/set/sync`
+    - `state.userDegree.get/set`
+    - `state.userPlan.get/set`
+    - `state.provider.get/set`
+- `createLocalStateProvider()`: local provider bound to IndexedDB and
+  requirements sync.
+- `setStateProviderChangeHandler(handler)`: internal callback hook used by the
+  router to rerender on provider swap.
 
 ## Data Flow
 
-- `createStateManagement()` maps all read/write operations to
-  `$lib/indexeddb` and `$lib/requirementsSync`.
-- Plan persistence is centralized via `plan.getPlanState()` and
-  `plan.setPlanState(...)`, both bound to the `planPageState` meta key.
-- Requirements selection and sync are exposed through
-  `requirements.getActiveSelection()`, `setActiveSelection(...)`, and `sync(...)`.
+- `state.provider` points to the current provider implementation.
+- Each `state.<domain>.<method>(...)` call delegates to the active provider.
+- `state.provider.set(nextProvider)` swaps backend behavior at runtime.
+- `setStateProviderChangeHandler(...)` is invoked after provider replacement so
+  the router can rerender the active route.
 
 ## Dependencies
 
@@ -28,12 +35,13 @@ and generic metadata reads/writes.
 
 ## Notes
 
-- Pages are expected to receive `StateManagement` explicitly.
-- The module intentionally avoids hidden global fallback logic inside pages.
+- Pages import the global `state` object directly and do not receive DI params.
+- `set(...)` methods may be async and can map to persistent writes.
+- Public `onchange` listeners are intentionally not exposed yet.
 
 ## Tests
 
-- `proxies course, catalog, and requirements reads`: verifies the factory
-  forwards course/catalog/requirements reads to the underlying modules.
-- `persists requirements selection and plan state`: verifies selection sync,
-  plan meta writes (`planPageState`), and direct meta read/write forwarding.
+- `proxies local provider course and degree getters`: verifies local provider
+  wiring to indexeddb/requirements sync.
+- `swaps provider and notifies rerender handler`: verifies runtime provider
+  replacement and rerender callback invocation.

@@ -7,7 +7,7 @@ import {
 } from '$lib/requirementsUtils';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
-import type { StateManagement } from '$lib/stateManagement';
+import { state as appState } from '$lib/stateManagement';
 import templateHtml from './semester_page.html?raw';
 
 const FALLBACK_COURSE_NAME_PREFIX = 'קורס';
@@ -38,7 +38,7 @@ type CourseGroup = {
     kind: 'requirement' | 'free';
 };
 
-export function SemesterPage(stateManagement: StateManagement): HTMLElement {
+export function SemesterPage(): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
     const templateElement = template.content.firstElementChild;
@@ -60,7 +60,7 @@ export function SemesterPage(stateManagement: StateManagement): HTMLElement {
     const elements = queryElements(root);
     const semesterNumber = getSemesterNumberFromUrl(window.location.search);
 
-    void hydratePage(stateManagement, elements, semesterNumber);
+    void hydratePage(elements, semesterNumber);
 
     return root;
 }
@@ -122,16 +122,15 @@ function getFallbackSemesterInfo(number: number): SemesterInfo {
 }
 
 async function hydratePage(
-    stateManagement: StateManagement,
     elements: SemesterPageElements,
     semesterNumber: number
 ): Promise<void> {
     try {
         const [selection, requirementCountEntry, allCoursesResult] =
             await Promise.all([
-                stateManagement.requirements.getActiveSelection(),
-                stateManagement.plan.getPlanState(),
-                stateManagement.courses.queryCourses({
+                appState.userDegree.get(),
+                appState.userPlan.get(),
+                appState.courses.query({
                     page: 1,
                     pageSize: 'all',
                 }),
@@ -150,7 +149,6 @@ async function hydratePage(
             semesterEntry?.courseCodes
         );
         const semesterCourses = await loadCoursesForCodes(
-            stateManagement,
             semesterCourseCodes,
             courseMap
         );
@@ -170,7 +168,6 @@ async function hydratePage(
             selection === undefined
                 ? []
                 : await loadRequirementCourseGroups(
-                      stateManagement,
                       selection.programId,
                       selection.path,
                       courseMap,
@@ -241,7 +238,6 @@ function getSemesterInfo(number: number, semesterId?: string): SemesterInfo {
 }
 
 async function loadCoursesForCodes(
-    stateManagement: StateManagement,
     codes: string[],
     courseMap: Map<string, CourseRecord>
 ): Promise<CourseRecord[]> {
@@ -255,7 +251,7 @@ async function loadCoursesForCodes(
                 return;
             }
 
-            const loaded = await stateManagement.courses.getCourse(code);
+            const loaded = await appState.courses.get(code);
             if (loaded !== undefined) {
                 courseMap.set(code, loaded);
                 courses[index] = loaded;
@@ -280,14 +276,12 @@ function toRequirementNode(value: unknown): RequirementNode | undefined {
 }
 
 async function loadRequirementCourseGroups(
-    stateManagement: StateManagement,
     programId: string,
     path: string | undefined,
     courseMap: Map<string, CourseRecord>,
     semesterCodeSet: Set<string>
 ): Promise<CourseGroup[]> {
-    const requirementRecord =
-        await stateManagement.requirements.getRequirement(programId);
+    const requirementRecord = await appState.requirements.get(programId);
     const requirementRoot = toRequirementNode(requirementRecord?.data);
     if (requirementRoot === undefined) {
         return [];
@@ -306,7 +300,7 @@ async function loadRequirementCourseGroups(
         }
 
         const courses = sortCoursesByMedianAndCode(
-            await loadCoursesForCodes(stateManagement, groupCodes, courseMap)
+            await loadCoursesForCodes(groupCodes, courseMap)
         );
         result.push({
             title: rawGroup.label,

@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import type { StateManagement } from '$lib/stateManagement';
+import { state, type StateProvider } from '$lib/stateManagement';
 
 const getCatalogsMock = vi.fn();
 const getRequirementMock = vi.fn();
@@ -15,7 +15,7 @@ vi.mock('$lib/catalogSync', () => ({
 import { DegreePicker } from './DegreePicker';
 
 describe('DegreePicker', () => {
-    beforeEach(() => {
+    beforeEach(async () => {
         getCatalogsMock.mockReset();
         getRequirementMock.mockReset();
         getActiveRequirementsSelectionMock.mockReset();
@@ -36,6 +36,7 @@ describe('DegreePicker', () => {
         getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
         syncRequirementsMock.mockResolvedValue({ status: 'updated' });
         setActiveRequirementsSelectionMock.mockResolvedValue(undefined);
+        await state.provider.set(createStateProviderMock());
     });
 
     it('does not persist active selection while path is required but not selected', async () => {
@@ -58,7 +59,7 @@ describe('DegreePicker', () => {
             },
         });
 
-        const picker = DegreePicker(createStateManagementMock());
+        const picker = DegreePicker();
         await waitForUiWork();
 
         const catalogSelect = querySelect(picker, '[data-degree-catalog]');
@@ -117,7 +118,7 @@ describe('DegreePicker', () => {
             },
         });
 
-        const picker = DegreePicker(createStateManagementMock());
+        const picker = DegreePicker();
         await waitForUiWork();
 
         const catalogSelect = querySelect(picker, '[data-degree-catalog]');
@@ -161,29 +162,31 @@ async function waitForUiWork(): Promise<void> {
     await Promise.resolve();
 }
 
-function createStateManagementMock(): StateManagement {
+function createStateProviderMock(): StateProvider {
     return {
         courses: {
-            getCourse: vi.fn(),
-            queryCourses: vi.fn(),
-            getCoursesPage: vi.fn(),
-            getCoursesCount: vi.fn(),
-            getCourseFaculties: vi.fn(),
+            get: vi.fn(),
+            set: vi.fn(),
+            query: vi.fn(),
+            page: vi.fn(),
+            count: vi.fn(),
+            faculties: vi.fn(),
+            getLastSync: vi.fn(),
         },
         catalogs: {
-            getCatalogs: getCatalogsMock,
+            get: getCatalogsMock,
+            set: vi.fn(),
         },
         requirements: {
-            getRequirement: getRequirementMock,
-            getActiveSelection: getActiveRequirementsSelectionMock,
-            setActiveSelection: setActiveRequirementsSelectionMock,
+            get: getRequirementMock,
+            set: vi.fn(),
             sync: syncRequirementsMock,
         },
-        plan: {
-            getPlanState: vi.fn(),
-            setPlanState: vi.fn(),
+        userDegree: {
+            get: getActiveRequirementsSelectionMock,
+            set: setActiveRequirementsSelectionMock,
         },
-        meta: {
+        userPlan: {
             get: vi.fn(),
             set: vi.fn(),
         },
