@@ -69,6 +69,59 @@ test.describe('/plan page route', () => {
         await expect(page.locator('[data-page="semester"]')).toBeVisible();
     });
 
+    test('uses course-page-like grid width management for plan cards', async ({
+        page,
+    }) => {
+        await page.goto('plan');
+        await page.waitForFunction(() => {
+            return document.querySelector('[data-course-action]') !== null;
+        });
+
+        const listClasses = await page.evaluate(() => {
+            return Array.from(
+                document.querySelectorAll<HTMLElement>('[data-row-course-list]')
+            ).map((element) => element.className);
+        });
+
+        expect(listClasses.length).toBeGreaterThan(0);
+        expect(
+            listClasses.every((className) => className.includes('grid'))
+        ).toBe(true);
+        expect(
+            listClasses.every((className) =>
+                className.includes(
+                    'grid-cols-[repeat(auto-fit,minmax(5rem,1fr))]'
+                )
+            )
+        ).toBe(true);
+        expect(
+            listClasses.every(
+                (className) =>
+                    className.includes(
+                        'md:grid-cols-[repeat(auto-fit,minmax(7rem,1fr))]'
+                    ) &&
+                    className.includes(
+                        'lg:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]'
+                    )
+            )
+        ).toBe(true);
+        expect(
+            listClasses.every((className) => !className.includes('flex'))
+        ).toBe(true);
+
+        const cardActionClasses = await page.evaluate(() => {
+            const firstCourseAction = document.querySelector<HTMLElement>(
+                '[data-course-action]'
+            );
+            return firstCourseAction?.className ?? '';
+        });
+
+        expect(cardActionClasses).toContain('w-full');
+        expect(cardActionClasses).not.toContain('basis-full');
+        expect(cardActionClasses).not.toContain('sm:basis-');
+        expect(cardActionClasses).not.toContain('lg:basis-');
+    });
+
     test('moves selected course to wishlist row', async ({ page }) => {
         await page.goto('plan');
 

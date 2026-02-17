@@ -12,6 +12,7 @@ It is designed as a row-based board that avoids horizontal scrolling and keeps m
     - semester rows
     - wishlist row (`רשימת משאלות`)
     - exemptions row (`פטורים`)
+- A shared row-course-list template in `plan_page.html` (`data-role="row-course-list-template"`) that controls card width with responsive grid columns (`5rem` / `7rem` / `9rem`) matching the course page width-management pattern.
 - Per-row header metadata chips (credits, median, tests for semesters; course count for wishlist/exemptions).
 - Per-row move actions shown only during active selection:
     - `העברה` on valid destination rows
@@ -32,6 +33,7 @@ It is designed as a row-based board that avoids horizontal scrolling and keeps m
     - resize semester count
 5. Persisted state is updated with `state.userPlan.set(...)` after move/resize operations.
 6. The UI rerenders row content and updates derived metrics + schedule problems from semester rows.
+7. Row course-list styling is template-driven from `plan_page.html`; TypeScript clones that template for every row so width behavior stays consistent in one HTML source.
 
 ## Unit Tests
 
@@ -114,6 +116,28 @@ page.goto('/plan')
 page.click('[data-semester-link][data-semester-number="3"]')
 assert page.url.endswith('/semester?number=3')
 assert page.locator('[data-page="semester"]').is_visible()
+```
+
+### `uses course-page-like grid width management for plan cards`
+
+WHAT: Verifies plan card width is controlled by responsive grid columns (same strategy as the course page).
+WHY: Prevents regressions back to per-card basis sizing and keeps width behavior consistent between pages.
+HOW: Navigates to `/plan`, reads classes from all `data-row-course-list` containers, asserts the shared grid column classes exist, and checks first `data-course-action` no longer includes `basis-*` classes.
+
+```python
+page.goto('/plan')
+list_classes = all_class_names('[data-row-course-list]')
+assert all('grid' in cls for cls in list_classes)
+assert all('grid-cols-[repeat(auto-fit,minmax(5rem,1fr))]' in cls for cls in list_classes)
+assert all('md:grid-cols-[repeat(auto-fit,minmax(7rem,1fr))]' in cls for cls in list_classes)
+assert all('lg:grid-cols-[repeat(auto-fit,minmax(9rem,1fr))]' in cls for cls in list_classes)
+assert all('flex' not in cls for cls in list_classes)
+
+action_cls = class_name('[data-course-action]')
+assert 'w-full' in action_cls
+assert 'basis-full' not in action_cls
+assert 'sm:basis-' not in action_cls
+assert 'lg:basis-' not in action_cls
 ```
 
 ### `moves selected course to wishlist row`
