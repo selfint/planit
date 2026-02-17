@@ -21,7 +21,6 @@
         "pw:codegen": "playwright codegen http://localhost:5173",
         "optimize:videos": "node scripts/optimize-playwright-videos.mjs",
         "test": "pnpm run unittest && pnpm run integtest",
-        "lhci": "node scripts/run-lhci.mjs collect",
         "lhci:ci": "node scripts/run-lhci.mjs collect",
         "vibe": "PORT=9999 vibe-kanban",
         "fix-webp-asset": "pnpx sharp-cli -i"

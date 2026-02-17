@@ -2,17 +2,15 @@
     "ci": {
         "collect": {
             "numberOfRuns": 1,
-            "startServerCommand": "pnpm preview --host --port 4173",
+            "startServerCommand": "pnpm preview --port 4173",
             "startServerReadyPattern": "Local",
             "url": [
-                "http://127.0.0.1:4173/planit/",
-                "http://127.0.0.1:4173/planit/plan",
-                "http://127.0.0.1:4173/planit/catalog",
-                "http://127.0.0.1:4173/planit/course?code=104031",
-                "http://127.0.0.1:4173/planit/search",
-                "http://127.0.0.1:4173/planit/semester?number=1",
-                "http://127.0.0.1:4173/planit/login",
-                "http://127.0.0.1:4173/planit/missing-route"
+                "http://localhost:4173/planit/",
+                "http://localhost:4173/planit/plan",
+                "http://localhost:4173/planit/catalog",
+                "http://localhost:4173/planit/course?code=104031",
+                "http://localhost:4173/planit/search",
+                "http://localhost:4173/planit/semester?number=1"
             ],
             "settings": {
                 "chromeFlags": "--no-sandbox --disable-dev-shm-usage"
