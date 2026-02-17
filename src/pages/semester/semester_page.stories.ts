@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import { type StateProvider, state } from '$lib/stateManagement';
+import { state } from '$lib/stateManagement';
+import { createStoryStateProvider } from '$lib/test-utils/storyStateProvider';
 
 import { SemesterPage } from './semester_page';
 
@@ -64,11 +65,9 @@ function buildSemesterUrl(semesterNumber: number): string {
     return `/semester?number=${String(semesterNumber)}`;
 }
 
-function createSemesterStoryProvider(): StateProvider {
-    return {
+function createSemesterStoryProvider() {
+    return createStoryStateProvider({
         courses: {
-            get: () => Promise.resolve(undefined),
-            set: () => Promise.resolve(undefined),
             query: () =>
                 Promise.resolve({
                     total: 4,
@@ -102,11 +101,9 @@ function createSemesterStoryProvider(): StateProvider {
             page: () => Promise.resolve([]),
             count: () => Promise.resolve(4),
             faculties: () => Promise.resolve([]),
-            getLastSync: () => Promise.resolve(undefined),
         },
         catalogs: {
             get: () => Promise.resolve({}),
-            set: () => Promise.resolve(undefined),
         },
         requirements: {
             get: () =>
@@ -140,7 +137,6 @@ function createSemesterStoryProvider(): StateProvider {
                     programId: '0324',
                     path: 'software',
                 }),
-            set: () => Promise.resolve(undefined),
         },
         userPlan: {
             get: () =>
@@ -153,7 +149,6 @@ function createSemesterStoryProvider(): StateProvider {
                         ],
                     },
                 }),
-            set: () => Promise.resolve(undefined),
         },
-    };
+    });
 }

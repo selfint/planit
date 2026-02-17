@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import { type StateProvider, state } from '$lib/stateManagement';
+import { state } from '$lib/stateManagement';
+import { createStoryStateProvider } from '$lib/test-utils/storyStateProvider';
 
 import { DegreePicker } from './DegreePicker';
 
@@ -36,16 +37,13 @@ export const Dark: Story = {
     },
 };
 
-function createDegreePickerStoryProvider(): StateProvider {
-    return {
+function createDegreePickerStoryProvider() {
+    return createStoryStateProvider({
         courses: {
-            get: () => Promise.resolve(undefined),
-            set: () => Promise.resolve(undefined),
             query: () => Promise.resolve({ courses: [], total: 0 }),
             page: () => Promise.resolve([]),
             count: () => Promise.resolve(0),
             faculties: () => Promise.resolve([]),
-            getLastSync: () => Promise.resolve(undefined),
         },
         catalogs: {
             get: () =>
@@ -60,7 +58,6 @@ function createDegreePickerStoryProvider(): StateProvider {
                         },
                     },
                 }),
-            set: () => Promise.resolve(undefined),
         },
         requirements: {
             get: () =>
@@ -95,11 +92,6 @@ function createDegreePickerStoryProvider(): StateProvider {
                     programId: '0324',
                     path: undefined,
                 }),
-            set: () => Promise.resolve(undefined),
         },
-        userPlan: {
-            get: () => Promise.resolve(undefined),
-            set: () => Promise.resolve(undefined),
-        },
-    };
+    });
 }

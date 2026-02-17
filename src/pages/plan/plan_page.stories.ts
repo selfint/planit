@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html';
 import { type StateProvider, state } from '$lib/stateManagement';
-import { createStoryStateProvider } from '$lib/storyStateProvider';
+import { createStoryStateProvider } from '$lib/test-utils/storyStateProvider';
 
 import { PlanPage } from './plan_page';
 

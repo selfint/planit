@@ -1,5 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import { type StateProvider, state } from '$lib/stateManagement';
+import { state } from '$lib/stateManagement';
+import { createStoryStateProvider } from '$lib/test-utils/storyStateProvider';
 
 import { CatalogPage } from './catalog_page';
 
@@ -41,8 +42,8 @@ export const Dark: Story = {
     },
 };
 
-function createCatalogStoryProvider(): StateProvider {
-    return {
+function createCatalogStoryProvider() {
+    return createStoryStateProvider({
         courses: {
             get: (code: string) =>
                 Promise.resolve({
@@ -51,12 +52,10 @@ function createCatalogStoryProvider(): StateProvider {
                     median: 80,
                     current: true,
                 }),
-            set: () => Promise.resolve(undefined),
             query: () => Promise.resolve({ courses: [], total: 0 }),
             page: () => Promise.resolve([]),
             count: () => Promise.resolve(0),
             faculties: () => Promise.resolve([]),
-            getLastSync: () => Promise.resolve(undefined),
         },
         catalogs: {
             get: () =>
@@ -71,7 +70,6 @@ function createCatalogStoryProvider(): StateProvider {
                         },
                     },
                 }),
-            set: () => Promise.resolve(undefined),
         },
         requirements: {
             get: () =>
@@ -106,11 +104,6 @@ function createCatalogStoryProvider(): StateProvider {
                     programId: '0324',
                     path: 'software-path',
                 }),
-            set: () => Promise.resolve(undefined),
         },
-        userPlan: {
-            get: () => Promise.resolve(undefined),
-            set: () => Promise.resolve(undefined),
-        },
-    };
+    });
 }
