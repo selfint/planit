@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
+import { type StateProvider, state } from '$lib/stateManagement';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { state, type StateProvider } from '$lib/stateManagement';
 
 const mocks = vi.hoisted(() => {
     return {
@@ -221,8 +221,10 @@ function createStateProviderMock(): StateProvider {
         },
         userPlan: {
             get: mocks.getMetaMock,
-            set: async (value: unknown) =>
-                mocks.setMetaMock({ key: 'planPageState', value }),
+            set: (value: unknown): Promise<void> => {
+                mocks.setMetaMock({ key: 'planPageState', value });
+                return Promise.resolve();
+            },
         },
     };
 }

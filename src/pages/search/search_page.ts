@@ -1,7 +1,7 @@
 import { type CourseQueryParams, type CourseRecord } from '$lib/indexeddb';
-import { state as appState } from '$lib/stateManagement';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
+import { state as appState } from '$lib/stateManagement';
 
 import templateHtml from './search_page.html?raw';
 

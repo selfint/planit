@@ -1,4 +1,3 @@
-import { type CourseRecord } from '$lib/indexeddb';
 import {
     type RequirementNode,
     filterRequirementsByPath,
@@ -7,6 +6,7 @@ import {
 } from '$lib/requirementsUtils';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
+import { type CourseRecord } from '$lib/indexeddb';
 import { state as appState } from '$lib/stateManagement';
 import templateHtml from './semester_page.html?raw';
 

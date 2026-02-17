@@ -64,12 +64,17 @@ export type StateProvider = {
     };
 };
 
-export type StateManagement = Record<string, unknown>;
+type GlobalState = StateProvider & {
+    provider: {
+        get(): StateProvider;
+        set(nextProvider: StateProvider): Promise<void>;
+    };
+};
 
 let provider: StateProvider = createLocalStateProvider();
 let providerChangeHandler: (() => void) | undefined;
 
-export const state = {
+export const state: GlobalState = {
     courses: {
         get(code: string): Promise<CourseRecord | undefined> {
             return provider.courses.get(code);
@@ -143,9 +148,10 @@ export const state = {
         get(): StateProvider {
             return provider;
         },
-        async set(nextProvider: StateProvider): Promise<void> {
+        set(nextProvider: StateProvider): Promise<void> {
             provider = nextProvider;
             providerChangeHandler?.();
+            return Promise.resolve();
         },
     },
 };

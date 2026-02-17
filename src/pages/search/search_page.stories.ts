@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import { state, type StateProvider } from '$lib/stateManagement';
+import { type StateProvider, state } from '$lib/stateManagement';
 
 import { SearchPage } from './search_page';
 
@@ -44,59 +44,70 @@ export const Dark: Story = {
 function createSearchStoryStateManagement(): StateProvider {
     return {
         courses: {
-            get: async () => undefined,
-            set: async () => undefined,
-            query: async () => ({
-                total: 3,
-                courses: [
-                    { code: '234114', name: 'מבוא למדעי המחשב', current: true },
-                    {
-                        code: '236501',
-                        name: 'מבוא לבינה מלאכותית',
-                        current: true,
-                    },
-                    { code: '236363', name: 'מערכות הפעלה', current: false },
-                ],
-            }),
-            page: async () => [],
-            count: async () => 3,
-            faculties: async () => ['מדעי המחשב', 'מתמטיקה'],
-            getLastSync: async () => new Date().toISOString(),
-        },
-        catalogs: {
-            get: async () => ({}),
-            set: async () => undefined,
-        },
-        requirements: {
-            get: async () => ({
-                programId: '0324',
-                catalogId: '2025_200',
-                facultyId: 'computer-science',
-                data: {
-                    name: 'root',
-                    nested: [
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(undefined),
+            query: () =>
+                Promise.resolve({
+                    total: 3,
+                    courses: [
                         {
-                            he: 'חובה',
-                            courses: ['234114', '236501'],
+                            code: '234114',
+                            name: 'מבוא למדעי המחשב',
+                            current: true,
+                        },
+                        {
+                            code: '236501',
+                            name: 'מבוא לבינה מלאכותית',
+                            current: true,
+                        },
+                        {
+                            code: '236363',
+                            name: 'מערכות הפעלה',
+                            current: false,
                         },
                     ],
-                },
-            }),
-            set: async () => undefined,
-            sync: async () => ({ status: 'updated' }),
+                }),
+            page: () => Promise.resolve([]),
+            count: () => Promise.resolve(3),
+            faculties: () => Promise.resolve(['מדעי המחשב', 'מתמטיקה']),
+            getLastSync: () => Promise.resolve(new Date().toISOString()),
+        },
+        catalogs: {
+            get: () => Promise.resolve({}),
+            set: () => Promise.resolve(undefined),
+        },
+        requirements: {
+            get: () =>
+                Promise.resolve({
+                    programId: '0324',
+                    catalogId: '2025_200',
+                    facultyId: 'computer-science',
+                    data: {
+                        name: 'root',
+                        nested: [
+                            {
+                                he: 'חובה',
+                                courses: ['234114', '236501'],
+                            },
+                        ],
+                    },
+                }),
+            set: () => Promise.resolve(undefined),
+            sync: () => Promise.resolve({ status: 'updated' }),
         },
         userDegree: {
-            get: async () => ({
-                catalogId: '2025_200',
-                facultyId: 'computer-science',
-                programId: '0324',
-                path: undefined,
-            }),
-            set: async () => undefined,
+            get: () =>
+                Promise.resolve({
+                    catalogId: '2025_200',
+                    facultyId: 'computer-science',
+                    programId: '0324',
+                    path: undefined,
+                }),
+            set: () => Promise.resolve(undefined),
         },
         userPlan: {
-            get: async () => undefined,
-            set: async () => undefined,
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(undefined),
         },
     };
 }

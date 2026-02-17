@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import { state, type StateProvider } from '$lib/stateManagement';
+import { type StateProvider, state } from '$lib/stateManagement';
 
 import { PlanPage } from './plan_page';
 
@@ -44,38 +44,39 @@ export const Dark: Story = {
 function createPlanStoryProvider(): StateProvider {
     return {
         courses: {
-            get: async () => undefined,
-            set: async () => undefined,
-            query: async () => ({ courses: [], total: 0 }),
-            page: async () => [
-                { code: '104031', name: 'חדו"א 1', points: 5, median: 78 },
-                {
-                    code: '234114',
-                    name: 'מבוא למדעי המחשב',
-                    points: 4,
-                    median: 82,
-                },
-            ],
-            count: async () => 2,
-            faculties: async () => [],
-            getLastSync: async () => undefined,
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(undefined),
+            query: () => Promise.resolve({ courses: [], total: 0 }),
+            page: () =>
+                Promise.resolve([
+                    { code: '104031', name: 'חדו"א 1', points: 5, median: 78 },
+                    {
+                        code: '234114',
+                        name: 'מבוא למדעי המחשב',
+                        points: 4,
+                        median: 82,
+                    },
+                ]),
+            count: () => Promise.resolve(2),
+            faculties: () => Promise.resolve([]),
+            getLastSync: () => Promise.resolve(undefined),
         },
         catalogs: {
-            get: async () => ({}),
-            set: async () => undefined,
+            get: () => Promise.resolve({}),
+            set: () => Promise.resolve(undefined),
         },
         requirements: {
-            get: async () => undefined,
-            set: async () => undefined,
-            sync: async () => ({ status: 'updated' }),
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(undefined),
+            sync: () => Promise.resolve({ status: 'updated' }),
         },
         userDegree: {
-            get: async () => undefined,
-            set: async () => undefined,
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(undefined),
         },
         userPlan: {
-            get: async () => undefined,
-            set: async () => undefined,
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(undefined),
         },
     };
 }

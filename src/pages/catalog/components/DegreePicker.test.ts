@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
+import { type StateProvider, state } from '$lib/stateManagement';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { state, type StateProvider } from '$lib/stateManagement';
 
 const getCatalogsMock = vi.fn();
 const getRequirementMock = vi.fn();

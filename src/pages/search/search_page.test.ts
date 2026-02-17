@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
+import { type StateProvider, state } from '$lib/stateManagement';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { state, type StateProvider } from '$lib/stateManagement';
 
 const {
     queryCoursesMock,
@@ -156,7 +156,7 @@ function createStateProviderMock(): StateProvider {
             page: vi.fn(),
             count: getCoursesCountMock,
             faculties: getCourseFacultiesMock,
-            getLastSync: async () => undefined,
+            getLastSync: () => Promise.resolve(undefined),
         },
         catalogs: {
             get: vi.fn(),
@@ -168,7 +168,7 @@ function createStateProviderMock(): StateProvider {
             sync: vi.fn(),
         },
         userDegree: {
-            get: async () => undefined,
+            get: () => Promise.resolve(undefined),
             set: vi.fn(),
         },
         userPlan: {

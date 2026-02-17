@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import { state, type StateProvider } from '$lib/stateManagement';
+import { type StateProvider, state } from '$lib/stateManagement';
 
 import { SemesterPage } from './semester_page';
 
@@ -67,90 +67,94 @@ function buildSemesterUrl(semesterNumber: number): string {
 function createSemesterStoryProvider(): StateProvider {
     return {
         courses: {
-            get: async () => undefined,
-            set: async () => undefined,
-            query: async () => ({
-                total: 4,
-                courses: [
-                    {
-                        code: 'A100',
-                        name: 'A100',
-                        faculty: 'מדעי המחשב',
-                        median: 90,
-                    },
-                    {
-                        code: 'B200',
-                        name: 'B200',
-                        faculty: 'מדעי המחשב',
-                        median: 80,
-                    },
-                    {
-                        code: 'C300',
-                        name: 'C300',
-                        faculty: 'מתמטיקה',
-                        median: 70,
-                    },
-                    {
-                        code: 'D400',
-                        name: 'D400',
-                        faculty: 'פיזיקה',
-                        median: 85,
-                    },
-                ],
-            }),
-            page: async () => [],
-            count: async () => 4,
-            faculties: async () => [],
-            getLastSync: async () => undefined,
-        },
-        catalogs: {
-            get: async () => ({}),
-            set: async () => undefined,
-        },
-        requirements: {
-            get: async () => ({
-                programId: '0324',
-                catalogId: '2025_200',
-                facultyId: 'computer-science',
-                data: {
-                    name: 'root',
-                    nested: [
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(undefined),
+            query: () =>
+                Promise.resolve({
+                    total: 4,
+                    courses: [
                         {
-                            name: 'software',
-                            en: 'Software Path',
-                            nested: [
-                                {
-                                    name: 'core',
-                                    courses: ['A100', 'B200'],
-                                },
-                            ],
+                            code: 'A100',
+                            name: 'A100',
+                            faculty: 'מדעי המחשב',
+                            median: 90,
+                        },
+                        {
+                            code: 'B200',
+                            name: 'B200',
+                            faculty: 'מדעי המחשב',
+                            median: 80,
+                        },
+                        {
+                            code: 'C300',
+                            name: 'C300',
+                            faculty: 'מתמטיקה',
+                            median: 70,
+                        },
+                        {
+                            code: 'D400',
+                            name: 'D400',
+                            faculty: 'פיזיקה',
+                            median: 85,
                         },
                     ],
-                },
-            }),
-            set: async () => undefined,
-            sync: async () => ({ status: 'updated' }),
+                }),
+            page: () => Promise.resolve([]),
+            count: () => Promise.resolve(4),
+            faculties: () => Promise.resolve([]),
+            getLastSync: () => Promise.resolve(undefined),
+        },
+        catalogs: {
+            get: () => Promise.resolve({}),
+            set: () => Promise.resolve(undefined),
+        },
+        requirements: {
+            get: () =>
+                Promise.resolve({
+                    programId: '0324',
+                    catalogId: '2025_200',
+                    facultyId: 'computer-science',
+                    data: {
+                        name: 'root',
+                        nested: [
+                            {
+                                name: 'software',
+                                en: 'Software Path',
+                                nested: [
+                                    {
+                                        name: 'core',
+                                        courses: ['A100', 'B200'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                }),
+            set: () => Promise.resolve(undefined),
+            sync: () => Promise.resolve({ status: 'updated' }),
         },
         userDegree: {
-            get: async () => ({
-                catalogId: '2025_200',
-                facultyId: 'computer-science',
-                programId: '0324',
-                path: 'software',
-            }),
-            set: async () => undefined,
+            get: () =>
+                Promise.resolve({
+                    catalogId: '2025_200',
+                    facultyId: 'computer-science',
+                    programId: '0324',
+                    path: 'software',
+                }),
+            set: () => Promise.resolve(undefined),
         },
         userPlan: {
-            get: async () => ({
-                key: 'planPageState',
-                value: {
-                    semesters: [
-                        { id: 'אביב-2026-0', courseCodes: [] },
-                        { id: 'קיץ-2026-1', courseCodes: ['A100'] },
-                    ],
-                },
-            }),
-            set: async () => undefined,
+            get: () =>
+                Promise.resolve({
+                    key: 'planPageState',
+                    value: {
+                        semesters: [
+                            { id: 'אביב-2026-0', courseCodes: [] },
+                            { id: 'קיץ-2026-1', courseCodes: ['A100'] },
+                        ],
+                    },
+                }),
+            set: () => Promise.resolve(undefined),
         },
     };
 }

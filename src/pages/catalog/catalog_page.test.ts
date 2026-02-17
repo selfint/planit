@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
+import { type StateProvider, state as appState } from '$lib/stateManagement';
 import { describe, expect, it, vi } from 'vitest';
-import { state as appState, type StateProvider } from '$lib/stateManagement';
 
 vi.mock('$components/CourseCard', () => ({
     CourseCard: (course?: { code?: string; name?: string }): HTMLElement => {

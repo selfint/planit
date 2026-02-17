@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/html';
-import { state, type StateProvider } from '$lib/stateManagement';
+import { type StateProvider, state } from '$lib/stateManagement';
 
 import { DegreePicker } from './DegreePicker';
 
@@ -39,65 +39,68 @@ export const Dark: Story = {
 function createDegreePickerStoryProvider(): StateProvider {
     return {
         courses: {
-            get: async () => undefined,
-            set: async () => undefined,
-            query: async () => ({ courses: [], total: 0 }),
-            page: async () => [],
-            count: async () => 0,
-            faculties: async () => [],
-            getLastSync: async () => undefined,
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(undefined),
+            query: () => Promise.resolve({ courses: [], total: 0 }),
+            page: () => Promise.resolve([]),
+            count: () => Promise.resolve(0),
+            faculties: () => Promise.resolve([]),
+            getLastSync: () => Promise.resolve(undefined),
         },
         catalogs: {
-            get: async () => ({
-                '2025_200': {
-                    he: 'קטלוג 2025',
-                    'computer-science': {
-                        he: 'מדעי המחשב',
-                        '0324': {
-                            he: 'מדעי המחשב - ארבע שנתי',
+            get: () =>
+                Promise.resolve({
+                    '2025_200': {
+                        he: 'קטלוג 2025',
+                        'computer-science': {
+                            he: 'מדעי המחשב',
+                            '0324': {
+                                he: 'מדעי המחשב - ארבע שנתי',
+                            },
                         },
                     },
-                },
-            }),
-            set: async () => undefined,
+                }),
+            set: () => Promise.resolve(undefined),
         },
         requirements: {
-            get: async () => ({
-                programId: '0324',
-                catalogId: '2025_200',
-                facultyId: 'computer-science',
-                data: {
-                    name: 'root',
-                    nested: [
-                        {
-                            name: 'software-path',
-                            en: 'Software Path',
-                            nested: [
-                                {
-                                    name: 'core',
-                                    he: 'חובה',
-                                    courses: ['234114', '236501'],
-                                },
-                            ],
-                        },
-                    ],
-                },
-            }),
-            set: async () => undefined,
-            sync: async () => ({ status: 'updated' }),
+            get: () =>
+                Promise.resolve({
+                    programId: '0324',
+                    catalogId: '2025_200',
+                    facultyId: 'computer-science',
+                    data: {
+                        name: 'root',
+                        nested: [
+                            {
+                                name: 'software-path',
+                                en: 'Software Path',
+                                nested: [
+                                    {
+                                        name: 'core',
+                                        he: 'חובה',
+                                        courses: ['234114', '236501'],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
+                }),
+            set: () => Promise.resolve(undefined),
+            sync: () => Promise.resolve({ status: 'updated' }),
         },
         userDegree: {
-            get: async () => ({
-                catalogId: '2025_200',
-                facultyId: 'computer-science',
-                programId: '0324',
-                path: undefined,
-            }),
-            set: async () => undefined,
+            get: () =>
+                Promise.resolve({
+                    catalogId: '2025_200',
+                    facultyId: 'computer-science',
+                    programId: '0324',
+                    path: undefined,
+                }),
+            set: () => Promise.resolve(undefined),
         },
         userPlan: {
-            get: async () => undefined,
-            set: async () => undefined,
+            get: () => Promise.resolve(undefined),
+            set: () => Promise.resolve(undefined),
         },
     };
 }
