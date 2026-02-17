@@ -10,7 +10,11 @@ test.describe('/ landing page route', () => {
         await expect(
             page.locator('[data-component="LandingHero"]')
         ).toBeVisible();
-        await expect(page.locator('a[href="/plan"]').first()).toBeVisible();
-        await expect(page.locator('a[href="/catalog"]').first()).toBeVisible();
+        await expect(
+            page.locator('a[href="/plan"]:visible').first()
+        ).toBeVisible();
+        await expect(
+            page.locator('a[href="/catalog"]:visible').first()
+        ).toBeVisible();
     });
 });

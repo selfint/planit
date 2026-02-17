@@ -26,14 +26,12 @@ export default defineConfig({
             use: {
                 ...devices['Desktop Chrome'],
             },
-            testIgnore: ['tests/mobile-smoke.spec.ts'],
         },
         {
             name: 'mobile-chrome',
             use: {
                 ...devices['Pixel 5'],
             },
-            testMatch: ['tests/mobile-smoke.spec.ts'],
         },
     ],
     webServer: {
