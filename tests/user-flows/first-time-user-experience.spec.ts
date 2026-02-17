@@ -1,11 +1,13 @@
 import { type Locator, type Page, expect, test } from '@playwright/test';
+import { fileURLToPath } from 'node:url';
 import fs from 'node:fs/promises';
 import path from 'node:path';
-import { fileURLToPath } from 'node:url';
 
-const DEFAULT_COURSE_CODE = '03240033';
-const COURSE_CODE =
-    process.env.PW_DEMO_COURSE_CODE?.trim() ?? DEFAULT_COURSE_CODE;
+const COURSE_CODE = '01140075';
+const DEGREE_CATALOG_ID = '2023_201';
+const DEGREE_FACULTY_ID = '00002120';
+const DEGREE_PROGRAM_ID = 'SC00001314_CG00006245';
+const DEGREE_PATH_ID = 'CG00006246';
 const FTUX_VIDEO_OUTPUT_PATH = path.join(
     process.cwd(),
     'src',
@@ -19,6 +21,7 @@ const MODERN_CURSOR_ASSET_PATH = fileURLToPath(
 const DEMO_TIME_SCALE_RAW = Number.parseFloat(
     process.env.PW_DEMO_TIME_SCALE ?? '1'
 );
+const IS_DEMO_MODE = process.env.PW_DEMO === 'on';
 const DEMO_TIME_SCALE =
     Number.isFinite(DEMO_TIME_SCALE_RAW) && DEMO_TIME_SCALE_RAW > 0
         ? DEMO_TIME_SCALE_RAW
@@ -31,30 +34,35 @@ test.describe('first-time-user-experience', () => {
         test.setTimeout(120_000);
 
         await page.goto('catalog');
-        // await page.waitForLoadState('networkidle');
-        // await resetClientCache(page);
-        // await page.reload();
-        // await page.waitForLoadState('networkidle');
         await installDemoCursor(page);
         await expect(page).toHaveURL(/\/catalog$/);
         await expect(page.locator('[data-page="catalog"]')).toBeVisible();
 
-        await selectFirstNonEmptyOption(page, '[data-degree-catalog]');
+        await selectSpecificOption(
+            page,
+            '[data-degree-catalog]',
+            DEGREE_CATALOG_ID
+        );
         await pause(page, 900);
-        await selectFirstNonEmptyOption(page, '[data-degree-faculty]');
+        await selectSpecificOption(
+            page,
+            '[data-degree-faculty]',
+            DEGREE_FACULTY_ID
+        );
         await pause(page, 900);
-        await selectFirstNonEmptyOption(page, '[data-degree-program]');
+        await selectSpecificOption(
+            page,
+            '[data-degree-program]',
+            DEGREE_PROGRAM_ID
+        );
         await pause(page, 900);
-        await selectPathIfRequired(page);
+        await selectSpecificPathIfRequired(page, DEGREE_PATH_ID);
         await pause(page, 1200);
 
         await expect(page.locator('[data-catalog-groups]')).toBeVisible();
         await pause(page, 1700);
 
-        const selectedCourseCode = await openCourseFromCatalog(
-            page,
-            COURSE_CODE
-        );
+        const selectedCourseCode = await openCourseFromCatalog(page);
         await pause(page, 1000);
         await expect(page).toHaveURL(
             new RegExp(`/course\\?code=${selectedCourseCode}$`)
@@ -127,13 +135,16 @@ test.describe('first-time-user-experience', () => {
             await pause(page, 1200);
         }
 
-        await saveFtuxVideo(page);
+        if (IS_DEMO_MODE) {
+            await saveFtuxVideo(page);
+        }
     });
 });
 
-async function selectFirstNonEmptyOption(
+async function selectSpecificOption(
     page: Page,
-    selector: string
+    selector: string,
+    value: string
 ): Promise<void> {
     const select = page.locator(selector);
     await expect(select).toBeVisible();
@@ -143,108 +154,71 @@ async function selectFirstNonEmptyOption(
 
     await expect
         .poll(async () => {
-            return select.evaluate((node) => {
+            return select.evaluate((node, expectedValue) => {
                 if (!(node instanceof HTMLSelectElement)) {
-                    return 0;
+                    return false;
                 }
-                return Array.from(node.options).filter(
-                    (option) => option.value.trim().length > 0
-                ).length;
-            });
+                return Array.from(node.options).some(
+                    (option) => option.value === expectedValue
+                );
+            }, value);
         })
-        .toBeGreaterThan(0);
+        .toBe(true);
 
-    const selected = await select.evaluate((node) => {
+    const selected = await select.evaluate((node, expectedValue) => {
         if (!(node instanceof HTMLSelectElement)) {
             return false;
         }
-        const first = Array.from(node.options).find(
-            (option) => option.value.trim().length > 0
+        const hasOption = Array.from(node.options).some(
+            (option) => option.value === expectedValue
         );
-        if (first === undefined) {
+        if (!hasOption) {
             return false;
         }
 
-        node.value = first.value;
+        node.value = expectedValue;
         node.dispatchEvent(new Event('change', { bubbles: true }));
         return true;
-    });
+    }, value);
 
     expect(selected).toBe(true);
 }
 
-async function selectPathIfRequired(page: Page): Promise<void> {
+async function selectSpecificPathIfRequired(
+    page: Page,
+    value: string
+): Promise<void> {
     const pathSelect = page.locator('[data-degree-path]');
     await expect(pathSelect).toBeVisible();
-
-    const isRequired = await pathSelect.evaluate((node) => {
-        return node instanceof HTMLSelectElement && node.required;
-    });
-    if (!isRequired) {
-        return;
-    }
-
-    await selectFirstNonEmptyOption(page, '[data-degree-path]');
+    await selectSpecificOption(page, '[data-degree-path]', value);
+    await expect
+        .poll(async () => {
+            return pathSelect.evaluate((node) => {
+                return node instanceof HTMLSelectElement ? node.value : '';
+            });
+        })
+        .toBe(value);
 }
 
-async function openCourseFromCatalog(
-    page: Page,
-    preferredCourseCode?: string
-): Promise<string> {
-    if (preferredCourseCode !== undefined) {
-        const encodedPreferredCode = encodeURIComponent(preferredCourseCode);
-        const preferredLink = page
-            .locator(`a[href*="/course?code=${encodedPreferredCode}"]`)
-            .first();
-        await expect(preferredLink).toBeVisible({ timeout: 15_000 });
-        await humanClick(page, preferredLink);
-        return preferredCourseCode;
-    }
-
-    const firstCourseLink = page.locator('a[href*="/course?code="]').first();
-    await expect(firstCourseLink).toBeVisible({ timeout: 15_000 });
-
-    const firstCourseHref = await firstCourseLink.getAttribute('href');
-    if (firstCourseHref === null) {
-        throw new Error('Could not find any course in catalog groups.');
-    }
-
-    await humanClick(page, firstCourseLink);
-
-    const parsedCode = extractCourseCodeFromHref(firstCourseHref);
-    if (parsedCode === null) {
-        throw new Error(
-            `Could not parse course code from catalog link: ${firstCourseHref}`
-        );
-    }
-
-    return parsedCode;
-}
-
-function extractCourseCodeFromHref(href: string): string | null {
-    const marker = '/course?code=';
-    const markerIndex = href.indexOf(marker);
-    if (markerIndex < 0) {
-        return null;
-    }
-
-    const encoded = href.slice(markerIndex + marker.length).trim();
-    if (encoded.length === 0) {
-        return null;
-    }
-
-    try {
-        const decoded = decodeURIComponent(encoded);
-        return decoded.length > 0 ? decoded : null;
-    } catch {
-        return null;
-    }
+async function openCourseFromCatalog(page: Page): Promise<string> {
+    const encodedPreferredCode = encodeURIComponent(COURSE_CODE);
+    const preferredLink = page
+        .locator(`a[href*="/course?code=${encodedPreferredCode}"]`)
+        .first();
+    await expect(preferredLink).toBeVisible({ timeout: 15_000 });
+    await humanClick(page, preferredLink);
+    return COURSE_CODE;
 }
 
 async function humanClick(page: Page, locator: Locator): Promise<void> {
     await expect(locator).toBeVisible();
     await locator.waitFor({ state: 'visible' });
     await smoothScrollToLocator(page, locator);
+
+    if (!IS_DEMO_MODE) {
+        await locator.click();
+        return;
+    }
     const box = await locator.boundingBox();
     if (box === null) {
         throw new Error('Element not visible');
@@ -380,6 +354,10 @@ async function emitClickPulse(page: Page, x: number, y: number): Promise<void> {
 }
 
 async function pause(page: Page, durationMs: number): Promise<void> {
+    if (!IS_DEMO_MODE) {
+        return;
+    }
+
     await page.waitForTimeout(
         Math.max(40, Math.round(durationMs * DEMO_TIME_SCALE))
     );
@@ -389,17 +367,22 @@ async function smoothScrollToLocator(
     page: Page,
     locator: Locator
 ): Promise<void> {
-    await locator.evaluate(async (node) => {
+    await locator.evaluate(async (node, isDemoMode) => {
         if (!(node instanceof HTMLElement)) {
             return;
         }
         node.scrollIntoView({
-            behavior: 'smooth',
+            behavior: isDemoMode ? 'smooth' : 'auto',
             block: 'center',
             inline: 'center',
         });
 
         await new Promise<void>((resolve) => {
+            if (!isDemoMode) {
+                resolve();
+                return;
+            }
+
             let lastY = window.scrollY;
             let stableFrames = 0;
 
@@ -422,7 +405,7 @@ async function smoothScrollToLocator(
 
             window.requestAnimationFrame(tick);
         });
-    });
+    }, IS_DEMO_MODE);
     await pause(page, 160);
 }
 
