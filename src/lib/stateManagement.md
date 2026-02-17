@@ -162,6 +162,42 @@ sequenceDiagram
   Provider->>Sync: setActiveRequirementsSelection(selection)
 ```
 
+### Requirements Sync Write (Used in App Flow)
+
+```mermaid
+sequenceDiagram
+  participant Picker as DegreePicker
+  participant State as state
+  participant Provider as active StateProvider
+  participant Sync as requirementsSync
+  participant DB as indexeddb
+
+  Picker->>State: state.requirements.sync(selection)
+  State->>Provider: requirements.sync(selection)
+  Provider->>Sync: syncRequirements(selection)
+  Sync->>DB: replaceRequirementsWithCow(record,...)
+  DB-->>Sync: ok
+  Sync-->>Provider: { status: "updated" }
+  Provider-->>State: { status: "updated" }
+```
+
+### Direct Requirements Set (Currently Not Used by Runtime Pages)
+
+```mermaid
+sequenceDiagram
+  participant Caller as Import/Admin/Tooling (future)
+  participant State as state
+  participant Provider as active StateProvider
+  participant DB as indexeddb
+
+  Note over Caller,DB: As of now, runtime pages do not call this path.
+  Caller->>State: state.requirements.set(record, previousProgramId?, persistActiveSelection?)
+  State->>Provider: requirements.set(record,...)
+  Provider->>DB: replaceRequirementsWithCow(record,...)
+  DB-->>Provider: ok
+  Provider-->>State: Promise<void>
+```
+
 ## Conventions and Pitfalls
 
 - Always use `state` from pages; do not bypass into `indexeddb.ts` from page
@@ -169,6 +205,8 @@ sequenceDiagram
 - Keep provider methods Promise-based, even for immediate values.
 - Story/test providers should return `Promise.resolve(...)` for sync data to
   avoid lints about async-without-await.
+- `state.requirements.set(...)` is a direct persistence API and is currently not
+  used by runtime page flows; runtime updates use `state.requirements.sync(...)`.
 - Avoid relying on object identity of provider internals; treat provider as
   opaque.
 - Provider swap rerenders current route; page-local transient UI state may be
