@@ -28,14 +28,14 @@ def check_files(module: str) -> List[str]:
     missing = []
     ts_path = os.path.join(LIB_DIR, f"{module}.ts")
     test_path = os.path.join(LIB_DIR, f"{module}.test.ts")
-    md_path = os.path.join(LIB_DIR, f"{module}.md")
+    context_path = os.path.join(LIB_DIR, f"{module}.context.md")
 
     if not os.path.exists(ts_path):
         missing.append(ts_path)
     if not os.path.exists(test_path):
         missing.append(test_path)
-    if not os.path.exists(md_path):
-        missing.append(md_path)
+    if not os.path.exists(context_path):
+        missing.append(context_path)
 
     return missing
 
@@ -45,8 +45,8 @@ def find_orphans(lib_dir: str) -> Tuple[List[str], List[str]]:
     test_orphans: List[str] = []
 
     for name in os.listdir(lib_dir):
-        if name.endswith(".md"):
-            base = name[:-3]
+        if name.endswith(".context.md"):
+            base = name[: -len(".context.md")]
             ts_path = os.path.join(lib_dir, f"{base}.ts")
             if not os.path.exists(ts_path):
                 md_orphans.append(os.path.join(lib_dir, name))
@@ -83,14 +83,18 @@ def main() -> int:
         if missing_files:
             print(format_list("Missing required files:", missing_files))
         if md_orphans:
-            print(format_list("Orphaned .md docs (no matching .ts):", md_orphans))
+            print(
+                format_list(
+                    "Orphaned .context.md docs (no matching .ts):", md_orphans
+                )
+            )
         if test_orphans:
             print(
                 format_list("Orphaned .test.ts files (no matching .ts):", test_orphans)
             )
         return 1
 
-    print("All src/lib modules have .ts, .test.ts, and .md files.")
+    print("All src/lib modules have .ts, .test.ts, and .context.md files.")
     return 0
 
 

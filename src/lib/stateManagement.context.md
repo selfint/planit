@@ -88,30 +88,43 @@ Current local provider methods map to existing modules as follows:
 - `userPlan.get` -> `indexeddb.getMeta('planPageState')`
 - `userPlan.set` -> `indexeddb.setMeta({ key: 'planPageState', ... })`
 
+## Data Sync Ownership
+
+- App bootstrap (`src/main.ts`) initializes global dataset sync by calling
+  `initCourseSync()` and `initCatalogSync()`.
+- Course and catalog pages read those synced datasets through `state` and never
+  block on network fetches during route render.
+- Requirements sync is user-selection driven: `DegreePicker` calls
+  `state.requirements.sync(selection, { persistActiveSelection: false })`, then
+  commits the active selection after the user picks a complete
+  catalog/faculty/program/path combination.
+- `state.userPlan` owns local-first planner persistence (`planPageState`) used by
+  plan, semester, and course flows.
+
 ## Method Usage Coverage
 
 All provider methods mapped to current uses in runtime pages (plus test/story
 only cases where relevant):
 
-| Method                | Runtime call sites                                                         | User flow diagram                                                                                                                                                                                                                                                               |
-| --------------------- | -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `courses.get`         | `semester_page.ts`, `catalog_page.ts`                                      | [Catalog Groups](#catalog-groups-view-requirement-table), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration)                                                                                                                          |
-| `courses.set`         | Not called in runtime/tests/stories                                        | [Planned Data Sync Import (currently unused methods)](#planned-data-sync-import-currently-unused-methods)                                                                                                                                                                       |
-| `courses.query`       | `search_page.ts`, `semester_page.ts`                                       | [Search Courses](#search-courses-search-page-interactions), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration)                                                                                                                        |
-| `courses.page`        | `plan_page.ts`                                                             | [Plan Page Load + Drag/Move Persist](#plan-page-load--dragmove-persist)                                                                                                                                                                                                         |
-| `courses.count`       | `search_page.ts`                                                           | [Search Courses](#search-courses-search-page-interactions)                                                                                                                                                                                                                      |
-| `courses.faculties`   | `search_page.ts`                                                           | [Search Courses](#search-courses-search-page-interactions)                                                                                                                                                                                                                      |
-| `courses.getLastSync` | `search_page.ts`                                                           | [Search Courses](#search-courses-search-page-interactions)                                                                                                                                                                                                                      |
-| `catalogs.get`        | `DegreePicker.ts`                                                          | [Degree Picker Load](#degree-picker-load-open-catalog-page)                                                                                                                                                                                                                     |
-| `catalogs.set`        | Not called in runtime/tests/stories                                        | [Planned Data Sync Import (currently unused methods)](#planned-data-sync-import-currently-unused-methods)                                                                                                                                                                       |
-| `requirements.get`    | `DegreePicker.ts`, `catalog_page.ts`, `search_page.ts`, `semester_page.ts` | [Degree Picker Load](#degree-picker-load-open-catalog-page), [Catalog Groups](#catalog-groups-view-requirement-table), [Search Courses](#search-courses-search-page-interactions), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration) |
-| `requirements.sync`   | `DegreePicker.ts`                                                          | [Degree Selection Update](#degree-selection-update-choose-programpath)                                                                                                                                                                                                          |
-| `userDegree.get`      | `DegreePicker.ts`, `catalog_page.ts`, `search_page.ts`, `semester_page.ts` | [Degree Picker Load](#degree-picker-load-open-catalog-page), [Catalog Groups](#catalog-groups-view-requirement-table), [Search Courses](#search-courses-search-page-interactions), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration) |
-| `userDegree.set`      | `DegreePicker.ts`                                                          | [Degree Selection Update](#degree-selection-update-choose-programpath)                                                                                                                                                                                                          |
-| `userPlan.get`        | `plan_page.ts`, `semester_page.ts`                                         | [Plan Page Load + Drag/Move Persist](#plan-page-load--dragmove-persist), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration)                                                                                                           |
-| `userPlan.set`        | `plan_page.ts`, `semester_page.ts`                                         | [Plan Page Load + Drag/Move Persist](#plan-page-load--dragmove-persist), [Semester Course Selection + Add To Current Semester Persist](#semester-course-selection--add-to-current-semester-persist)                                                                             |
-| `provider.get`        | Test only (`stateManagement.test.ts`)                                      | [Provider Swap + Router Rerender (test/dev flow)](#provider-swap--router-rerender-testdev-flow)                                                                                                                                                                                 |
-| `provider.set`        | Test/story only                                                            | [Provider Swap + Router Rerender (test/dev flow)](#provider-swap--router-rerender-testdev-flow)                                                                                                                                                                                 |
+| Method                | Runtime call sites                                                         | User flow diagram                                                                                                                                                                                                                                                                                         |
+| --------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `courses.get`         | `course_page.ts`, `plan_page.ts`, `semester_page.ts`, `catalog_page.ts`    | [Catalog Groups](#catalog-groups-view-requirement-table), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration), [Course Page Load + Related Courses](#course-page-load--related-courses), [Plan Page Load + Drag/Move Persist](#plan-page-load--dragmove-persist) |
+| `courses.set`         | Not called in runtime/tests/stories                                        | [Planned Data Sync Import (currently unused methods)](#planned-data-sync-import-currently-unused-methods)                                                                                                                                                                                                 |
+| `courses.query`       | `search_page.ts`, `semester_page.ts`                                       | [Search Courses](#search-courses-search-page-interactions), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration)                                                                                                                                                  |
+| `courses.page`        | `course_page.ts`, `plan_page.ts`                                           | [Course Page Load + Related Courses](#course-page-load--related-courses), [Plan Page Load + Drag/Move Persist](#plan-page-load--dragmove-persist)                                                                                                                                                         |
+| `courses.count`       | `course_page.ts`, `search_page.ts`                                         | [Course Page Load + Related Courses](#course-page-load--related-courses), [Search Courses](#search-courses-search-page-interactions)                                                                                                                                                                      |
+| `courses.faculties`   | `search_page.ts`                                                           | [Search Courses](#search-courses-search-page-interactions)                                                                                                                                                                                                                                                |
+| `courses.getLastSync` | `search_page.ts`                                                           | [Search Courses](#search-courses-search-page-interactions)                                                                                                                                                                                                                                                |
+| `catalogs.get`        | `DegreePicker.ts`                                                          | [Degree Picker Load](#degree-picker-load-open-catalog-page)                                                                                                                                                                                                                                               |
+| `catalogs.set`        | Not called in runtime/tests/stories                                        | [Planned Data Sync Import (currently unused methods)](#planned-data-sync-import-currently-unused-methods)                                                                                                                                                                                                 |
+| `requirements.get`    | `DegreePicker.ts`, `catalog_page.ts`, `search_page.ts`, `semester_page.ts` | [Degree Picker Load](#degree-picker-load-open-catalog-page), [Catalog Groups](#catalog-groups-view-requirement-table), [Search Courses](#search-courses-search-page-interactions), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration)                           |
+| `requirements.sync`   | `DegreePicker.ts`                                                          | [Degree Selection Update](#degree-selection-update-choose-programpath)                                                                                                                                                                                                                                    |
+| `userDegree.get`      | `DegreePicker.ts`, `catalog_page.ts`, `search_page.ts`, `semester_page.ts` | [Degree Picker Load](#degree-picker-load-open-catalog-page), [Catalog Groups](#catalog-groups-view-requirement-table), [Search Courses](#search-courses-search-page-interactions), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration)                           |
+| `userDegree.set`      | `DegreePicker.ts`                                                          | [Degree Selection Update](#degree-selection-update-choose-programpath)                                                                                                                                                                                                                                    |
+| `userPlan.get`        | `course_page.ts`, `plan_page.ts`, `semester_page.ts`                       | [Course Page Load + Related Courses](#course-page-load--related-courses), [Plan Page Load + Drag/Move Persist](#plan-page-load--dragmove-persist), [Semester Page Load + Course Detail Hydration](#semester-page-load--course-detail-hydration)                                                           |
+| `userPlan.set`        | `course_page.ts`, `plan_page.ts`, `semester_page.ts`                       | [Course Wishlist Add Persist](#course-wishlist-add-persist), [Plan Page Load + Drag/Move Persist](#plan-page-load--dragmove-persist), [Semester Course Selection + Add To Current Semester Persist](#semester-course-selection--add-to-current-semester-persist)                                          |
+| `provider.get`        | Test only (`stateManagement.test.ts`)                                      | [Provider Swap + Router Rerender (test/dev flow)](#provider-swap--router-rerender-testdev-flow)                                                                                                                                                                                                           |
+| `provider.set`        | Test/story only                                                            | [Provider Swap + Router Rerender (test/dev flow)](#provider-swap--router-rerender-testdev-flow)                                                                                                                                                                                                           |
 
 ## User-Action Diagrams
 
@@ -347,6 +360,58 @@ sequenceDiagram
   SP->>DB: setMeta({key:"planPageState", value:payload})
   DB-->>SP: ok
   SP-->>S: Promise<void>
+```
+
+### Course Page Load + Related Courses
+
+User action: user opens `/course?code=...` and the page hydrates the main course,
+connections, and dependants from local data.
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant C as Course Page
+  participant S as state
+  participant SP as active StateProvider
+  participant DB as IndexedDB
+
+  U->>C: Open course deep link
+  C->>S: courses.get(code)
+  S->>SP: courses.get(code)
+  SP->>DB: getCourse(code)
+  DB-->>SP: course | undefined
+  SP-->>S: course | undefined
+  C->>S: courses.count()
+  C->>S: courses.page(batchSize, offset) in loop
+  S->>SP: courses.count()/courses.page(...)
+  SP->>DB: getCoursesCount()/getCoursesPage(...)
+  DB-->>SP: totals + batches
+  SP-->>S: totals + batches
+```
+
+### Course Wishlist Add Persist
+
+User action: user clicks "add to wishlist" on course page; the plan payload is
+updated through state and persisted locally.
+
+```mermaid
+sequenceDiagram
+  participant U as User
+  participant C as Course Page
+  participant S as state
+  participant SP as active StateProvider
+  participant DB as IndexedDB
+
+  U->>C: Click add to wishlist
+  C->>S: userPlan.get()
+  S->>SP: userPlan.get()
+  SP->>DB: getMeta("planPageState")
+  DB-->>SP: existing plan | undefined
+  SP-->>S: existing plan | undefined
+  C->>C: merge + dedupe wishlist codes
+  C->>S: userPlan.set(nextPlanPayload)
+  S->>SP: userPlan.set(payload)
+  SP->>DB: setMeta({key:"planPageState", value:payload})
 ```
 
 ### Provider Swap + Router Rerender (test/dev flow)
