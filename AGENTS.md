@@ -79,7 +79,10 @@ sequenceDiagram
 - Favor incremental changes and avoid blocking the UI when parsing or writing large datasets.
 - Keep data update paths resilient to partial failures (e.g., retry or resume logic).
 - Treat each collocated `*.context.md` file as the context dump for its sibling `.ts` file.
-- Whenever you change a `.ts` file, update the matching `.context.md` in the same change.
+- Create `*.context.md` only for primary implementation `.ts` files.
+- Do not create `*.context.md` files for `*.test.ts`, `*.spec.ts`, or `*.stories.ts` files.
+- Whenever you change an implementation `.ts` file, update the matching `.context.md` in the same change.
+- Each implementation `.context.md` should also summarize the role of related tests/specs (what they validate and why), so test intent stays discoverable without separate test context files.
 - Context dumps must explain both what the code does and why it exists from a user-flow/business perspective so the next agent can continue work safely.
 
 ## Style guide
