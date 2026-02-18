@@ -262,12 +262,12 @@ describe('plan page', () => {
             page.querySelectorAll<HTMLElement>(
                 '[data-tests-track="0"] [data-test-course-code]'
             )
-        ).map((item) => item.textContent?.trim());
+        ).map((item) => item.textContent.trim());
         const second = Array.from(
             page.querySelectorAll<HTMLElement>(
                 '[data-tests-track="1"] [data-test-course-code]'
             )
-        ).map((item) => item.textContent?.trim());
+        ).map((item) => item.textContent.trim());
         expect(first).toEqual(['12/1', '1']);
         expect(second).toEqual(['14/2', '6']);
     });
