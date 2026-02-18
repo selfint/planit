@@ -744,6 +744,10 @@ function createPlanRow(
     cancelSelectionButton.dataset.cancelSelection = 'true';
     cancelSelectionButton.dataset.rowId = row.id;
 
+    if (isCurrentSemesterRow && row.kind === 'semester') {
+        appendCurrentSemesterTestsRows(metrics);
+    }
+
     if (semesterLink !== undefined) {
         headingRow.append(
             title,
@@ -761,22 +765,14 @@ function createPlanRow(
     for (const course of row.courses) {
         list.append(createSemesterCourse(state, row, course));
     }
-    if (isCurrentSemesterRow && row.kind === 'semester') {
-        header.append(createCurrentSemesterTestsBlock());
-    }
-
     rowElement.append(header, list);
 
     return rowElement;
 }
 
-function createCurrentSemesterTestsBlock(): HTMLElement {
-    const section = document.createElement('section');
-    section.className = 'mt-1 flex flex-wrap items-center gap-x-3 gap-y-1';
-    section.dataset.testsSchedule = 'true';
-
+function appendCurrentSemesterTestsRows(container: HTMLElement): void {
     const firstRow = document.createElement('div');
-    firstRow.className = 'flex items-center gap-1';
+    firstRow.className = 'flex shrink-0 items-center gap-1';
     firstRow.dataset.testRow = '0';
 
     const firstLabel = document.createElement('p');
@@ -790,7 +786,7 @@ function createCurrentSemesterTestsBlock(): HTMLElement {
     firstRow.append(firstLabel, firstTrack);
 
     const secondRow = document.createElement('div');
-    secondRow.className = 'flex items-center gap-1';
+    secondRow.className = 'flex shrink-0 items-center gap-1';
     secondRow.dataset.testRow = '1';
 
     const secondLabel = document.createElement('p');
@@ -804,13 +800,12 @@ function createCurrentSemesterTestsBlock(): HTMLElement {
     secondRow.append(secondLabel, secondTrack);
 
     const empty = document.createElement('p');
-    empty.className = 'text-text-muted text-xs';
+    empty.className = 'text-text-muted hidden text-xs';
     empty.dataset.testsEmpty = 'true';
     empty.textContent = 'אין מועדי בחינות ידועים בסמסטר הנוכחי.';
 
     empty.classList.add('w-full');
-    section.append(firstRow, secondRow, empty);
-    return section;
+    container.append(firstRow, secondRow, empty);
 }
 
 function cloneRowCourseList(template: HTMLTemplateElement): HTMLElement {
