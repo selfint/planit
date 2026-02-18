@@ -910,6 +910,16 @@ function refreshRowMetrics(
     }
 
     renderRowMetrics(rowMetrics, row);
+    if (isCurrentSemesterRow(state, row)) {
+        appendCurrentSemesterTestsRows(rowMetrics);
+    }
+}
+
+function isCurrentSemesterRow(state: PlanState, row: PlanRow): boolean {
+    return (
+        row.kind === 'semester' &&
+        row.semesterNumber === state.currentSemester + 1
+    );
 }
 
 function summarizeSemester(courses: CourseRecord[]): {
