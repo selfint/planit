@@ -43,6 +43,35 @@ It is designed as a row-based board that avoids horizontal scrolling and keeps m
 8. Derived metrics + schedule problems continue to be computed from all semester rows.
 9. Row course-list styling is template-driven from `plan_page.html`; TypeScript clones that template for every row so width behavior stays consistent in one HTML source.
 
+## Reactivity
+
+The page uses a single in-memory `PlanState` object and updates UI in two modes:
+
+1. **Full rerender (`renderPlan`)**
+    - Triggered by hydration completion, semester-count changes, and current-semester selector changes.
+    - Rebuilds all planner rows from current state.
+    - Recomputes row metrics and schedule-problems list.
+    - Rebuilds current-semester exam rows (`מועדי א׳` / `מועדי ב׳`) inside the active row metrics area.
+
+2. **Targeted DOM updates (move flow)**
+    - Triggered when moving a selected course between rows.
+    - Moves the selected course element between source/target row lists without full rerender.
+    - Refreshes only the affected row metrics via `refreshRowMetrics(...)`.
+    - Reattaches current-semester exam rows after metric refresh when the refreshed row is the active semester.
+
+State-to-UI mapping is deterministic:
+
+- `state.semesters`, `state.wishlist`, `state.exemptions` -> row contents and card counts.
+- `state.currentSemester` -> active row marker + which row renders exam rows.
+- `state.selected` -> move-target visibility, row highlight classes, and cancel controls.
+- Derived schedule diagnostics -> `data-schedule-problems` section.
+
+Persistence follows the same reactive updates:
+
+- Structural changes (move, resize, current-semester change) call `persistPlanState(...)`.
+- Persisted payload includes semesters, wishlist/exemptions codes, semester count, and `currentSemester`.
+- On next load, hydrate restores persisted state first, then renders from restored values.
+
 ## Unit Tests
 
 ### `renders planner rows including wishlist and exemptions`
