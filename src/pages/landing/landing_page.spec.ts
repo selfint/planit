@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../../tests/helpers/testWithDevState';
 
 test.describe('/ landing page route', () => {
     test('renders hero and navigation actions', async ({ page }) => {
@@ -24,7 +24,9 @@ test.describe('/ landing page route', () => {
         await page.goto('/');
         const viewport = page.viewportSize();
         const isMobileViewport =
-            viewport !== null && viewport.width > 0 ? viewport.width < 768 : false;
+            viewport !== null && viewport.width > 0
+                ? viewport.width < 768
+                : false;
         const devicePrefix = isMobileViewport ? 'mobile' : 'desktop';
 
         await page.emulateMedia({ colorScheme: 'light' });
@@ -33,9 +35,7 @@ test.describe('/ landing page route', () => {
             page.locator('[data-landing-demo-video]:visible')
         ).toHaveCount(1);
         await expect(
-            page.locator(
-                `[data-landing-demo-video="${devicePrefix}-light"]`
-            )
+            page.locator(`[data-landing-demo-video="${devicePrefix}-light"]`)
         ).toBeVisible();
 
         await page.emulateMedia({ colorScheme: 'dark' });
@@ -44,9 +44,7 @@ test.describe('/ landing page route', () => {
             page.locator('[data-landing-demo-video]:visible')
         ).toHaveCount(1);
         await expect(
-            page.locator(
-                `[data-landing-demo-video="${devicePrefix}-dark"]`
-            )
+            page.locator(`[data-landing-demo-video="${devicePrefix}-dark"]`)
         ).toBeVisible();
     });
 });

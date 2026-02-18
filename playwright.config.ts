@@ -115,7 +115,7 @@ export default defineConfig({
         },
     ],
     webServer: {
-        command: `pnpm preview --host ${host} --strictPort --port ${port}`,
+        command: `pnpm dev --host ${host} --strictPort --port ${port}`,
         url: baseURL,
         reuseExistingServer: false,
         timeout: 120000,

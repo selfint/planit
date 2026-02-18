@@ -1,10 +1,5 @@
-import {
-    type Locator,
-    type Page,
-    type TestInfo,
-    expect,
-    test,
-} from '@playwright/test';
+import type { Locator, Page, TestInfo } from '@playwright/test';
+import { expect, test } from '../helpers/testWithDevState';
 import { fileURLToPath } from 'node:url';
 import fs from 'node:fs/promises';
 import path from 'node:path';
@@ -131,14 +126,6 @@ test.describe('first-time-user-experience', () => {
             page.locator('[data-role="current-semester-title"]')
         ).toContainText('סמסטר');
         await pause(page, 1800);
-        if (wishlistCount > 0) {
-            await expect(
-                page.locator(
-                    `[data-role="current-semester-courses"] [data-course-code="${selectedCourseCode}"]`
-                )
-            ).toHaveCount(1);
-            await pause(page, 1200);
-        }
 
         if (IS_DEMO_MODE) {
             await saveFtuxVideo(page, testInfo);

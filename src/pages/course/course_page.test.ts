@@ -12,12 +12,38 @@ const mocks = vi.hoisted(() => {
     };
 });
 
-vi.mock('$lib/indexeddb', () => ({
-    getCourse: mocks.getCourseMock,
-    getCoursesCount: mocks.getCoursesCountMock,
-    getCoursesPage: mocks.getCoursesPageMock,
-    getMeta: mocks.getMetaMock,
-    setMeta: mocks.setMetaMock,
+vi.mock('$lib/stateManagement', () => ({
+    state: {
+        courses: {
+            get: mocks.getCourseMock,
+            set: vi.fn(),
+            query: vi.fn(),
+            page: mocks.getCoursesPageMock,
+            count: mocks.getCoursesCountMock,
+            faculties: vi.fn(),
+            getLastSync: vi.fn(),
+        },
+        catalogs: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+        requirements: {
+            get: vi.fn(),
+            sync: vi.fn(),
+        },
+        userDegree: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+        userPlan: {
+            get: mocks.getMetaMock,
+            set: mocks.setMetaMock,
+        },
+        provider: {
+            get: vi.fn(),
+            set: vi.fn(),
+        },
+    },
 }));
 
 vi.mock('$lib/courseSync', () => ({
@@ -72,8 +98,8 @@ describe('course page', () => {
         const message = page.querySelector<HTMLElement>(
             "[data-role='not-found-message']"
         );
-        const headings = Array.from(page.querySelectorAll('h2')).map((heading) =>
-            heading.textContent.trim()
+        const headings = Array.from(page.querySelectorAll('h2')).map(
+            (heading) => heading.textContent.trim()
         );
 
         expect(notFoundState?.classList.contains('hidden')).toBe(false);

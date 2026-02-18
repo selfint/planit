@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../../tests/helpers/testWithDevState';
 
 async function getVisibleMoveTargetCount(
     page: import('@playwright/test').Page

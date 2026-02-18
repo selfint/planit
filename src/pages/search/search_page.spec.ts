@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../../tests/helpers/testWithDevState';
 
 test.describe('/search page route', () => {
     test('renders search form, filters, and results region', async ({

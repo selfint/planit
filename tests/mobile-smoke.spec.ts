@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './helpers/testWithDevState';
 
 test.describe('mobile smoke', () => {
     test('navigates key routes on a mobile device profile', async ({

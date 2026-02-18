@@ -13,6 +13,9 @@ The implementation is provider-based:
 - Swapping provider via `state.provider.set(nextProvider)` triggers router
   rerender of the current route, so the same page can rehydrate from the new
   backend without changing page code.
+- In development mode only, the module can bootstrap an in-memory provider from
+  `window.__PLANIT_DEV_STATE__` so browser tests can use deterministic data
+  without persistent IndexedDB state.
 
 This file should be treated as a context dump for future work on state.
 
@@ -46,6 +49,8 @@ This file should be treated as a context dump for future work on state.
     - `state.provider.get()`
     - `state.provider.set(nextProvider)`
 - `createLocalStateProvider()`
+- `installDevStateProviderFromWindow()`
+- `DevStateSnapshot` type
 - `setStateProviderChangeHandler(handler)`
 - `StateProvider` type
 
@@ -400,6 +405,8 @@ Unused today:
 
 - Always use `state` from pages; do not bypass into `indexeddb.ts` from page
   code.
+- For Playwright and local debug harnesses, prefer `window.__PLANIT_DEV_STATE__`
+  in dev mode instead of mutating IndexedDB between tests.
 - Keep provider methods Promise-based, even for immediate values.
 - Story/test providers should return `Promise.resolve(...)` for sync data to
   avoid lints about async-without-await.

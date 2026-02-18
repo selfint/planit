@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../../tests/helpers/testWithDevState';
 
 test.describe('/catalog page route', () => {
     test('renders catalog route and picker section', async ({ page }) => {

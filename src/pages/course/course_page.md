@@ -19,22 +19,25 @@ navigation and is rendered by the client-side router.
 ## Data Flow
 
 1. The page reads `code` from `window.location.search` (`?code=...`).
-2. It loads the course from IndexedDB through `getCourse`.
+2. It loads the course through `state.courses.get(...)`.
 3. It subscribes to `COURSE_SYNC_EVENT` and re-renders when course data is
    refreshed.
 4. It resolves connection codes (dependencies/adjacent/exclusive) and fetches
-   each related course from IndexedDB.
-5. It scans the courses store in batches to find dependants (courses whose
-   dependency groups include the current course code).
-6. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
+   each related course through `state.courses.get(...)`.
+5. It scans courses in batches via `state.courses.count()` and
+   `state.courses.page(...)` to find dependants (courses whose dependency
+   groups include the current course code).
+6. Wishlist persistence uses `state.userPlan.get()` and `state.userPlan.set()`
+   rather than direct meta store access.
+7. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
    `חורף`, `spring`/`B` -> `אביב`, `summer`/`C` -> `קיץ`).
-7. Section headers are always visible to keep layout stable.
-8. During loading, each relation grid starts with 3 pre-rendered `CourseCard`
+8. Section headers are always visible to keep layout stable.
+9. During loading, each relation grid starts with 3 pre-rendered `CourseCard`
    skeletons from the HTML template, and section counts use shimmer
    placeholders (without loading text).
-9. During loading, the full points/median/faculty/seasons stat cards use
-   shimmer placeholders via `data-loading="true"` on each stat tile.
-10. After data resolves, grids are replaced with real cards and empty labels are
+10. During loading, the full points/median/faculty/seasons stat cards use
+    shimmer placeholders via `data-loading="true"` on each stat tile.
+11. After data resolves, grids are replaced with real cards and empty labels are
     shown only for empty result sets.
 
 ## Storybook
@@ -114,6 +117,6 @@ HOW: Navigates directly with query param, asserts heading visibility, and verifi
 ```python
 page.goto('/course?code=104031')
 assert page.main().is_visible()
-assert page.heading('פרטי קורס').is_visible()
+assert page.locator('[data-page="course"] h1').first().is_visible()
 assert page.text('/course?code=104031').count() == 0
 ```

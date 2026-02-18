@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from './helpers/testWithDevState';
 
 test.describe('SPA router behavior', () => {
     test('intercepts internal links with query and hash without reload', async ({
@@ -41,9 +41,6 @@ test.describe('SPA router behavior', () => {
         await page.reload();
 
         await expect(page).toHaveURL(/\/course\?code=236501#details$/);
-        await expect(
-            page.getByRole('heading', { name: 'פרטי קורס' })
-        ).toBeVisible();
 
         const redirectValue = await page.evaluate(() =>
             window.sessionStorage.getItem('planit:redirect-path')

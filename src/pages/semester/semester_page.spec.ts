@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../../tests/helpers/testWithDevState';
 
 test.describe('/semester page route', () => {
     test('renders semester route and current semester section', async ({

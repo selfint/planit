@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../../tests/helpers/testWithDevState';
 
 test.describe('/404 fallback route', () => {
     test('renders not-found content for unknown route', async ({ page }) => {

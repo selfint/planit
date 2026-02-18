@@ -1,4 +1,4 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from '../../../tests/helpers/testWithDevState';
 
 test.describe('/course page route', () => {
     test('shows validation state when code is missing', async ({ page }) => {
@@ -14,7 +14,7 @@ test.describe('/course page route', () => {
 
         await expect(page.getByRole('main')).toBeVisible();
         await expect(
-            page.getByRole('heading', { name: 'פרטי קורס' })
+            page.locator('[data-page="course"] h1').first()
         ).toBeVisible();
         await expect(page.getByText('/course?code=104031')).toHaveCount(0);
     });

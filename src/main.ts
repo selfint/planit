@@ -5,17 +5,22 @@ import { initCatalogSync } from '$lib/catalogSync';
 import { initCourseSync } from '$lib/courseSync';
 import { initPWA } from '$lib/pwa';
 import { initRouter } from '$lib/router';
+import { installDevStateProviderFromWindow } from '$lib/stateManagement';
 
-function main(): void {
+async function main(): Promise<void> {
     try {
+        const usingDevState = await installDevStateProviderFromWindow();
         initRouter();
         document.body.append(PwaUpdateToast());
         initPWA();
-        initCourseSync();
-        initCatalogSync();
+
+        if (!usingDevState) {
+            initCourseSync();
+            initCatalogSync();
+        }
     } catch (err: unknown) {
         console.error('Failed to start app:', err);
     }
 }
 
-main();
+void main();
