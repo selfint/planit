@@ -1,8 +1,8 @@
-import { type CourseRecord } from '$lib/indexeddb';
 import { COURSE_SYNC_EVENT } from '$lib/courseSync';
-import { state as appState } from '$lib/stateManagement';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
+import type { CourseRecord } from '$lib/indexeddb';
+import { state as appState } from '$lib/stateManagement';
 
 import templateHtml from './course_page.html?raw';
 
