@@ -761,11 +761,11 @@ function createPlanRow(
     for (const course of row.courses) {
         list.append(createSemesterCourse(state, row, course));
     }
-    rowElement.append(header, list);
-
     if (isCurrentSemesterRow && row.kind === 'semester') {
-        rowElement.append(createCurrentSemesterTestsBlock());
+        header.append(createCurrentSemesterTestsBlock());
     }
+
+    rowElement.append(header, list);
 
     return rowElement;
 }
@@ -773,7 +773,7 @@ function createPlanRow(
 function createCurrentSemesterTestsBlock(): HTMLElement {
     const section = document.createElement('section');
     section.className =
-        'border-border/50 mt-1 flex flex-col gap-2 border-t pt-2';
+        'border-border/50 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-2';
     section.dataset.testsSchedule = 'true';
 
     const firstRow = document.createElement('div');
@@ -782,7 +782,7 @@ function createCurrentSemesterTestsBlock(): HTMLElement {
 
     const firstLabel = document.createElement('p');
     firstLabel.className = 'text-text-muted shrink-0 text-xs';
-    firstLabel.textContent = 'מועדי א';
+    firstLabel.textContent = 'מועדי א׳:';
 
     const firstTrack = document.createElement('div');
     firstTrack.className = 'flex min-h-7 flex-wrap items-center gap-1';
@@ -796,7 +796,7 @@ function createCurrentSemesterTestsBlock(): HTMLElement {
 
     const secondLabel = document.createElement('p');
     secondLabel.className = 'text-text-muted shrink-0 text-xs';
-    secondLabel.textContent = 'מועדי ב';
+    secondLabel.textContent = 'מועדי ב׳:';
 
     const secondTrack = document.createElement('div');
     secondTrack.className = 'flex min-h-7 flex-wrap items-center gap-1';
@@ -809,6 +809,7 @@ function createCurrentSemesterTestsBlock(): HTMLElement {
     empty.dataset.testsEmpty = 'true';
     empty.textContent = 'אין מועדי בחינות ידועים בסמסטר הנוכחי.';
 
+    empty.classList.add('w-full');
     section.append(firstRow, secondRow, empty);
     return section;
 }
