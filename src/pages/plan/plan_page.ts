@@ -1354,6 +1354,7 @@ async function handleRowClick(
 
     refreshRowMetrics(state, rail, sourceRowId);
     refreshRowMetrics(state, rail, targetRowId);
+    renderCurrentSemesterTests(state, rail);
 
     state.selected = undefined;
     toggleMoveTargets(rail, undefined);
