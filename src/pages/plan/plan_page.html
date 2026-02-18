@@ -18,6 +18,15 @@
                             data-semester-count
                         />
                     </label>
+                    <label
+                        class="border-border/60 bg-surface-1/70 text-text-muted flex items-center gap-2 rounded-full border px-3 py-1 text-xs"
+                    >
+                        <span>סמסטר נוכחי</span>
+                        <select
+                            class="focus-visible:ring-accent/60 bg-surface-2/80 text-text max-w-36 rounded-lg px-2 py-1 text-xs focus-visible:ring-2"
+                            data-current-semester-select
+                        ></select>
+                    </label>
                 </div>
 
                 <p
@@ -38,6 +47,33 @@
                         data-row-course-list
                     ></div>
                 </template>
+
+                <section class="flex flex-col gap-2" data-tests-schedule>
+                    <h3 class="text-sm font-medium">
+                        לוח בחינות לסמסטר הנוכחי
+                    </h3>
+                    <div class="flex items-center gap-2" data-test-row="0">
+                        <p class="text-text-muted w-14 shrink-0 text-xs">
+                            מועד א
+                        </p>
+                        <div
+                            class="flex min-h-8 flex-wrap items-center gap-1"
+                            data-tests-track="0"
+                        ></div>
+                    </div>
+                    <div class="flex items-center gap-2" data-test-row="1">
+                        <p class="text-text-muted w-14 shrink-0 text-xs">
+                            מועד ב
+                        </p>
+                        <div
+                            class="flex min-h-8 flex-wrap items-center gap-1"
+                            data-tests-track="1"
+                        ></div>
+                    </div>
+                    <p class="text-text-muted text-xs" data-tests-empty>
+                        אין מועדי בחינות ידועים בסמסטר הנוכחי.
+                    </p>
+                </section>
             </section>
 
             <section class="flex flex-col gap-2">

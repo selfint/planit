@@ -53,14 +53,20 @@ describe('plan page', () => {
                 name: 'חדו"א 1',
                 points: 5,
                 median: 78,
-                tests: [null],
+                tests: [
+                    { year: 2025, monthIndex: 0, day: 12 },
+                    { year: 2025, monthIndex: 1, day: 14 },
+                ],
             },
             {
                 code: '234114',
                 name: 'מבוא למדמ"ח',
                 points: 4,
                 median: 81,
-                tests: [null],
+                tests: [
+                    { year: 2025, monthIndex: 0, day: 13 },
+                    { year: 2025, monthIndex: 1, day: 20 },
+                ],
             },
         ]);
         mocks.setMetaMock.mockResolvedValue(undefined);
@@ -184,6 +190,137 @@ describe('plan page', () => {
             | { value?: { semesterCount?: number } }
             | undefined;
         expect(payload?.value?.semesterCount).toBe(6);
+    });
+
+    it('persists selected current semester index', async () => {
+        const page = PlanPage();
+        await flushPromises();
+
+        const select = page.querySelector<HTMLSelectElement>(
+            '[data-current-semester-select]'
+        );
+        expect(select).toBeTruthy();
+
+        if (select !== null) {
+            select.value = '2';
+            select.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        const payload = mocks.setMetaMock.mock.calls.at(-1)?.[0] as
+            | { value?: { currentSemester?: number } }
+            | undefined;
+        expect(payload?.value?.currentSemester).toBe(2);
+    });
+
+    it('renders tests from the current semester only and sorted by exam date', async () => {
+        mocks.getCoursesPageMock.mockResolvedValue([
+            {
+                code: 'A101',
+                name: 'A101',
+                tests: [
+                    { year: 2025, monthIndex: 0, day: 13 },
+                    { year: 2025, monthIndex: 1, day: 20 },
+                ],
+            },
+            {
+                code: 'B202',
+                name: 'B202',
+                tests: [
+                    { year: 2025, monthIndex: 0, day: 12 },
+                    { year: 2025, monthIndex: 1, day: 14 },
+                ],
+            },
+            {
+                code: 'C303',
+                name: 'C303',
+                tests: [
+                    { year: 2025, monthIndex: 0, day: 18 },
+                    { year: 2025, monthIndex: 1, day: 22 },
+                ],
+            },
+        ]);
+        mocks.getMetaMock.mockResolvedValue({
+            key: 'planPageState',
+            value: {
+                version: 3,
+                semesterCount: 3,
+                currentSemester: 1,
+                semesters: [
+                    { id: 'אביב-2026-0', courseCodes: ['C303'] },
+                    { id: 'קיץ-2026-1', courseCodes: ['A101', 'B202'] },
+                    { id: 'חורף-2026-2', courseCodes: [] },
+                ],
+                wishlistCourseCodes: [],
+                exemptionsCourseCodes: [],
+            },
+        });
+
+        const page = PlanPage();
+        await flushPromises();
+
+        const first = Array.from(
+            page.querySelectorAll<HTMLElement>(
+                '[data-tests-track="0"] [data-test-course-code]'
+            )
+        ).map((item) => item.textContent?.trim());
+        const second = Array.from(
+            page.querySelectorAll<HTMLElement>(
+                '[data-tests-track="1"] [data-test-course-code]'
+            )
+        ).map((item) => item.textContent?.trim());
+        expect(first).toEqual(['12/1', '1']);
+        expect(second).toEqual(['14/2', '6']);
+    });
+
+    it('highlights current semester course on test-square hover', async () => {
+        mocks.getCoursesPageMock.mockResolvedValue([
+            {
+                code: 'A101',
+                name: 'A101',
+                tests: [{ year: 2025, monthIndex: 0, day: 13 }],
+            },
+            {
+                code: 'B202',
+                name: 'B202',
+                tests: [{ year: 2025, monthIndex: 0, day: 12 }],
+            },
+        ]);
+        mocks.getMetaMock.mockResolvedValue({
+            key: 'planPageState',
+            value: {
+                version: 3,
+                semesterCount: 2,
+                currentSemester: 0,
+                semesters: [
+                    { id: 'אביב-2026-0', courseCodes: ['A101', 'B202'] },
+                    { id: 'קיץ-2026-1', courseCodes: [] },
+                ],
+                wishlistCourseCodes: [],
+                exemptionsCourseCodes: [],
+            },
+        });
+
+        const page = PlanPage();
+        await flushPromises();
+
+        const targetSquare = page.querySelector<HTMLElement>(
+            '[data-tests-track="0"] [data-test-course-code="B202"]'
+        );
+        const courseButton = page.querySelector<HTMLElement>(
+            '[data-current-semester-course="true"][data-course-code="B202"]'
+        );
+        expect(targetSquare).toBeTruthy();
+        expect(courseButton).toBeTruthy();
+
+        targetSquare?.dispatchEvent(
+            new MouseEvent('mouseover', { bubbles: true })
+        );
+        expect(courseButton?.classList.contains('ring-2')).toBe(true);
+
+        targetSquare?.dispatchEvent(
+            new MouseEvent('mouseout', { bubbles: true })
+        );
+        expect(courseButton?.classList.contains('ring-2')).toBe(false);
     });
 });
 

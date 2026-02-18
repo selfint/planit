@@ -89,6 +89,7 @@ function createStoryCourses(total: number): CourseRecord[] {
 function createStoryPlanState(courses: CourseRecord[]): {
     version: number;
     semesterCount: number;
+    currentSemester: number;
     semesters: { id: string; courseCodes: string[] }[];
     wishlistCourseCodes: string[];
     exemptionsCourseCodes: string[];
@@ -123,8 +124,9 @@ function createStoryPlanState(courses: CourseRecord[]): {
         .map((course) => course.code);
 
     return {
-        version: 2,
+        version: 3,
         semesterCount: semesterIds.length,
+        currentSemester: 2,
         semesters,
         wishlistCourseCodes,
         exemptionsCourseCodes,

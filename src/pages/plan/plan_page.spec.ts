@@ -249,4 +249,35 @@ test.describe('/plan page route', () => {
 
         expect(isProblemsSectionAfterRail).toBe(true);
     });
+
+    test('shows current-semester test schedule and switches with selector', async ({
+        page,
+    }) => {
+        await page.goto('plan');
+        await page.waitForFunction(() => {
+            return (
+                document.querySelector('[data-current-semester-select]') !==
+                    null &&
+                document.querySelector('[data-tests-track="0"]') !== null
+            );
+        });
+
+        const select = page.locator('[data-current-semester-select]');
+        await expect(select).toBeVisible();
+        await expect(
+            page.locator('[data-plan-row][data-current-semester-row="true"]')
+        ).toHaveCount(1);
+
+        await select.selectOption('1');
+
+        await expect(
+            page.locator(
+                '[data-plan-row][data-current-semester-row="true"] [data-semester-link][data-semester-number="2"]'
+            )
+        ).toHaveCount(1);
+        const firstTrackCount = await page
+            .locator('[data-tests-track="0"] [data-test-course-code]')
+            .count();
+        expect(firstTrackCount).toBeGreaterThan(0);
+    });
 });

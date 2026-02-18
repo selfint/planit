@@ -8,10 +8,15 @@ It is designed as a row-based board that avoids horizontal scrolling and keeps m
 ## Page Contents
 
 - A semester count control (`מספר סמסטרים`) with dynamic minimum constraints.
+- A current-semester control (`סמסטר נוכחי`) that stores a 0-based `currentSemester` index in persisted planner state.
 - A vertical planner board (`data-semester-rail`) made of:
     - semester rows
     - wishlist row (`רשימת משאלות`)
     - exemptions row (`פטורים`)
+- A current-semester tests schedule block with two rows:
+    - `מועד א` (`data-tests-track="0"`)
+    - `מועד ב` (`data-tests-track="1"`)
+      Each square uses the course-code color. The first item in each row shows `day/month`; later items show day-delta to the previous sorted test date.
 - A shared row-course-list template in `plan_page.html` (`data-role="row-course-list-template"`) that controls card width with responsive grid columns (`5rem` / `7rem` / `9rem`) matching the course page width-management pattern.
 - Per-row header metadata chips (credits, median, tests for semesters; course count for wishlist/exemptions).
 - Per-row move actions shown only during active selection:
@@ -31,9 +36,12 @@ It is designed as a row-based board that avoids horizontal scrolling and keeps m
     - move to target row
     - clear selection
     - resize semester count
+    - set current semester index
 5. Persisted state is updated with `state.userPlan.set(...)` after move/resize operations.
-6. The UI rerenders row content and updates derived metrics + schedule problems from semester rows.
-7. Row course-list styling is template-driven from `plan_page.html`; TypeScript clones that template for every row so width behavior stays consistent in one HTML source.
+6. The UI rerenders row content, current-semester highlight, and test schedule for the selected current semester only.
+7. Hovering a test square highlights the matching course card in the current semester row.
+8. Derived metrics + schedule problems continue to be computed from all semester rows.
+9. Row course-list styling is template-driven from `plan_page.html`; TypeScript clones that template for every row so width behavior stays consistent in one HTML source.
 
 ## Unit Tests
 
@@ -86,6 +94,24 @@ dispatch_change('[data-semester-count]')
 assert value('[data-semester-count]') == '6'
 assert last_call(setMeta).value.semesterCount == 6
 ```
+
+### `persists selected current semester index`
+
+WHAT: Verifies changing `סמסטר נוכחי` writes `currentSemester` to persisted plan state.
+WHY: Test schedule and current-row highlighting must survive reloads.
+HOW: Changes the select value and asserts latest persisted payload includes the chosen 0-based index.
+
+### `renders tests from the current semester only and sorted by exam date`
+
+WHAT: Verifies test chips are generated from current semester courses only.
+WHY: Planner must not leak tests from non-current semesters.
+HOW: Seeds multiple semesters with dated tests, restores `currentSemester`, then asserts `מועד א/מועד ב` chips show first date and subsequent day-deltas in sorted date order.
+
+### `highlights current semester course on test-square hover`
+
+WHAT: Verifies hovering a test square adds highlight ring to the matching current-semester course card.
+WHY: Keeps schedule-to-course mapping clear and interactive.
+HOW: Hovers a `data-test-course-code` square and asserts the corresponding current-semester `data-course-action` toggles ring classes.
 
 ## Integration Tests
 
@@ -183,3 +209,9 @@ rail = page.query('[data-semester-rail]')
 problems = page.query('[data-schedule-problems]')
 assert dom_position(rail, problems) == 'following'
 ```
+
+### `shows current-semester test schedule and switches with selector`
+
+WHAT: Verifies selecting a different current semester updates both row highlighting and test schedule source.
+WHY: Confirms end-to-end behavior for the new current-semester control.
+HOW: Opens `/plan`, changes `data-current-semester-select`, then asserts `data-current-semester-row` moves to the selected semester and test chips remain available for that semester.
