@@ -135,7 +135,7 @@ describe('router lib', () => {
         const app = document.querySelector('#app');
         const firstPage = app?.firstElementChild;
 
-        await state.provider.set(createLocalStateProvider());
+        state.provider.set(createLocalStateProvider());
 
         const secondPage = app?.firstElementChild;
         expect(firstPage).toBeTruthy();

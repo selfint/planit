@@ -46,7 +46,7 @@ describe('SemesterPage', () => {
         mocks.getCourseFacultiesMock.mockResolvedValue([]);
         mocks.setMetaMock.mockResolvedValue(undefined);
         window.history.replaceState(null, '', '/semester');
-        await state.provider.set(createStateProviderMock());
+        state.provider.set(createStateProviderMock());
     });
 
     it('uses query param number and shows semester metadata in sticky title', async () => {

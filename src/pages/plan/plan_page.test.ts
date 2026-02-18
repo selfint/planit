@@ -64,7 +64,7 @@ describe('plan page', () => {
             },
         ]);
         mocks.setMetaMock.mockResolvedValue(undefined);
-        await state.provider.set(createStateProviderMock());
+        state.provider.set(createStateProviderMock());
     });
 
     afterEach(() => {

@@ -47,7 +47,7 @@ describe('CatalogPage', () => {
     it('renders waiting state when no active selection exists', async () => {
         setViewportWidth(620);
         getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
-        await appState.provider.set(createStateProviderMock());
+        appState.provider.set(createStateProviderMock());
 
         const page = CatalogPage();
         await waitForUiWork();
@@ -125,7 +125,7 @@ describe('CatalogPage', () => {
             });
         });
 
-        await appState.provider.set(createStateProviderMock());
+        appState.provider.set(createStateProviderMock());
         const page = CatalogPage();
         await waitForUiWork();
 
@@ -201,7 +201,7 @@ describe('CatalogPage', () => {
             })
         );
 
-        await appState.provider.set(createStateProviderMock());
+        appState.provider.set(createStateProviderMock());
         const page = CatalogPage();
         await waitForUiWork();
 
@@ -267,7 +267,7 @@ describe('CatalogPage', () => {
             })
         );
 
-        await appState.provider.set(createStateProviderMock());
+        appState.provider.set(createStateProviderMock());
         const page = CatalogPage();
         await waitForUiWork();
 
@@ -330,7 +330,7 @@ describe('CatalogPage', () => {
             })
         );
 
-        await appState.provider.set(createStateProviderMock());
+        appState.provider.set(createStateProviderMock());
         const page = CatalogPage();
         await waitForUiWork();
 

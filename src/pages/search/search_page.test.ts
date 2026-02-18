@@ -54,7 +54,7 @@ describe('SearchPage', () => {
         getMetaMock.mockResolvedValue(undefined);
 
         window.history.replaceState(null, '', '/search');
-        await state.provider.set(createStateProviderMock());
+        state.provider.set(createStateProviderMock());
     });
 
     afterEach(() => {

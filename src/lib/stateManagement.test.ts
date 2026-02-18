@@ -105,11 +105,11 @@ describe('stateManagement', () => {
             },
         };
 
-        await state.provider.set(customProvider);
+        state.provider.set(customProvider);
         expect(state.provider.get()).toBe(customProvider);
         expect(rerenderHandler).toHaveBeenCalledTimes(1);
 
         setStateProviderChangeHandler(undefined);
-        await state.provider.set(createLocalStateProvider());
+        state.provider.set(createLocalStateProvider());
     });
 });
