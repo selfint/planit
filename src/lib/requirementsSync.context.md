@@ -24,6 +24,7 @@ Fetches program requirements and stores them in IndexedDB with copy-on-write rep
 
 - `src/lib/indexeddb.ts` for meta and requirements storage.
 - GitHub raw endpoint for requirements data.
+- `VITE_DATA_REPO` and `VITE_DATA_BRANCH` environment variables (defaults: `selfint/planit`, `main`).
 
 ## Notes
 

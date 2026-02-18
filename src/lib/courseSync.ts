@@ -1,8 +1,23 @@
 import { getMeta, putCourses, setMeta } from '$lib/indexeddb';
 import type { CourseRecord } from '$lib/indexeddb';
 
-const COURSE_DATA_URL =
-    'https://raw.githubusercontent.com/selfint/degree-planner/main/static/courseData.json';
+function getEnvString(name: string, fallback: string): string {
+    const env = import.meta.env as Record<string, unknown>;
+    const value = env[name];
+
+    if (typeof value === 'string' && value.length > 0) {
+        return value;
+    }
+
+    return fallback;
+}
+
+const DATA_REPO = getEnvString('VITE_DATA_REPO', 'selfint/planit');
+const DATA_BRANCH = getEnvString('VITE_DATA_BRANCH', 'main');
+const DATA_RAW_BASE_URL = `https://raw.githubusercontent.com/${DATA_REPO}/${DATA_BRANCH}/public`;
+const DATA_API_BASE_URL = `https://api.github.com/repos/${DATA_REPO}`;
+
+const COURSE_DATA_URL = `${DATA_RAW_BASE_URL}/courseData.json`;
 
 const COURSE_META_KEYS = {
     etag: 'courseDataEtag',
@@ -55,7 +70,7 @@ async function fetchCourseData(): Promise<Response> {
 
 async function fetchRemoteUpdatedAt(): Promise<string | undefined> {
     const response = await fetch(
-        'https://api.github.com/repos/selfint/degree-planner/commits?path=static/courseData.json&per_page=1',
+        `${DATA_API_BASE_URL}/commits?path=public/courseData.json&per_page=1`,
         {
             headers: {
                 Accept: 'application/vnd.github+json',

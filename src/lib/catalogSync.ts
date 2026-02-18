@@ -1,7 +1,22 @@
 import { getMeta, putCatalogs, setMeta } from '$lib/indexeddb';
 
-const CATALOGS_DATA_URL =
-    'https://raw.githubusercontent.com/selfint/degree-planner/main/static/catalogs.json';
+function getEnvString(name: string, fallback: string): string {
+    const env = import.meta.env as Record<string, unknown>;
+    const value = env[name];
+
+    if (typeof value === 'string' && value.length > 0) {
+        return value;
+    }
+
+    return fallback;
+}
+
+const DATA_REPO = getEnvString('VITE_DATA_REPO', 'selfint/planit');
+const DATA_BRANCH = getEnvString('VITE_DATA_BRANCH', 'main');
+const DATA_RAW_BASE_URL = `https://raw.githubusercontent.com/${DATA_REPO}/${DATA_BRANCH}/public`;
+const DATA_API_BASE_URL = `https://api.github.com/repos/${DATA_REPO}`;
+
+const CATALOGS_DATA_URL = `${DATA_RAW_BASE_URL}/catalogs.json`;
 
 const CATALOGS_META_KEYS = {
     etag: 'catalogsDataEtag',
@@ -54,7 +69,7 @@ async function fetchCatalogsData(): Promise<Response> {
 
 async function fetchRemoteUpdatedAt(): Promise<string | undefined> {
     const response = await fetch(
-        'https://api.github.com/repos/selfint/degree-planner/commits?path=static/catalogs.json&per_page=1',
+        `${DATA_API_BASE_URL}/commits?path=public/catalogs.json&per_page=1`,
         {
             headers: {
                 Accept: 'application/vnd.github+json',

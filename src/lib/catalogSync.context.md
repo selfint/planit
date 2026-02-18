@@ -21,6 +21,7 @@ Syncs the remote `catalogs.json` into IndexedDB with metadata for caching and fr
 
 - `src/lib/indexeddb.ts` for metadata and catalog storage.
 - GitHub raw and API endpoints for catalogs data and update timestamps.
+- `VITE_DATA_REPO` and `VITE_DATA_BRANCH` environment variables (defaults: `selfint/planit`, `main`).
 
 ## Notes
 

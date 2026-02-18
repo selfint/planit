@@ -21,6 +21,7 @@ Syncs the remote `courseData.json` into IndexedDB with metadata for caching and 
 
 - `src/lib/indexeddb.ts` for metadata and course storage.
 - GitHub raw and API endpoints for course data and update timestamps.
+- `VITE_DATA_REPO` and `VITE_DATA_BRANCH` environment variables (defaults: `selfint/planit`, `main`).
 
 ## Notes
 

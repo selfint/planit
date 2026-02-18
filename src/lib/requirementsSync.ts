@@ -1,6 +1,21 @@
 import { getMeta, replaceRequirementsWithCow, setMeta } from '$lib/indexeddb';
 import type { RequirementRecord } from '$lib/indexeddb';
 
+function getEnvString(name: string, fallback: string): string {
+    const env = import.meta.env as Record<string, unknown>;
+    const value = env[name];
+
+    if (typeof value === 'string' && value.length > 0) {
+        return value;
+    }
+
+    return fallback;
+}
+
+const DATA_REPO = getEnvString('VITE_DATA_REPO', 'selfint/planit');
+const DATA_BRANCH = getEnvString('VITE_DATA_BRANCH', 'main');
+const DATA_RAW_BASE_URL = `https://raw.githubusercontent.com/${DATA_REPO}/${DATA_BRANCH}/public`;
+
 const REQUIREMENTS_META_KEYS = {
     activeCatalogId: 'requirementsActiveCatalogId',
     activeFacultyId: 'requirementsActiveFacultyId',
@@ -30,7 +45,7 @@ function isOnline(): boolean {
 }
 
 function buildRequirementsUrl(selection: RequirementsSelection): string {
-    return `https://raw.githubusercontent.com/selfint/degree-planner/main/static/_catalogs/${selection.catalogId}/${selection.facultyId}/${selection.programId}/requirementsData.json`;
+    return `${DATA_RAW_BASE_URL}/_catalogs/${selection.catalogId}/${selection.facultyId}/${selection.programId}/requirementsData.json`;
 }
 
 export async function getActiveRequirementsSelection(): Promise<

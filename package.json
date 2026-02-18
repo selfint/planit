@@ -29,6 +29,12 @@
         "emulator:seed": "node scripts/seed-firebase-emulator.mjs",
         "test": "pnpm run unittest && pnpm run integtest",
         "lhci:ci": "node scripts/run-lhci.mjs collect",
+        "data:course": "node scripts/generateCourseData.mjs 10000 > public/courseData.json",
+        "data:catalogs:raw": "node scripts/generateCatalogsRaw.mjs",
+        "data:catalogs:static": "node scripts/generateCatalogsStatic.mjs",
+        "data:requirements": "node scripts/generateRequirementsData.mjs",
+        "data:manifest": "node scripts/generateCatalogsManifest.js",
+        "data:generate": "pnpm run data:course && pnpm run data:catalogs:raw && pnpm run data:catalogs:static && pnpm run data:requirements && pnpm run data:manifest",
         "vibe": "PORT=9999 vibe-kanban",
         "fix-webp-asset": "pnpx sharp-cli -i"
     },
