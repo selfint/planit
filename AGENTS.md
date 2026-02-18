@@ -78,7 +78,9 @@ sequenceDiagram
 
 - Favor incremental changes and avoid blocking the UI when parsing or writing large datasets.
 - Keep data update paths resilient to partial failures (e.g., retry or resume logic).
-- Every .ts file should have a collocated .md file explaining it. Always keeps these two in sync.
+- Treat each collocated `*.context.md` file as the context dump for its sibling `.ts` file.
+- Whenever you change a `.ts` file, update the matching `.context.md` in the same change.
+- Context dumps must explain both what the code does and why it exists from a user-flow/business perspective so the next agent can continue work safely.
 
 ## Style guide
 

@@ -7,18 +7,18 @@ description: Build or update UI components using vanilla HTML and TypeScript (us
 
 ## Overview
 
-Build UI components as four files (.html, .ts, .stories.ts, .md). Use <template> cloning and data attributes for wiring, keep UI copy in Hebrew (RTL), and keep the docs concise and technical.
+Build UI components as four files (.html, .ts, .stories.ts, .context.md). Use <template> cloning and data attributes for wiring, keep UI copy in Hebrew (RTL), and keep the docs concise and technical.
 
 ## Workflow
 
-1. Confirm or create the component set at src/components/<Component>.html, src/components/<Component>.ts, src/components/<Component>.stories.ts, and src/components/<Component>.md.
+1. Confirm or create the component set at src/components/<Component>.html, src/components/<Component>.ts, src/components/<Component>.stories.ts, and src/components/<Component>.context.md.
 2. Put all markup and Tailwind classes in the HTML file inside a <template>.
 3. Keep logic, state, and event wiring in the TS file; do not embed scripts in HTML.
 4. In the .html file, put all text in Hebrew; except for PlanIt and other english-only phrases.
 5. Use data attributes in the HTML to target elements from TS.
 6. Ensure all interactive controls prevent mobile double-tap zoom by applying `touch-manipulation` (or equivalent `touch-action: manipulation`) to tap targets (`button`, `a`, `[role="button"]`, and other clickable wrappers).
 7. Export a component factory (e.g., `AppHeader()`) that returns a root element.
-8. Add a concise Markdown doc in `src/components/<Component>.md` following the structure below. Component `.md` docs are always written in English.
+8. Add a concise Markdown doc in `src/components/<Component>.context.md` following the structure below. Component `.context.md` docs are always written in English.
 9. Create `src/components/<Component>.stories.ts` alongside the component.
 10. Define `Default` and `Dark` stories, setting `globals: { theme: 'dark' }` for dark.
 11. Rely on `.storybook/preview.ts` for the wrapper; do not create custom preview shells.
@@ -33,7 +33,7 @@ Build UI components as four files (.html, .ts, .stories.ts, .md). Use <template>
     - src/components/<Component>.html
     - src/components/<Component>.ts
     - src/components/<Component>.stories.ts
-    - src/components/<Component>.md
+    - src/components/<Component>.context.md
 - HTML:
     - Wrap the component in a single <template> element.
     - Keep UI-only concerns here: structure, Tailwind classes, semantic tags.
@@ -45,7 +45,7 @@ Build UI components as four files (.html, .ts, .stories.ts, .md). Use <template>
 
 ## Documentation File
 
-- Use `src/components/<Component>.md` to explain the component behavior.
+- Use `src/components/<Component>.context.md` to explain the component behavior.
 - Keep it short and technical; follow the CourseTable example.
 - Write the documentation in English.
 - Recommended sections: Overview, Template Structure, Data Flow, Dependencies, Notes.
@@ -155,7 +155,7 @@ export const Dark: Story = {
 };
 ```
 
-### Component.md
+### Component.context.md
 
 ```markdown
 # Component

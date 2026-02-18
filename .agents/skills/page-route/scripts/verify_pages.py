@@ -12,7 +12,7 @@ REQUIRED_SUFFIXES = (
     '.stories.ts',
     '.spec.ts',
     '.test.ts',
-    '.md',
+    '.context.md',
 )
 
 
@@ -126,7 +126,7 @@ def main() -> int:
         return 1
 
     print(
-        'All page routes have .html, .ts, .stories.ts, .spec.ts, .test.ts, and .md files, and use Playwright/Vitest/Storybook imports in route tests and stories.'
+        'All page routes have .html, .ts, .stories.ts, .spec.ts, .test.ts, and .context.md files, and use Playwright/Vitest/Storybook imports in route tests and stories.'
     )
     return 0
 

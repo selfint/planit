@@ -3,21 +3,27 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 const mocks = vi.hoisted(() => {
     return {
-        getCourseMock: vi.fn(),
-        getCoursesCountMock: vi.fn(),
-        getCoursesPageMock: vi.fn(),
-        getMetaMock: vi.fn(),
-        setMetaMock: vi.fn(),
+        coursesGetMock: vi.fn(),
+        coursesCountMock: vi.fn(),
+        coursesPageMock: vi.fn(),
+        userPlanGetMock: vi.fn(),
+        userPlanSetMock: vi.fn(),
         initCourseSyncMock: vi.fn(),
     };
 });
 
-vi.mock('$lib/indexeddb', () => ({
-    getCourse: mocks.getCourseMock,
-    getCoursesCount: mocks.getCoursesCountMock,
-    getCoursesPage: mocks.getCoursesPageMock,
-    getMeta: mocks.getMetaMock,
-    setMeta: mocks.setMetaMock,
+vi.mock('$lib/stateManagement', () => ({
+    state: {
+        courses: {
+            get: mocks.coursesGetMock,
+            count: mocks.coursesCountMock,
+            page: mocks.coursesPageMock,
+        },
+        userPlan: {
+            get: mocks.userPlanGetMock,
+            set: mocks.userPlanSetMock,
+        },
+    },
 }));
 
 vi.mock('$lib/courseSync', () => ({
@@ -36,16 +42,16 @@ import { CoursePage } from './course_page';
 
 describe('course page', () => {
     beforeEach(() => {
-        mocks.getCourseMock.mockReset();
-        mocks.getCoursesCountMock.mockReset();
-        mocks.getCoursesPageMock.mockReset();
-        mocks.getMetaMock.mockReset();
-        mocks.setMetaMock.mockReset();
+        mocks.coursesGetMock.mockReset();
+        mocks.coursesCountMock.mockReset();
+        mocks.coursesPageMock.mockReset();
+        mocks.userPlanGetMock.mockReset();
+        mocks.userPlanSetMock.mockReset();
         mocks.initCourseSyncMock.mockReset();
-        mocks.getCoursesCountMock.mockResolvedValue(0);
-        mocks.getCoursesPageMock.mockResolvedValue([]);
-        mocks.getMetaMock.mockResolvedValue(undefined);
-        mocks.setMetaMock.mockResolvedValue(undefined);
+        mocks.coursesCountMock.mockResolvedValue(0);
+        mocks.coursesPageMock.mockResolvedValue([]);
+        mocks.userPlanGetMock.mockResolvedValue(undefined);
+        mocks.userPlanSetMock.mockResolvedValue(undefined);
         window.history.replaceState(null, '', '/course');
     });
 
@@ -54,7 +60,7 @@ describe('course page', () => {
     });
 
     it('renders a root element', () => {
-        mocks.getCourseMock.mockResolvedValue(undefined);
+        mocks.coursesGetMock.mockResolvedValue(undefined);
 
         const page = CoursePage();
 
@@ -72,8 +78,8 @@ describe('course page', () => {
         const message = page.querySelector<HTMLElement>(
             "[data-role='not-found-message']"
         );
-        const headings = Array.from(page.querySelectorAll('h2')).map((heading) =>
-            heading.textContent.trim()
+        const headings = Array.from(page.querySelectorAll('h2')).map(
+            (heading) => heading.textContent.trim()
         );
 
         expect(notFoundState?.classList.contains('hidden')).toBe(false);
@@ -83,7 +89,7 @@ describe('course page', () => {
 
     it('renders fetched course and related course cards', async () => {
         window.history.replaceState(null, '', '/course?code=CS101');
-        mocks.getCourseMock.mockImplementation((code: string) => {
+        mocks.coursesGetMock.mockImplementation((code: string) => {
             if (code === 'CS101') {
                 return {
                     code: 'CS101',
@@ -111,8 +117,8 @@ describe('course page', () => {
             }
             return undefined;
         });
-        mocks.getCoursesCountMock.mockResolvedValue(4);
-        mocks.getCoursesPageMock.mockImplementation(
+        mocks.coursesCountMock.mockResolvedValue(4);
+        mocks.coursesPageMock.mockImplementation(
             (limit: number, offset: number) => {
                 if (limit !== 300) {
                     return [];

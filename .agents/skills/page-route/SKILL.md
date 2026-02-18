@@ -7,7 +7,7 @@ description: Build or update a route page under src/pages using a consistent 6-f
 
 ## Overview
 
-Build each route page as six colocated files: `.html`, `.ts`, `.stories.ts`, `.spec.ts`, `.test.ts`, and `.md`.
+Build each route page as six colocated files: `.html`, `.ts`, `.stories.ts`, `.spec.ts`, `.test.ts`, and `.context.md`.
 Use a `<template>` in HTML, keep logic in TypeScript, and colocate both unit and integration tests in the page route directory.
 
 ## Workflow
@@ -19,7 +19,7 @@ Use a `<template>` in HTML, keep logic in TypeScript, and colocate both unit and
     - `src/pages/<route>/<route>_page.stories.ts`
     - `src/pages/<route>/<route>_page.spec.ts`
     - `src/pages/<route>/<route>_page.test.ts`
-    - `src/pages/<route>/<route>_page.md`
+    - `src/pages/<route>/<route>_page.context.md`
 3. Put all markup and Tailwind classes in the HTML `<template>`.
 4. Keep state, event wiring, and composition in the TS factory.
 5. Use data attributes in HTML for TS hooks.
@@ -32,7 +32,7 @@ Use a `<template>` in HTML, keep logic in TypeScript, and colocate both unit and
 10. Add Playwright integration tests in `.spec.ts` for browser route behavior
     (navigation, route rendering, and user-visible flows).
 11. Keep Playwright page specs colocated in `src/pages/<route>/`; reserve `tests/` for broader e2e flows.
-12. Document the page in `.md` using the required documentation structure.
+12. Document the page in `.context.md` using the required documentation structure.
 13. Before completing the task, run `python3 .agents/skills/page-route/scripts/verify_pages.py` and treat any missing `.stories.ts` as a blocking failure.
 
 ## Page Route Contract
@@ -59,12 +59,12 @@ Use a `<template>` in HTML, keep logic in TypeScript, and colocate both unit and
 - Storybook (`.stories.ts`):
     - Must import `@storybook/html`.
     - Must include both `Default` and `Dark` stories.
-- Docs (`.md`):
+- Docs (`.context.md`):
     - Must explain page contents, data flows, unit tests, and integration tests.
 
 ## Documentation File
 
-Write `src/pages/<route>/<route>_page.md` in English with these sections:
+Write `src/pages/<route>/<route>_page.context.md` in English with these sections:
 
 ```markdown
 # <RouteName> Page

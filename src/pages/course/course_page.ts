@@ -1,12 +1,6 @@
-import {
-    type CourseRecord,
-    getCourse,
-    getCoursesCount,
-    getCoursesPage,
-    getMeta,
-    setMeta,
-} from '$lib/indexeddb';
+import { type CourseRecord } from '$lib/indexeddb';
 import { COURSE_SYNC_EVENT } from '$lib/courseSync';
+import { state as appState } from '$lib/stateManagement';
 import { ConsoleNav } from '$components/ConsoleNav';
 import { CourseCard } from '$components/CourseCard';
 
@@ -15,7 +9,6 @@ import templateHtml from './course_page.html?raw';
 const EMPTY_VALUE = '—';
 const UNKNOWN_COURSE_LABEL = 'קורס לא זמין במאגר';
 const COURSES_BATCH_SIZE = 300;
-const PLAN_META_KEY = 'planPageState';
 const PLAN_META_VERSION = 2;
 const DEFAULT_SEMESTER_COUNT = 6;
 
@@ -369,7 +362,7 @@ async function refreshWishlistUi(
 }
 
 async function readWishlistCourseCodes(): Promise<string[]> {
-    const metaEntry = await getMeta(PLAN_META_KEY);
+    const metaEntry = await appState.userPlan.get();
     const plan = toPersistedPlan(metaEntry?.value);
     return normalizeCourseCodes(plan?.wishlistCourseCodes);
 }
@@ -380,7 +373,7 @@ async function addCourseToWishlist(courseCode: string): Promise<boolean> {
         return false;
     }
 
-    const metaEntry = await getMeta(PLAN_META_KEY);
+    const metaEntry = await appState.userPlan.get();
     const plan = toPersistedPlan(metaEntry?.value);
     const wishlist = normalizeCourseCodes(plan?.wishlistCourseCodes);
     if (wishlist.includes(code)) {
@@ -398,10 +391,7 @@ async function addCourseToWishlist(courseCode: string): Promise<boolean> {
         ),
     };
 
-    await setMeta({
-        key: PLAN_META_KEY,
-        value: payload,
-    });
+    await appState.userPlan.set(payload);
 
     return true;
 }
@@ -531,7 +521,7 @@ async function loadAndRenderCourse(
     elements: CoursePageElements,
     code: string
 ): Promise<void> {
-    const course = await getCourse(code);
+    const course = await appState.courses.get(code);
     if (course === undefined) {
         showNotFound(elements, `לא נמצא קורס עם הקוד ${code}.`);
         return;
@@ -720,7 +710,7 @@ async function loadRelatedCourses(
 
     const relatedCourses = await Promise.all(
         uniqueCodes.map(async (relatedCode) => {
-            const relatedCourse = await getCourse(relatedCode);
+            const relatedCourse = await appState.courses.get(relatedCode);
             if (relatedCourse !== undefined) {
                 return relatedCourse;
             }
@@ -757,14 +747,17 @@ async function loadDependantCourses(
         return [];
     }
 
-    const totalCourses = await getCoursesCount();
+    const totalCourses = await appState.courses.count();
     if (totalCourses === 0) {
         return [];
     }
 
     const dependants: CourseRecord[] = [];
     for (let offset = 0; offset < totalCourses; offset += COURSES_BATCH_SIZE) {
-        const coursesBatch = await getCoursesPage(COURSES_BATCH_SIZE, offset);
+        const coursesBatch = await appState.courses.page(
+            COURSES_BATCH_SIZE,
+            offset
+        );
         if (coursesBatch.length === 0) {
             break;
         }

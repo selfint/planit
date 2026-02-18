@@ -29,7 +29,8 @@ methods resolve to `undefined` (or no-op for `set`).
 - Default `set` methods are no-op and resolve immediately.
 - Default getter/query methods resolve to `undefined` so stories/tests can opt in
   only to behavior under test.
-- This utility is currently adopted in the Plan page story only.
+- This utility is currently adopted in multiple stories, including Plan,
+  Semester, Search, DegreePicker, and Catalog page stories.
 
 ## Tests
 
