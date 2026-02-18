@@ -771,6 +771,10 @@ function createPlanRow(
 }
 
 function appendCurrentSemesterTestsRows(container: HTMLElement): void {
+    const testsGroup = document.createElement('div');
+    testsGroup.className = 'flex flex-wrap items-center gap-x-3 gap-y-1';
+    testsGroup.dataset.testsSchedule = 'true';
+
     const firstRow = document.createElement('div');
     firstRow.className = 'flex shrink-0 items-center gap-1';
     firstRow.dataset.testRow = '0';
@@ -805,7 +809,8 @@ function appendCurrentSemesterTestsRows(container: HTMLElement): void {
     empty.textContent = 'אין מועדי בחינות ידועים בסמסטר הנוכחי.';
 
     empty.classList.add('w-full');
-    container.append(firstRow, secondRow, empty);
+    testsGroup.append(firstRow, secondRow, empty);
+    container.append(testsGroup);
 }
 
 function cloneRowCourseList(template: HTMLTemplateElement): HTMLElement {
