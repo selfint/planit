@@ -696,7 +696,7 @@ function createPlanRow(
 ): HTMLElement {
     const rowElement = document.createElement('section');
     rowElement.className =
-        'border-border/50 bg-semester-surface relative flex flex-col gap-3 overflow-hidden rounded-2xl border p-3 sm:p-4';
+        'border-border/50 bg-semester-surface flex flex-col gap-3 rounded-2xl border p-3 sm:p-4';
     rowElement.dataset.planRow = 'true';
     rowElement.dataset.rowId = row.id;
     rowElement.dataset.rowKind = row.kind;
@@ -705,10 +705,6 @@ function createPlanRow(
         row.semesterNumber === state.currentSemester + 1;
     if (isCurrentSemesterRow) {
         rowElement.dataset.currentSemesterRow = 'true';
-        const currentMarker = document.createElement('span');
-        currentMarker.className =
-            'bg-accent pointer-events-none absolute inset-y-2 start-0 w-1.5 rounded-full';
-        rowElement.append(currentMarker);
     }
 
     const header = document.createElement('header');
@@ -720,6 +716,9 @@ function createPlanRow(
     const title = document.createElement('p');
     title.className = 'text-sm font-medium whitespace-nowrap';
     title.textContent = row.title;
+    if (isCurrentSemesterRow) {
+        title.classList.add('underline', 'decoration-accent', 'decoration-2');
+    }
 
     const semesterLink = createSemesterLink(row);
 
