@@ -772,8 +772,7 @@ function createPlanRow(
 
 function createCurrentSemesterTestsBlock(): HTMLElement {
     const section = document.createElement('section');
-    section.className =
-        'border-border/50 mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 border-t pt-2';
+    section.className = 'mt-1 flex flex-wrap items-center gap-x-3 gap-y-1';
     section.dataset.testsSchedule = 'true';
 
     const firstRow = document.createElement('div');
