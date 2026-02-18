@@ -18,7 +18,7 @@ const rawCatalogs = join(
     '.cache',
     'catalogs.raw.json'
 );
-const dbPath = join(process.cwd(), 'public', '_catalogs');
+const dbPath = join(process.cwd(), 'public', '_data', '_catalogs');
 
 function writeTreeSync(path, tree) {
     let treePath = join(path, tree.Otjid);

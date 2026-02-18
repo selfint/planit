@@ -2,7 +2,7 @@ import * as fs from 'node:fs';
 import { join, dirname, basename } from 'node:path';
 import * as sap from './SAPClient.mjs';
 
-const dbPath = join(process.cwd(), 'public', '_catalogs');
+const dbPath = join(process.cwd(), 'public', '_data', '_catalogs');
 
 function writeFileSync(path, data) {
     const size = sap.formatBytes(new Blob([data]).size);

@@ -21,22 +21,6 @@ function stubFetch(impl: (input: RequestInfo) => Promise<Response>): void {
     vi.stubGlobal('fetch', vi.fn(impl));
 }
 
-function getRequestUrl(input: RequestInfo): string {
-    if (typeof input === 'string') {
-        return input;
-    }
-
-    if (input instanceof URL) {
-        return input.toString();
-    }
-
-    if (input instanceof Request) {
-        return input.url;
-    }
-
-    return '';
-}
-
 function makeJsonResponse(data: unknown, init?: ResponseInit): Response {
     return new Response(JSON.stringify(data), init);
 }
@@ -63,26 +47,10 @@ describe('course sync lib', () => {
     });
 
     it('skips when remote data is unchanged', async () => {
-        const remoteDate = '2024-01-01T00:00:00Z';
         stubNavigator(true);
-        stubFetch((input) => {
-            if (getRequestUrl(input).includes('api.github.com')) {
-                return Promise.resolve(
-                    makeJsonResponse([
-                        { commit: { committer: { date: remoteDate } } },
-                    ])
-                );
-            }
-            return Promise.resolve(makeJsonResponse({}, { status: 304 }));
-        });
+        stubFetch(() => Promise.resolve(new Response(null, { status: 304 })));
 
         mockGetMeta.mockImplementation((key) => {
-            if (key === 'courseDataRemoteUpdatedAt') {
-                return Promise.resolve({ key, value: remoteDate });
-            }
-            if (key === 'courseDataLastSync') {
-                return Promise.resolve({ key, value: '2024-01-02T00:00:00Z' });
-            }
             if (key === 'courseDataEtag') {
                 return Promise.resolve({ key, value: 'etag' });
             }
@@ -96,28 +64,15 @@ describe('course sync lib', () => {
 
         expect(result.status).toBe('skipped');
         expect(mockPutCourses).not.toHaveBeenCalled();
-        expect(mockSetMeta).toHaveBeenCalledWith({
-            key: 'courseDataRemoteUpdatedAt',
-            value: remoteDate,
-        });
         expect(mockSetMeta).toHaveBeenCalledWith(
-            expect.objectContaining({ key: 'courseDataLastChecked' })
+            expect.objectContaining({ key: 'courseDataLastSync' })
         );
     });
 
     it('updates courses when remote data changes', async () => {
-        const remoteDate = '2024-02-01T00:00:00Z';
         stubNavigator(true);
-        stubFetch((input) => {
-            if (getRequestUrl(input).includes('api.github.com')) {
-                return Promise.resolve(
-                    makeJsonResponse([
-                        { commit: { committer: { date: remoteDate } } },
-                    ])
-                );
-            }
-
-            return Promise.resolve(
+        stubFetch(() =>
+            Promise.resolve(
                 makeJsonResponse(
                     {
                         CS101: { code: 'CS101', name: 'Intro' },
@@ -131,8 +86,8 @@ describe('course sync lib', () => {
                         },
                     }
                 )
-            );
-        });
+            )
+        );
 
         mockGetMeta.mockResolvedValue(undefined);
 

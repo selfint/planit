@@ -12,9 +12,10 @@ function getEnvString(name: string, fallback: string): string {
     return fallback;
 }
 
-const DATA_REPO = getEnvString('VITE_DATA_REPO', 'selfint/planit');
-const DATA_BRANCH = getEnvString('VITE_DATA_BRANCH', 'main');
-const DATA_RAW_BASE_URL = `https://raw.githubusercontent.com/${DATA_REPO}/${DATA_BRANCH}/public`;
+const DATA_BASE_URL = getEnvString(
+    'VITE_DATA_BASE_URL',
+    'https://tom.selfin.io/planit/_data'
+);
 
 const REQUIREMENTS_META_KEYS = {
     activeCatalogId: 'requirementsActiveCatalogId',
@@ -45,7 +46,7 @@ function isOnline(): boolean {
 }
 
 function buildRequirementsUrl(selection: RequirementsSelection): string {
-    return `${DATA_RAW_BASE_URL}/_catalogs/${selection.catalogId}/${selection.facultyId}/${selection.programId}/requirementsData.json`;
+    return `${DATA_BASE_URL}/_catalogs/${selection.catalogId}/${selection.facultyId}/${selection.programId}/requirementsData.json`;
 }
 
 export async function getActiveRequirementsSelection(): Promise<

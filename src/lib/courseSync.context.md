@@ -13,15 +13,15 @@ Syncs the remote `courseData.json` into IndexedDB with metadata for caching and 
 
 ## Data Flow
 
-- Reads `etag`, `lastModified`, and `remoteUpdatedAt` from metadata.
-- Uses conditional fetch headers and GitHub commit metadata to skip redundant fetches.
+- Reads `etag` and `lastModified` from metadata.
+- Uses conditional fetch headers to skip redundant payload downloads.
 - Stores courses via `putCourses()` and updates meta keys (etag, last sync, counts).
 
 ## Dependencies
 
 - `src/lib/indexeddb.ts` for metadata and course storage.
-- GitHub raw and API endpoints for course data and update timestamps.
-- `VITE_DATA_REPO` and `VITE_DATA_BRANCH` environment variables (defaults: `selfint/planit`, `main`).
+- Data endpoint serving `courseData.json` (default: `https://tom.selfin.io/planit/_data`).
+- `VITE_DATA_BASE_URL` environment variable to override the default endpoint.
 
 ## Notes
 
@@ -31,5 +31,5 @@ Syncs the remote `courseData.json` into IndexedDB with metadata for caching and 
 ## Tests
 
 - Returns `offline` and avoids fetch calls when `navigator.onLine` is false.
-- Skips updates when remote metadata matches stored values and handles 304 responses.
+- Skips updates on 304 responses while refreshing `lastSync` metadata.
 - Updates courses, count, and metadata when remote data changes.

@@ -12,20 +12,18 @@ function getEnvString(name: string, fallback: string): string {
     return fallback;
 }
 
-const DATA_REPO = getEnvString('VITE_DATA_REPO', 'selfint/planit');
-const DATA_BRANCH = getEnvString('VITE_DATA_BRANCH', 'main');
-const DATA_RAW_BASE_URL = `https://raw.githubusercontent.com/${DATA_REPO}/${DATA_BRANCH}/public`;
-const DATA_API_BASE_URL = `https://api.github.com/repos/${DATA_REPO}`;
+const DATA_BASE_URL = getEnvString(
+    'VITE_DATA_BASE_URL',
+    'https://tom.selfin.io/planit/_data'
+);
 
-const COURSE_DATA_URL = `${DATA_RAW_BASE_URL}/courseData.json`;
+const COURSE_DATA_URL = `${DATA_BASE_URL}/courseData.json`;
 
 const COURSE_META_KEYS = {
     etag: 'courseDataEtag',
     lastModified: 'courseDataLastModified',
     lastSync: 'courseDataLastSync',
     count: 'courseDataCount',
-    remoteUpdatedAt: 'courseDataRemoteUpdatedAt',
-    lastChecked: 'courseDataLastChecked',
 };
 
 export const COURSE_SYNC_EVENT = 'planit:course-sync';
@@ -68,87 +66,9 @@ async function fetchCourseData(): Promise<Response> {
     return fetch(COURSE_DATA_URL, { headers });
 }
 
-async function fetchRemoteUpdatedAt(): Promise<string | undefined> {
-    const response = await fetch(
-        `${DATA_API_BASE_URL}/commits?path=public/courseData.json&per_page=1`,
-        {
-            headers: {
-                Accept: 'application/vnd.github+json',
-            },
-        }
-    );
-
-    if (!response.ok) {
-        throw new Error(
-            `Failed to fetch remote update metadata: ${String(
-                response.status
-            )} ${response.statusText}`
-        );
-    }
-
-    const data = (await response.json()) as {
-        commit?: { committer?: { date?: string } };
-    }[];
-    const date = data[0]?.commit?.committer?.date;
-    if (typeof date === 'string' && date.length > 0) {
-        return date;
-    }
-
-    return undefined;
-}
-
-async function shouldFetchCourseData(
-    remoteUpdatedAt: string | undefined
-): Promise<boolean> {
-    const [storedRemote, lastSync] = await Promise.all([
-        getMeta(COURSE_META_KEYS.remoteUpdatedAt),
-        getMeta(COURSE_META_KEYS.lastSync),
-    ]);
-    const storedRemoteValue =
-        typeof storedRemote?.value === 'string'
-            ? storedRemote.value
-            : undefined;
-
-    if (remoteUpdatedAt === undefined) {
-        return true;
-    }
-
-    if (storedRemoteValue === undefined || storedRemoteValue.length === 0) {
-        return true;
-    }
-
-    if (storedRemoteValue !== remoteUpdatedAt) {
-        return true;
-    }
-
-    return lastSync?.value === undefined;
-}
-
 export async function syncCourseData(): Promise<CourseSyncResult> {
     if (!isOnline()) {
         return { status: 'offline' };
-    }
-
-    let remoteUpdatedAt: string | undefined;
-    try {
-        remoteUpdatedAt = await fetchRemoteUpdatedAt();
-    } catch (error) {
-        console.error('Failed to fetch remote course metadata', error);
-    }
-
-    if (remoteUpdatedAt !== undefined) {
-        await setMeta({
-            key: COURSE_META_KEYS.remoteUpdatedAt,
-            value: remoteUpdatedAt,
-        });
-        await setMeta({
-            key: COURSE_META_KEYS.lastChecked,
-            value: new Date().toISOString(),
-        });
-    }
-
-    if (!(await shouldFetchCourseData(remoteUpdatedAt))) {
-        return { status: 'skipped' };
     }
 
     const response = await fetchCourseData();
@@ -190,12 +110,6 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
             value: new Date().toISOString(),
         }),
         setMeta({ key: COURSE_META_KEYS.count, value: courses.length }),
-        remoteUpdatedAt !== undefined
-            ? setMeta({
-                  key: COURSE_META_KEYS.remoteUpdatedAt,
-                  value: remoteUpdatedAt,
-              })
-            : Promise.resolve(),
     ]);
 
     return { status: 'updated', count: courses.length };

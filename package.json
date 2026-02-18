@@ -29,7 +29,7 @@
         "emulator:seed": "node scripts/seed-firebase-emulator.mjs",
         "test": "pnpm run unittest && pnpm run integtest",
         "lhci:ci": "node scripts/run-lhci.mjs collect",
-        "data:course": "node scripts/generateCourseData.mjs 10000 > public/courseData.json",
+        "data:course": "mkdir -p public/_data && node scripts/generateCourseData.mjs 10000 > public/_data/courseData.json",
         "data:catalogs:raw": "node scripts/generateCatalogsRaw.mjs",
         "data:catalogs:static": "node scripts/generateCatalogsStatic.mjs",
         "data:requirements": "node scripts/generateRequirementsData.mjs",

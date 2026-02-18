@@ -1,8 +1,8 @@
 import { readdirSync, statSync, writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-const dbPath = join(process.cwd(), 'public', '_catalogs');
-const manifestPath = join(process.cwd(), 'public', 'catalogs.json');
+const dbPath = join(process.cwd(), 'public', '_data', '_catalogs');
+const manifestPath = join(process.cwd(), 'public', '_data', 'catalogs.json');
 
 function parseI18N(path) {
     const en = readFileSync(join(path, 'en')).toString();

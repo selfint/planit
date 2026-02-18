@@ -55,6 +55,7 @@ export default defineConfig(({ command }) => ({
 
             workbox: {
                 globPatterns: ['**/*.{js,css,html,svg,png,ico}'],
+                globIgnores: ['**/_data/**'],
                 cleanupOutdatedCaches: true,
                 clientsClaim: true,
                 skipWaiting: false,

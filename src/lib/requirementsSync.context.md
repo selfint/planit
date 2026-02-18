@@ -23,8 +23,8 @@ Fetches program requirements and stores them in IndexedDB with copy-on-write rep
 ## Dependencies
 
 - `src/lib/indexeddb.ts` for meta and requirements storage.
-- GitHub raw endpoint for requirements data.
-- `VITE_DATA_REPO` and `VITE_DATA_BRANCH` environment variables (defaults: `selfint/planit`, `main`).
+- Data endpoint serving `requirementsData.json` files (default: `https://tom.selfin.io/planit/_data`).
+- `VITE_DATA_BASE_URL` environment variable to override the default endpoint.
 
 ## Notes
 
