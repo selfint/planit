@@ -589,7 +589,7 @@ function appendTestSquares(track: HTMLElement, entries: TestEntry[]): void {
     entries.forEach((entry, index) => {
         const square = document.createElement('span');
         square.className =
-            'text-accent-contrast inline-flex h-5 shrink-0 items-center justify-center rounded-none px-[1px] text-xs tabular-nums';
+            'text-accent-contrast inline-flex h-5 shrink-0 items-center justify-center rounded-none px-0.5 text-xs tabular-nums';
         square.dataset.testCourseCode = entry.courseCode;
         square.style.backgroundColor = getCourseColorByCode(entry.courseCode);
         square.textContent =
