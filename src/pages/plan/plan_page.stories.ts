@@ -81,6 +81,21 @@ function createStoryCourses(total: number): CourseRecord[] {
             points: 2 + (index % 4),
             median: 70 + (index % 25),
             seasons: ['אביב', 'קיץ', 'חורף'],
+            tests:
+                index % 6 === 0
+                    ? [null, null]
+                    : [
+                          {
+                              year: 2026 + Math.floor(index / 16),
+                              monthIndex: (index * 2) % 12,
+                              day: 3 + (index % 24),
+                          },
+                          {
+                              year: 2026 + Math.floor(index / 16),
+                              monthIndex: (((index * 2) % 12) + 1) % 12,
+                              day: 8 + (index % 20),
+                          },
+                      ],
         });
     }
     return courses;

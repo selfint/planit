@@ -728,7 +728,7 @@ function createPlanRow(
         row.semesterNumber === state.currentSemester + 1;
     if (isCurrentSemesterRow) {
         rowElement.dataset.currentSemesterRow = 'true';
-        rowElement.classList.add('!border-accent/45');
+        rowElement.classList.add('!border-s-6', '!border-s-accent');
     }
 
     const header = document.createElement('header');
