@@ -13,7 +13,7 @@ It is designed as a row-based board that avoids horizontal scrolling and keeps m
     - semester rows
     - wishlist row (`רשימת משאלות`)
     - exemptions row (`פטורים`)
-- A current-semester tests schedule block with two rows:
+- A current-semester tests schedule block rendered inside the selected semester row, with two rows:
     - `מועד א` (`data-tests-track="0"`)
     - `מועד ב` (`data-tests-track="1"`)
       Each square uses the course-code color. The first item in each row shows `day/month`; later items show day-delta to the previous sorted test date.

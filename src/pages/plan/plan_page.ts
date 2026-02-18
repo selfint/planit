@@ -212,13 +212,6 @@ export function PlanPage(): HTMLElement {
     const currentSemesterSelect = root.querySelector<HTMLSelectElement>(
         '[data-current-semester-select]'
     );
-    const testsTrackFirst = root.querySelector<HTMLElement>(
-        '[data-tests-track="0"]'
-    );
-    const testsTrackSecond = root.querySelector<HTMLElement>(
-        '[data-tests-track="1"]'
-    );
-    const testsEmpty = root.querySelector<HTMLElement>('[data-tests-empty]');
     const rowCourseListTemplate = root.querySelector<HTMLTemplateElement>(
         "[data-role='row-course-list-template']"
     );
@@ -230,9 +223,6 @@ export function PlanPage(): HTMLElement {
         problemsCount === null ||
         semesterCountInput === null ||
         currentSemesterSelect === null ||
-        testsTrackFirst === null ||
-        testsTrackSecond === null ||
-        testsEmpty === null ||
         rowCourseListTemplate === null
     ) {
         throw new Error('PlanPage required elements not found');
@@ -258,9 +248,6 @@ export function PlanPage(): HTMLElement {
             problemsCount,
             semesterCountInput,
             currentSemesterSelect,
-            testsTrackFirst,
-            testsTrackSecond,
-            testsEmpty,
             rowCourseListTemplate
         );
     });
@@ -279,9 +266,6 @@ export function PlanPage(): HTMLElement {
             problemsCount,
             semesterCountInput,
             currentSemesterSelect,
-            testsTrackFirst,
-            testsTrackSecond,
-            testsEmpty,
             rowCourseListTemplate
         );
     });
@@ -381,9 +365,6 @@ export function PlanPage(): HTMLElement {
         problemsCount,
         semesterCountInput,
         currentSemesterSelect,
-        testsTrackFirst,
-        testsTrackSecond,
-        testsEmpty,
         rowCourseListTemplate
     );
     void hydratePlan(
@@ -394,9 +375,6 @@ export function PlanPage(): HTMLElement {
         problemsCount,
         semesterCountInput,
         currentSemesterSelect,
-        testsTrackFirst,
-        testsTrackSecond,
-        testsEmpty,
         rowCourseListTemplate
     );
 
@@ -411,9 +389,6 @@ async function hydratePlan(
     problemsCount: HTMLElement,
     semesterCountInput: HTMLInputElement,
     currentSemesterSelect: HTMLSelectElement,
-    testsTrackFirst: HTMLElement,
-    testsTrackSecond: HTMLElement,
-    testsEmpty: HTMLElement,
     rowCourseListTemplate: HTMLTemplateElement
 ): Promise<void> {
     const [meta, courses] = await Promise.all([
@@ -453,9 +428,6 @@ async function hydratePlan(
         problemsCount,
         semesterCountInput,
         currentSemesterSelect,
-        testsTrackFirst,
-        testsTrackSecond,
-        testsEmpty,
         rowCourseListTemplate
     );
 }
@@ -468,9 +440,6 @@ function renderPlan(
     problemsCount: HTMLElement,
     semesterCountInput: HTMLInputElement,
     currentSemesterSelect: HTMLSelectElement,
-    testsTrackFirst: HTMLElement,
-    testsTrackSecond: HTMLElement,
-    testsEmpty: HTMLElement,
     rowCourseListTemplate: HTMLTemplateElement
 ): void {
     state.currentSemester = parseCurrentSemesterIndex(
@@ -499,12 +468,7 @@ function renderPlan(
         rail.append(rowElement);
     }
 
-    renderCurrentSemesterTests(
-        state,
-        testsTrackFirst,
-        testsTrackSecond,
-        testsEmpty
-    );
+    renderCurrentSemesterTests(state, rail);
 
     toggleMoveTargets(rail, state.selected?.rowId);
 }
@@ -544,12 +508,25 @@ function renderCurrentSemesterSelect(
     });
 }
 
-function renderCurrentSemesterTests(
-    state: PlanState,
-    firstTrack: HTMLElement,
-    secondTrack: HTMLElement,
-    empty: HTMLElement
-): void {
+function renderCurrentSemesterTests(state: PlanState, rail: HTMLElement): void {
+    const currentRow = rail.querySelector<HTMLElement>(
+        '[data-plan-row][data-current-semester-row="true"]'
+    );
+    if (currentRow === null) {
+        return;
+    }
+
+    const firstTrack = currentRow.querySelector<HTMLElement>(
+        '[data-tests-track="0"]'
+    );
+    const secondTrack = currentRow.querySelector<HTMLElement>(
+        '[data-tests-track="1"]'
+    );
+    const empty = currentRow.querySelector<HTMLElement>('[data-tests-empty]');
+    if (firstTrack === null || secondTrack === null || empty === null) {
+        return;
+    }
+
     firstTrack.replaceChildren();
     secondTrack.replaceChildren();
 
@@ -612,7 +589,7 @@ function appendTestSquares(track: HTMLElement, entries: TestEntry[]): void {
     entries.forEach((entry, index) => {
         const square = document.createElement('span');
         square.className =
-            'text-accent-contrast inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-none text-xs tabular-nums';
+            'text-accent-contrast inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-none px-0.5 text-xs tabular-nums';
         square.dataset.testCourseCode = entry.courseCode;
         square.style.backgroundColor = getCourseColorByCode(entry.courseCode);
         square.textContent =
@@ -786,7 +763,59 @@ function createPlanRow(
         list.append(createSemesterCourse(state, row, course));
     }
     rowElement.append(header, list);
+
+    if (isCurrentSemesterRow && row.kind === 'semester') {
+        rowElement.append(createCurrentSemesterTestsBlock());
+    }
+
     return rowElement;
+}
+
+function createCurrentSemesterTestsBlock(): HTMLElement {
+    const section = document.createElement('section');
+    section.className =
+        'border-border/50 mt-1 flex flex-col gap-2 border-t pt-2';
+    section.dataset.testsSchedule = 'true';
+
+    const title = document.createElement('h3');
+    title.className = 'text-sm font-medium';
+    title.textContent = 'לוח בחינות לסמסטר הנוכחי';
+
+    const firstRow = document.createElement('div');
+    firstRow.className = 'flex items-center gap-2';
+    firstRow.dataset.testRow = '0';
+
+    const firstLabel = document.createElement('p');
+    firstLabel.className = 'text-text-muted w-14 shrink-0 text-xs';
+    firstLabel.textContent = 'מועד א';
+
+    const firstTrack = document.createElement('div');
+    firstTrack.className = 'flex min-h-7 flex-wrap items-center gap-1';
+    firstTrack.dataset.testsTrack = '0';
+
+    firstRow.append(firstLabel, firstTrack);
+
+    const secondRow = document.createElement('div');
+    secondRow.className = 'flex items-center gap-2';
+    secondRow.dataset.testRow = '1';
+
+    const secondLabel = document.createElement('p');
+    secondLabel.className = 'text-text-muted w-14 shrink-0 text-xs';
+    secondLabel.textContent = 'מועד ב';
+
+    const secondTrack = document.createElement('div');
+    secondTrack.className = 'flex min-h-7 flex-wrap items-center gap-1';
+    secondTrack.dataset.testsTrack = '1';
+
+    secondRow.append(secondLabel, secondTrack);
+
+    const empty = document.createElement('p');
+    empty.className = 'text-text-muted text-xs';
+    empty.dataset.testsEmpty = 'true';
+    empty.textContent = 'אין מועדי בחינות ידועים בסמסטר הנוכחי.';
+
+    section.append(title, firstRow, secondRow, empty);
+    return section;
 }
 
 function cloneRowCourseList(template: HTMLTemplateElement): HTMLElement {
