@@ -536,7 +536,7 @@ function renderCurrentSemesterSelect(
     state.semesters.forEach((semester, index) => {
         const option = document.createElement('option');
         option.value = String(index);
-        option.textContent = `סמסטר ${String(index + 1)} - ${semester.title}`;
+        option.textContent = semester.title;
         if (index === normalizedCurrent) {
             option.selected = true;
         }
