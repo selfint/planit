@@ -776,17 +776,13 @@ function createCurrentSemesterTestsBlock(): HTMLElement {
         'border-border/50 mt-1 flex flex-col gap-2 border-t pt-2';
     section.dataset.testsSchedule = 'true';
 
-    const title = document.createElement('h3');
-    title.className = 'text-sm font-medium';
-    title.textContent = 'לוח בחינות לסמסטר הנוכחי';
-
     const firstRow = document.createElement('div');
     firstRow.className = 'flex items-center gap-1';
     firstRow.dataset.testRow = '0';
 
     const firstLabel = document.createElement('p');
     firstLabel.className = 'text-text-muted shrink-0 text-xs';
-    firstLabel.textContent = 'מועד א';
+    firstLabel.textContent = 'מועדי א';
 
     const firstTrack = document.createElement('div');
     firstTrack.className = 'flex min-h-7 flex-wrap items-center gap-1';
@@ -800,7 +796,7 @@ function createCurrentSemesterTestsBlock(): HTMLElement {
 
     const secondLabel = document.createElement('p');
     secondLabel.className = 'text-text-muted shrink-0 text-xs';
-    secondLabel.textContent = 'מועד ב';
+    secondLabel.textContent = 'מועדי ב';
 
     const secondTrack = document.createElement('div');
     secondTrack.className = 'flex min-h-7 flex-wrap items-center gap-1';
@@ -813,7 +809,7 @@ function createCurrentSemesterTestsBlock(): HTMLElement {
     empty.dataset.testsEmpty = 'true';
     empty.textContent = 'אין מועדי בחינות ידועים בסמסטר הנוכחי.';
 
-    section.append(title, firstRow, secondRow, empty);
+    section.append(firstRow, secondRow, empty);
     return section;
 }
 
