@@ -589,7 +589,7 @@ function appendTestSquares(track: HTMLElement, entries: TestEntry[]): void {
     entries.forEach((entry, index) => {
         const square = document.createElement('span');
         square.className =
-            'text-accent-contrast inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-none text-xs tabular-nums';
+            'text-accent-contrast inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-none px-[1px] text-xs tabular-nums';
         square.dataset.testCourseCode = entry.courseCode;
         square.style.backgroundColor = getCourseColorByCode(entry.courseCode);
         square.textContent =
@@ -781,11 +781,11 @@ function createCurrentSemesterTestsBlock(): HTMLElement {
     title.textContent = 'לוח בחינות לסמסטר הנוכחי';
 
     const firstRow = document.createElement('div');
-    firstRow.className = 'flex items-center gap-2';
+    firstRow.className = 'flex items-center gap-0';
     firstRow.dataset.testRow = '0';
 
     const firstLabel = document.createElement('p');
-    firstLabel.className = 'text-text-muted w-14 shrink-0 text-xs';
+    firstLabel.className = 'text-text-muted shrink-0 text-xs';
     firstLabel.textContent = 'מועד א';
 
     const firstTrack = document.createElement('div');
@@ -795,11 +795,11 @@ function createCurrentSemesterTestsBlock(): HTMLElement {
     firstRow.append(firstLabel, firstTrack);
 
     const secondRow = document.createElement('div');
-    secondRow.className = 'flex items-center gap-2';
+    secondRow.className = 'flex items-center gap-0';
     secondRow.dataset.testRow = '1';
 
     const secondLabel = document.createElement('p');
-    secondLabel.className = 'text-text-muted w-14 shrink-0 text-xs';
+    secondLabel.className = 'text-text-muted shrink-0 text-xs';
     secondLabel.textContent = 'מועד ב';
 
     const secondTrack = document.createElement('div');
