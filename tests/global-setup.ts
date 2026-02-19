@@ -1,4 +1,3 @@
-import type { FullConfig } from '@playwright/test';
 import fs from 'node:fs/promises';
 import path from 'node:path';
 
@@ -17,7 +16,7 @@ type UserDegree = {
     path?: string;
 };
 
-async function globalSetup(config: FullConfig): Promise<void> {
+async function globalSetup(): Promise<void> {
     const [courses, catalogs, requirements, userDegree] = await Promise.all([
         readJsonFile<Record<string, unknown>>('tests/state/courseData.json'),
         readJsonFile<Record<string, unknown>>('tests/state/catalogs.json'),
@@ -25,11 +24,7 @@ async function globalSetup(config: FullConfig): Promise<void> {
         readJsonFile<UserDegree>('tests/state/userDegree.json'),
     ]);
 
-    const configuredBaseURL = config.projects[0]?.use?.baseURL;
-    const baseURL =
-        typeof configuredBaseURL === 'string'
-            ? configuredBaseURL
-            : 'http://localhost:4173/planit/';
+    const baseURL = 'http://localhost:4173/planit/';
     const origin = new URL(baseURL).origin;
 
     const devState = JSON.stringify({
