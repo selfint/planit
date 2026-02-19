@@ -1,10 +1,4 @@
 import {
-    getUser as getFirebaseUser,
-    login as loginToFirebase,
-    logout as logoutFromFirebase,
-} from '$lib/firebase';
-import type { FirebaseUser } from '$lib/firebase';
-import {
     type CourseQueryParams,
     type CourseQueryResult,
     type CourseRecord,
@@ -22,6 +16,12 @@ import {
     queryCourses,
     setMeta,
 } from '$lib/indexeddb';
+import {
+    type FirebaseUser,
+    getUser as getFirebaseUser,
+    login as loginToFirebase,
+    logout as logoutFromFirebase,
+} from '$lib/firebase';
 import {
     type RequirementsSelection,
     type RequirementsSyncResult,

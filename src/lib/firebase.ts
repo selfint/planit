@@ -245,10 +245,10 @@ async function loadFirebaseSdkFromCdn(): Promise<FirebaseSdkModules> {
     );
 
     return {
-        appModule: appModuleUnknown as unknown as FirebaseAppModule,
-        authModule: authModuleUnknown as unknown as FirebaseAuthModule,
+        appModule: appModuleUnknown as FirebaseAppModule,
+        authModule: authModuleUnknown as FirebaseAuthModule,
         firestoreModule:
-            firestoreModuleUnknown as unknown as FirebaseFirestoreModule,
+            firestoreModuleUnknown as FirebaseFirestoreModule,
     };
 }
 

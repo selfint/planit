@@ -1,8 +1,9 @@
 import logoUrl from '$assets/logo.webp?w=256';
+import templateHtml from './ConsoleNav.html?raw';
 import titleUrl from '$assets/Title.svg?url';
+
 import { onUserChange } from '$lib/firebase';
 import { state } from '$lib/stateManagement';
-import templateHtml from './ConsoleNav.html?raw';
 
 type ConsoleLinkKey = 'catalog' | 'plan' | 'search';
 

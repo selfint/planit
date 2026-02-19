@@ -1,13 +1,13 @@
 import './style.css';
 
-import { default as appLoadingScreenHtml } from '$components/AppLoadingScreen.html?raw';
+import { DEV_STATE_STORAGE_KEY, initDevSync } from '$lib/test-utils/devSync';
 import { PwaUpdateToast } from '$components/PwaUpdateToast';
+import { default as appLoadingScreenHtml } from '$components/AppLoadingScreen.html?raw';
 import { initCatalogSync } from '$lib/catalogSync';
 import { initCourseSync } from '$lib/courseSync';
-import { preloadFirebase } from '$lib/firebase';
 import { initPWA } from '$lib/pwa';
 import { initRouter } from '$lib/router';
-import { DEV_STATE_STORAGE_KEY, initDevSync } from '$lib/test-utils/devSync';
+import { preloadFirebase } from '$lib/firebase';
 
 function main(): void {
     initRouter();

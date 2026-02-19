@@ -60,13 +60,16 @@ describe('firebase lib', () => {
         return Promise.resolve({ user });
     });
 
-    function MockGoogleAuthProvider(): void {
+    type MockGoogleAuthProviderType = {
+        new (): unknown;
+        credential(idToken: string): { idToken: string };
+    };
+    const MockGoogleAuthProvider = function MockGoogleAuthProvider(): void {
         return;
-    }
-
-    MockGoogleAuthProvider.credential = (
+    } as unknown as MockGoogleAuthProviderType;
+    MockGoogleAuthProvider.credential = function credential(
         idToken: string
-    ): { idToken: string } => {
+    ): { idToken: string } {
         return { idToken };
     };
 

@@ -362,5 +362,10 @@ function createStateProviderMock(): StateProvider {
                 return Promise.resolve();
             },
         },
+        firebase: {
+            login: vi.fn(),
+            logout: vi.fn(),
+            getUser: vi.fn(() => null),
+        },
     };
 }

@@ -516,6 +516,11 @@ function createStateProviderMock(): StateProvider {
             get: mocks.getMetaMock,
             set: mocks.setMetaMock,
         },
+        firebase: {
+            login: vi.fn(),
+            logout: vi.fn(),
+            getUser: vi.fn(() => null),
+        },
     };
 }
 
