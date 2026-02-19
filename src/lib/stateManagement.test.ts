@@ -16,6 +16,9 @@ const mocks = vi.hoisted(() => ({
     getActiveRequirementsSelectionMock: vi.fn(),
     setActiveRequirementsSelectionMock: vi.fn(),
     syncRequirementsMock: vi.fn(),
+    firebaseLoginMock: vi.fn(),
+    firebaseLogoutMock: vi.fn(),
+    firebaseGetUserMock: vi.fn(),
 }));
 
 vi.mock('$lib/indexeddb', () => ({
@@ -39,6 +42,12 @@ vi.mock('$lib/requirementsSync', () => ({
     syncRequirements: mocks.syncRequirementsMock,
 }));
 
+vi.mock('$lib/firebase', () => ({
+    getUser: mocks.firebaseGetUserMock,
+    login: mocks.firebaseLoginMock,
+    logout: mocks.firebaseLogoutMock,
+}));
+
 import {
     createLocalStateProvider,
     setStateProviderChangeHandler,
@@ -58,6 +67,9 @@ describe('stateManagement', () => {
         await localProvider.requirements.get('0324');
         await localProvider.userDegree.get();
         await localProvider.userPlan.get();
+        localProvider.firebase.getUser();
+        await localProvider.firebase.login();
+        await localProvider.firebase.logout();
 
         expect(mocks.getCourseMock).toHaveBeenCalledWith('236501');
         expect(mocks.queryCoursesMock).toHaveBeenCalledWith({
@@ -71,6 +83,9 @@ describe('stateManagement', () => {
         expect(mocks.getRequirementMock).toHaveBeenCalledWith('0324');
         expect(mocks.getActiveRequirementsSelectionMock).toHaveBeenCalled();
         expect(mocks.getMetaMock).toHaveBeenCalledWith('planPageState');
+        expect(mocks.firebaseGetUserMock).toHaveBeenCalled();
+        expect(mocks.firebaseLoginMock).toHaveBeenCalled();
+        expect(mocks.firebaseLogoutMock).toHaveBeenCalled();
     });
 
     it('swaps provider and notifies rerender handler', () => {
@@ -102,6 +117,11 @@ describe('stateManagement', () => {
             userPlan: {
                 get: vi.fn(),
                 set: vi.fn(),
+            },
+            firebase: {
+                getUser: vi.fn(),
+                login: vi.fn(),
+                logout: vi.fn(),
             },
         };
 

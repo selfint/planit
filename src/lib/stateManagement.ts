@@ -1,4 +1,10 @@
 import {
+    getUser as getFirebaseUser,
+    login as loginToFirebase,
+    logout as logoutFromFirebase,
+} from '$lib/firebase';
+import type { FirebaseUser } from '$lib/firebase';
+import {
     type CourseQueryParams,
     type CourseQueryResult,
     type CourseRecord,
@@ -55,6 +61,11 @@ export type StateProvider = {
     userPlan: {
         get(): Promise<MetaEntry | undefined>;
         set(value: unknown): Promise<void>;
+    };
+    firebase: {
+        login(): Promise<void>;
+        logout(): Promise<void>;
+        getUser(): FirebaseUser | null;
     };
 };
 
@@ -127,6 +138,17 @@ export const state: GlobalState = {
             return provider.userPlan.set(value);
         },
     },
+    firebase: {
+        login(): Promise<void> {
+            return provider.firebase.login();
+        },
+        logout(): Promise<void> {
+            return provider.firebase.logout();
+        },
+        getUser(): FirebaseUser | null {
+            return provider.firebase.getUser();
+        },
+    },
     provider: {
         get(): StateProvider {
             return provider;
@@ -179,6 +201,11 @@ export function createLocalStateProvider(): StateProvider {
                     key: PLAN_META_KEY,
                     value,
                 }),
+        },
+        firebase: {
+            login: loginToFirebase,
+            logout: logoutFromFirebase,
+            getUser: getFirebaseUser,
         },
     };
 }

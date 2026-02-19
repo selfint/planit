@@ -42,10 +42,13 @@ This file should be treated as a context dump for future work on state.
     - `state.requirements.sync(selection, options?)`
     - `state.userDegree.get()`
     - `state.userDegree.set(selection)`
-    - `state.userPlan.get()`
-    - `state.userPlan.set(value)`
-    - `state.provider.get()`
-    - `state.provider.set(nextProvider)`
+- `state.userPlan.get()`
+- `state.userPlan.set(value)`
+- `state.firebase.login()`
+- `state.firebase.logout()`
+- `state.firebase.getUser()`
+- `state.provider.get()`
+- `state.provider.set(nextProvider)`
 - `createLocalStateProvider()`
 - `setStateProviderChangeHandler(handler)`
 - `StateProvider` type
@@ -59,6 +62,7 @@ This file should be treated as a context dump for future work on state.
 - `requirements`: requirement record read/write/sync.
 - `userDegree`: active degree selection persistence.
 - `userPlan`: planner state persistence (`planPageState`).
+- `firebase`: auth-facing helpers for login/logout/current user lookup.
 
 If you add a new slice, update all of these:
 
@@ -88,6 +92,9 @@ Current local provider methods map to existing modules as follows:
 - `userDegree.set` -> `requirementsSync.setActiveRequirementsSelection`
 - `userPlan.get` -> `indexeddb.getMeta('planPageState')`
 - `userPlan.set` -> `indexeddb.setMeta({ key: 'planPageState', ... })`
+- `firebase.login` -> `firebase.login`
+- `firebase.logout` -> `firebase.logout`
+- `firebase.getUser` -> `firebase.getUser`
 
 ## Data Sync Ownership
 

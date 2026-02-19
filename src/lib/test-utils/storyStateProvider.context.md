@@ -17,7 +17,7 @@ methods resolve to `undefined` (or no-op for `set`).
 
 - Initializes a full provider contract with fallback methods.
 - Applies overrides per slice (`courses`, `catalogs`, `requirements`,
-  `userDegree`, `userPlan`).
+  `userDegree`, `userPlan`, `firebase`).
 - Returns a provider that can be passed to `state.provider.set(...)`.
 
 ## Dependencies
@@ -29,6 +29,8 @@ methods resolve to `undefined` (or no-op for `set`).
 - Default `set` methods are no-op and resolve immediately.
 - Default getter/query methods resolve to `undefined` so stories/tests can opt in
   only to behavior under test.
+- Default firebase behavior is signed-out (`getUser(): null`) with no-op
+  `login/logout` promises.
 - This utility is currently adopted in multiple stories, including Plan,
   Semester, Search, DegreePicker, and Catalog page stories.
 

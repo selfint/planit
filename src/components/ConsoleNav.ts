@@ -1,6 +1,8 @@
 import logoUrl from '$assets/logo.webp?w=256';
-import templateHtml from './ConsoleNav.html?raw';
 import titleUrl from '$assets/Title.svg?url';
+import { onUserChange } from '$lib/firebase';
+import { state } from '$lib/stateManagement';
+import templateHtml from './ConsoleNav.html?raw';
 
 type ConsoleLinkKey = 'catalog' | 'plan' | 'search';
 
@@ -38,6 +40,7 @@ export function ConsoleNav(options: ConsoleNavOptions = {}): HTMLElement {
     }
 
     applyActiveState(root, options.activePath);
+    bindAuthControls(root);
 
     return root;
 }
@@ -80,4 +83,56 @@ function normalizePath(path: string | undefined): string {
         return '/';
     }
     return path.replace(/\/+$/, '');
+}
+
+function bindAuthControls(root: HTMLElement): void {
+    const loginButton = root.querySelector<HTMLButtonElement>('[data-login]');
+    if (loginButton === null) {
+        throw new Error('ConsoleNav login button not found');
+    }
+    const resolvedLoginButton = loginButton;
+
+    const logoutButton = root.querySelector<HTMLButtonElement>('[data-logout]');
+    if (logoutButton === null) {
+        throw new Error('ConsoleNav logout button not found');
+    }
+    const resolvedLogoutButton = logoutButton;
+
+    function render(): void {
+        const user = state.firebase.getUser();
+        const loggedIn = user !== null;
+
+        resolvedLoginButton.classList.toggle('hidden', loggedIn);
+        resolvedLoginButton.classList.toggle('inline-flex', !loggedIn);
+        resolvedLoginButton.setAttribute('aria-hidden', String(loggedIn));
+
+        resolvedLogoutButton.classList.toggle('hidden', !loggedIn);
+        resolvedLogoutButton.classList.toggle('inline-flex', loggedIn);
+        resolvedLogoutButton.setAttribute('aria-hidden', String(!loggedIn));
+    }
+
+    resolvedLoginButton.addEventListener('click', () => {
+        void state.firebase.login().catch((error: unknown) => {
+            console.error('Firebase login failed', error);
+        });
+    });
+
+    resolvedLogoutButton.addEventListener('click', () => {
+        void state.firebase.logout().catch((error: unknown) => {
+            console.error('Firebase logout failed', error);
+        });
+    });
+
+    const unsubscribe = onUserChange(() => {
+        render();
+    });
+    root.addEventListener(
+        'DOMNodeRemoved',
+        () => {
+            unsubscribe();
+        },
+        { once: true }
+    );
+
+    render();
 }
