@@ -9,7 +9,7 @@ import templateHtml from './course_page.html?raw';
 const EMPTY_VALUE = '—';
 const UNKNOWN_COURSE_LABEL = 'קורס לא זמין במאגר';
 const COURSES_BATCH_SIZE = 300;
-const PLAN_META_VERSION = 2;
+const PLAN_META_VERSION = 3;
 const DEFAULT_SEMESTER_COUNT = 6;
 
 const COUNT_SKELETON_CLASS = [
@@ -57,6 +57,7 @@ type RelatedCourseGroups = CourseRecord[][];
 type PersistedPlan = {
     version: number;
     semesterCount?: number;
+    currentSemester?: number;
     semesters: { id?: string; courseCodes?: string[] }[];
     wishlistCourseCodes?: string[];
     exemptionsCourseCodes?: string[];
@@ -381,9 +382,14 @@ async function addCourseToWishlist(courseCode: string): Promise<boolean> {
     }
 
     const wishlistWithCode = [...wishlist, code];
+    const semesterCount = normalizeSemesterCount(plan?.semesterCount);
     const payload: PersistedPlan = {
         version: PLAN_META_VERSION,
-        semesterCount: normalizeSemesterCount(plan?.semesterCount),
+        semesterCount,
+        currentSemester: normalizeCurrentSemester(
+            plan?.currentSemester,
+            semesterCount
+        ),
         semesters: normalizeSemesters(plan?.semesters),
         wishlistCourseCodes: wishlistWithCode,
         exemptionsCourseCodes: normalizeCourseCodes(
@@ -447,6 +453,16 @@ function normalizeSemesterCount(value: unknown): number {
         return Math.max(3, Math.floor(value));
     }
     return DEFAULT_SEMESTER_COUNT;
+}
+
+function normalizeCurrentSemester(
+    value: unknown,
+    semesterCount: number
+): number {
+    if (typeof value === 'number' && Number.isFinite(value)) {
+        return Math.max(0, Math.min(semesterCount - 1, Math.floor(value)));
+    }
+    return 0;
 }
 
 function showNotFound(elements: CoursePageElements, message: string): void {

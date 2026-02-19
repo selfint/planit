@@ -81,6 +81,21 @@ function createStoryCourses(total: number): CourseRecord[] {
             points: 2 + (index % 4),
             median: 70 + (index % 25),
             seasons: ['אביב', 'קיץ', 'חורף'],
+            tests:
+                index % 6 === 0
+                    ? [null, null]
+                    : [
+                          {
+                              year: 2026 + Math.floor(index / 16),
+                              monthIndex: (index * 2) % 12,
+                              day: 3 + (index % 24),
+                          },
+                          {
+                              year: 2026 + Math.floor(index / 16),
+                              monthIndex: (((index * 2) % 12) + 1) % 12,
+                              day: 8 + (index % 20),
+                          },
+                      ],
         });
     }
     return courses;
@@ -89,6 +104,7 @@ function createStoryCourses(total: number): CourseRecord[] {
 function createStoryPlanState(courses: CourseRecord[]): {
     version: number;
     semesterCount: number;
+    currentSemester: number;
     semesters: { id: string; courseCodes: string[] }[];
     wishlistCourseCodes: string[];
     exemptionsCourseCodes: string[];
@@ -123,8 +139,9 @@ function createStoryPlanState(courses: CourseRecord[]): {
         .map((course) => course.code);
 
     return {
-        version: 2,
+        version: 3,
         semesterCount: semesterIds.length,
+        currentSemester: 2,
         semesters,
         wishlistCourseCodes,
         exemptionsCourseCodes,

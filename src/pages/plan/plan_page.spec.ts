@@ -22,6 +22,18 @@ async function getVisibleMoveTargetCount(
     });
 }
 
+async function clickPlanRow(
+    page: import('@playwright/test').Page,
+    rowId: string
+): Promise<void> {
+    await page.evaluate((targetRowId) => {
+        const row = document.querySelector<HTMLElement>(
+            `[data-plan-row][data-row-id="${CSS.escape(targetRowId)}"]`
+        );
+        row?.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+    }, rowId);
+}
+
 test.describe('/plan page route', () => {
     test('renders vertical rows with wishlist and exemptions', async ({
         page,
@@ -67,6 +79,17 @@ test.describe('/plan page route', () => {
 
         await expect(page).toHaveURL(/\/semester\?number=3$/);
         await expect(page.locator('[data-page="semester"]')).toBeVisible();
+    });
+
+    test('does not navigate when clicking semester row background', async ({
+        page,
+    }) => {
+        await page.goto('plan');
+
+        await page.click('[data-plan-row][data-row-id="אביב-2026-0"]');
+
+        await expect(page).toHaveURL(/\/plan$/);
+        await expect(page.locator('[data-page="plan"]')).toBeVisible();
     });
 
     test('uses course-page-like grid width management for plan cards', async ({
@@ -215,6 +238,183 @@ test.describe('/plan page route', () => {
         ).toHaveCount(0);
     });
 
+    test('updates current-semester tests when moving a tested course into current semester', async ({
+        page,
+    }) => {
+        await page.goto('plan');
+        await page.waitForFunction(() => {
+            return (
+                document.querySelector(
+                    '[data-plan-row][data-current-semester-row="true"] [data-row-metrics]'
+                ) !== null
+            );
+        });
+
+        const fixture = await page.evaluate(() => {
+            const currentRow = document.querySelector<HTMLElement>(
+                '[data-plan-row][data-current-semester-row="true"]'
+            );
+            if (currentRow?.dataset.rowId === undefined) {
+                return null;
+            }
+
+            const currentRowId = currentRow.dataset.rowId;
+            const currentMetricsText =
+                currentRow.querySelector<HTMLElement>('[data-row-metrics]')
+                    ?.textContent ?? '';
+            const currentTestsMatch = /מבחנים:\s*(\d+)/.exec(
+                currentMetricsText
+            );
+            const currentTestsBefore = Number.parseInt(
+                currentTestsMatch?.[1] ?? '0',
+                10
+            );
+
+            const sourceRow = Array.from(
+                document.querySelectorAll<HTMLElement>('[data-plan-row]')
+            ).find((row) => {
+                const rowId = row.dataset.rowId;
+                if (
+                    rowId === undefined ||
+                    rowId === currentRowId ||
+                    rowId === 'wishlist' ||
+                    rowId === 'exemptions' ||
+                    row.querySelectorAll('[data-course-action]').length !== 1
+                ) {
+                    return false;
+                }
+
+                const sourceMetricsText =
+                    row.querySelector<HTMLElement>('[data-row-metrics]')
+                        ?.textContent ?? '';
+                const sourceTestsMatch = /מבחנים:\s*(\d+)/.exec(
+                    sourceMetricsText
+                );
+                const sourceTestsCount = Number.parseInt(
+                    sourceTestsMatch?.[1] ?? '0',
+                    10
+                );
+                return (
+                    Number.isFinite(sourceTestsCount) && sourceTestsCount > 0
+                );
+            });
+
+            if (sourceRow?.dataset.rowId === undefined) {
+                return null;
+            }
+
+            const courseCode = sourceRow.querySelector<HTMLElement>(
+                '[data-course-action]'
+            )?.dataset.courseCode;
+            if (courseCode === undefined) {
+                return null;
+            }
+
+            return {
+                sourceRowId: sourceRow.dataset.rowId,
+                currentRowId,
+                courseCode,
+                currentTestsBefore,
+            };
+        });
+
+        expect(fixture).not.toBeNull();
+
+        const sourceRowId = fixture?.sourceRowId ?? '';
+        const currentRowId = fixture?.currentRowId ?? '';
+        const courseCode = fixture?.courseCode ?? '';
+        const currentTestsBefore = fixture?.currentTestsBefore ?? 0;
+
+        await page.click(
+            `[data-course-action][data-row-id="${sourceRowId}"][data-course-code="${courseCode}"]`
+        );
+        await clickPlanRow(page, currentRowId);
+
+        await expect
+            .poll(async () => {
+                const text = await page
+                    .locator(
+                        `[data-plan-row][data-row-id="${currentRowId}"] [data-row-metrics]`
+                    )
+                    .innerText();
+                const match = /מבחנים:\s*(\d+)/.exec(text);
+                return Number.parseInt(match?.[1] ?? '0', 10);
+            })
+            .toBeGreaterThan(currentTestsBefore);
+    });
+
+    test('removes current-semester test label when moving tested course out of current semester', async ({
+        page,
+    }) => {
+        await page.goto('plan');
+        await page.waitForFunction(() => {
+            return (
+                document.querySelector(
+                    '[data-plan-row][data-current-semester-row="true"] [data-test-course-code]'
+                ) !== null
+            );
+        });
+
+        const fixture = await page.evaluate(() => {
+            const currentRow = document.querySelector<HTMLElement>(
+                '[data-plan-row][data-current-semester-row="true"]'
+            );
+            if (currentRow?.dataset.rowId === undefined) {
+                return null;
+            }
+
+            const currentRowId = currentRow.dataset.rowId;
+            const testedCourseCode = currentRow.querySelector<HTMLElement>(
+                '[data-test-course-code]'
+            )?.dataset.testCourseCode;
+            if (testedCourseCode === undefined) {
+                return null;
+            }
+
+            const targetRow = Array.from(
+                document.querySelectorAll<HTMLElement>('[data-plan-row]')
+            ).find((row) => {
+                const rowId = row.dataset.rowId;
+                return (
+                    rowId !== undefined &&
+                    rowId !== currentRowId &&
+                    rowId !== 'wishlist' &&
+                    rowId !== 'exemptions'
+                );
+            });
+            if (targetRow?.dataset.rowId === undefined) {
+                return null;
+            }
+
+            return {
+                sourceRowId: currentRowId,
+                targetRowId: targetRow.dataset.rowId,
+                courseCode: testedCourseCode,
+            };
+        });
+
+        expect(fixture).not.toBeNull();
+
+        const sourceRowId = fixture?.sourceRowId ?? '';
+        const targetRowId = fixture?.targetRowId ?? '';
+        const courseCode = fixture?.courseCode ?? '';
+
+        await page.click(
+            `[data-course-action][data-row-id="${sourceRowId}"][data-course-code="${courseCode}"]`
+        );
+        await clickPlanRow(page, targetRowId);
+
+        await expect
+            .poll(async () => {
+                return page
+                    .locator(
+                        `[data-plan-row][data-row-id="${sourceRowId}"] [data-test-course-code="${courseCode}"]`
+                    )
+                    .count();
+            })
+            .toBe(0);
+    });
+
     test('keeps semester count minimum at last populated semester', async ({
         page,
     }) => {
@@ -248,5 +448,146 @@ test.describe('/plan page route', () => {
         });
 
         expect(isProblemsSectionAfterRail).toBe(true);
+    });
+
+    test('shows current-semester test schedule and switches with selector', async ({
+        page,
+    }) => {
+        await page.goto('plan');
+        await page.waitForFunction(() => {
+            return (
+                document.querySelector('[data-current-semester-select]') !==
+                    null &&
+                document.querySelector('[data-tests-track="0"]') !== null
+            );
+        });
+
+        const select = page.locator('[data-current-semester-select]');
+        await expect(select).toBeVisible();
+        await expect(
+            page.locator('[data-plan-row][data-current-semester-row="true"]')
+        ).toHaveCount(1);
+
+        await select.selectOption('1');
+
+        await expect(
+            page.locator(
+                '[data-plan-row][data-current-semester-row="true"] [data-semester-link][data-semester-number="2"]'
+            )
+        ).toHaveCount(1);
+        const firstTrackCount = await page
+            .locator('[data-tests-track="0"] [data-test-course-code]')
+            .count();
+        expect(firstTrackCount).toBeGreaterThan(0);
+    });
+
+    test('keeps current-semester test rows visible after moving a course into current semester', async ({
+        page,
+    }) => {
+        await page.goto('plan');
+
+        await page.waitForFunction(() => {
+            const currentRow = document.querySelector<HTMLElement>(
+                '[data-plan-row][data-current-semester-row="true"]'
+            );
+            if (currentRow === null) {
+                return false;
+            }
+
+            const currentRowId = currentRow.dataset.rowId;
+            if (currentRowId === undefined) {
+                return false;
+            }
+
+            const sourceRow = Array.from(
+                document.querySelectorAll<HTMLElement>('[data-plan-row]')
+            ).find((row) => {
+                const rowId = row.dataset.rowId;
+                return (
+                    rowId !== undefined &&
+                    rowId !== currentRowId &&
+                    rowId !== 'wishlist' &&
+                    rowId !== 'exemptions' &&
+                    row.querySelector('[data-course-action]') !== null
+                );
+            });
+
+            return sourceRow !== undefined;
+        });
+
+        const moveFixture = await page.evaluate(() => {
+            const currentRow = document.querySelector<HTMLElement>(
+                '[data-plan-row][data-current-semester-row="true"]'
+            );
+            const targetRowId = currentRow?.dataset.rowId;
+            if (targetRowId === undefined) {
+                return null;
+            }
+
+            const sourceRow = Array.from(
+                document.querySelectorAll<HTMLElement>('[data-plan-row]')
+            ).find((row) => {
+                const rowId = row.dataset.rowId;
+                return (
+                    rowId !== undefined &&
+                    rowId !== targetRowId &&
+                    rowId !== 'wishlist' &&
+                    rowId !== 'exemptions' &&
+                    row.querySelector<HTMLElement>('[data-course-action]') !==
+                        null
+                );
+            });
+
+            if (sourceRow?.dataset.rowId === undefined) {
+                return null;
+            }
+
+            const sourceButton = sourceRow.querySelector<HTMLElement>(
+                '[data-course-action]'
+            );
+            const courseCode = sourceButton?.dataset.courseCode;
+            if (courseCode === undefined) {
+                return null;
+            }
+
+            return {
+                sourceRowId: sourceRow.dataset.rowId,
+                targetRowId,
+                courseCode,
+            };
+        });
+
+        expect(moveFixture).not.toBeNull();
+
+        const sourceRowId = moveFixture?.sourceRowId ?? '';
+        const targetRowId = moveFixture?.targetRowId ?? '';
+        const courseCode = moveFixture?.courseCode ?? '';
+
+        await expect(
+            page.locator(
+                '[data-plan-row][data-current-semester-row="true"] [data-tests-track="0"]'
+            )
+        ).toHaveCount(1);
+        await expect(
+            page.locator(
+                '[data-plan-row][data-current-semester-row="true"] [data-tests-track="1"]'
+            )
+        ).toHaveCount(1);
+
+        await page.click(
+            `[data-course-action][data-row-id="${sourceRowId}"][data-course-code="${courseCode}"]`
+        );
+        await page.click(`[data-plan-row][data-row-id="${targetRowId}"]`);
+
+        await expect(
+            page.locator(
+                '[data-plan-row][data-current-semester-row="true"] [data-tests-track="0"]'
+            )
+        ).toHaveCount(1);
+        await expect(
+            page.locator(
+                '[data-plan-row][data-current-semester-row="true"] [data-tests-track="1"]'
+            )
+        ).toHaveCount(1);
     });
 });

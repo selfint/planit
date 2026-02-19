@@ -39,6 +39,8 @@ navigation and is rendered by the client-side router.
     shimmer placeholders via `data-loading="true"` on each stat tile.
 11. After data resolves, grids are replaced with real cards and empty labels are
     shown only for empty result sets.
+11. Wishlist writes keep planner metadata intact in `planPageState`, including
+    `semesterCount`, `semesters`, and `currentSemester`.
 
 ## Storybook
 
