@@ -1,6 +1,6 @@
 /* @vitest-environment jsdom */
 import { type StateProvider, state as appState } from '$lib/stateManagement';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('$components/CourseCard', () => ({
     CourseCard: (course?: { code?: string; name?: string }): HTMLElement => {
@@ -44,6 +44,11 @@ const getActiveRequirementsSelectionMock = vi.fn();
 import { CatalogPage } from './catalog_page';
 
 describe('CatalogPage', () => {
+    afterEach(async () => {
+        await new Promise((resolve) => window.setTimeout(resolve, 80));
+        await Promise.resolve();
+    });
+
     it('renders waiting state when no active selection exists', async () => {
         setViewportWidth(620);
         getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
@@ -384,6 +389,11 @@ function createStateProviderMock(): StateProvider {
         userPlan: {
             get: vi.fn(),
             set: vi.fn(),
+        },
+        firebase: {
+            login: vi.fn(),
+            logout: vi.fn(),
+            getUser: vi.fn(() => null),
         },
     };
 }

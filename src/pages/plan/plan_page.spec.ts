@@ -249,6 +249,44 @@ test.describe('/plan page route', () => {
                 ) !== null
             );
         });
+        await page.waitForFunction(() => {
+            const currentRow = document.querySelector<HTMLElement>(
+                '[data-plan-row][data-current-semester-row="true"]'
+            );
+            const currentRowId = currentRow?.dataset.rowId;
+            if (currentRowId === undefined) {
+                return false;
+            }
+
+            return Array.from(
+                document.querySelectorAll<HTMLElement>('[data-plan-row]')
+            ).some((row) => {
+                const rowId = row.dataset.rowId;
+                if (
+                    rowId === undefined ||
+                    rowId === currentRowId ||
+                    rowId === 'wishlist' ||
+                    rowId === 'exemptions' ||
+                    row.querySelector('[data-course-action]') === null
+                ) {
+                    return false;
+                }
+
+                const sourceMetricsText =
+                    row.querySelector<HTMLElement>('[data-row-metrics]')
+                        ?.textContent ?? '';
+                const sourceTestsMatch = /מבחנים:\s*(\d+)/.exec(
+                    sourceMetricsText
+                );
+                const sourceTestsCount = Number.parseInt(
+                    sourceTestsMatch?.[1] ?? '0',
+                    10
+                );
+                return (
+                    Number.isFinite(sourceTestsCount) && sourceTestsCount > 0
+                );
+            });
+        });
 
         const fixture = await page.evaluate(() => {
             const currentRow = document.querySelector<HTMLElement>(
@@ -279,7 +317,7 @@ test.describe('/plan page route', () => {
                     rowId === currentRowId ||
                     rowId === 'wishlist' ||
                     rowId === 'exemptions' ||
-                    row.querySelectorAll('[data-course-action]').length !== 1
+                    row.querySelector('[data-course-action]') === null
                 ) {
                     return false;
                 }
@@ -433,6 +471,13 @@ test.describe('/plan page route', () => {
         page,
     }) => {
         await page.goto('plan');
+        await page.waitForFunction(() => {
+            return (
+                document.querySelector('[data-app-loading-screen]') === null &&
+                document.querySelector('[data-semester-rail]') !== null &&
+                document.querySelector('[data-schedule-problems]') !== null
+            );
+        });
 
         const isProblemsSectionAfterRail = await page.evaluate(() => {
             const rail = document.querySelector('[data-semester-rail]');

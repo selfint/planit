@@ -38,6 +38,12 @@ export function createStoryStateProvider(
             set: () => Promise.resolve(),
             ...overrides.userPlan,
         },
+        firebase: {
+            getUser: () => null,
+            login: () => Promise.resolve(),
+            logout: () => Promise.resolve(),
+            ...overrides.firebase,
+        },
     };
 }
 

@@ -118,6 +118,36 @@ export default defineConfig(
     },
 
     {
+        files: ['src/**/*.{ts,js}'],
+        ignores: [
+            'src/**/*.test.ts',
+            'src/**/*.spec.ts',
+            'src/**/*.stories.ts',
+        ],
+        rules: {
+            'no-restricted-imports': [
+                'error',
+                {
+                    paths: [
+                        {
+                            name: 'firebase',
+                            message:
+                                'Use Firebase CDN imports in runtime code; npm firebase is allowed only in *.test.ts, *.spec.ts, and *.stories.ts files.',
+                        },
+                    ],
+                    patterns: [
+                        {
+                            group: ['firebase/*'],
+                            message:
+                                'Use Firebase CDN imports in runtime code; npm firebase is allowed only in *.test.ts, *.spec.ts, and *.stories.ts files.',
+                        },
+                    ],
+                },
+            ],
+        },
+    },
+
+    {
         files: ['**/*.md'],
         plugins: { markdown },
         language: 'markdown/gfm',

@@ -2,6 +2,9 @@ name: CI
 
 on:
   push:
+  pull_request:
+    branches:
+      - main
 
 jobs:
   build_and_lint:
@@ -88,7 +91,7 @@ jobs:
         run: pnpm exec playwright install --with-deps
 
       - name: Run integration tests (${{ matrix.profile }})
-        run: pnpm exec playwright test --project="${{ matrix.profile }}"
+        run: PW_PROFILE="${{ matrix.profile }}" pnpm integtest:profile
 
       - name: Upload Playwright artifacts on failure
         if: failure()
@@ -98,57 +101,3 @@ jobs:
           path: |
             test-results
             playwright-report
-
-  lighthouse_ci:
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        route:
-          - id: home
-            url: http://localhost:4173/planit/
-          - id: plan
-            url: http://localhost:4173/planit/plan
-          - id: catalog
-            url: http://localhost:4173/planit/catalog
-          - id: course
-            url: http://localhost:4173/planit/course?code=00140003
-          - id: search
-            url: http://localhost:4173/planit/search
-          - id: semester
-            url: http://localhost:4173/planit/semester?number=1
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v6
-
-      - name: Install pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: Install Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Build
-        run: pnpm build
-
-      - name: Install Playwright Chromium
-        run: pnpm exec playwright install --with-deps chromium
-
-      - name: Lighthouse CI (report-only, ${{ matrix.route.id }})
-        run: pnpm lhci:ci -- --url="${{ matrix.route.url }}"
-
-      - name: Upload Lighthouse reports
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: lighthouse-reports-${{ matrix.route.id }}
-          path: .lighthouseci
-          if-no-files-found: ignore
-          include-hidden-files: true
