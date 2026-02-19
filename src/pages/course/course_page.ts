@@ -9,7 +9,6 @@ import templateHtml from './course_page.html?raw';
 const EMPTY_VALUE = '—';
 const UNKNOWN_COURSE_LABEL = 'קורס לא זמין במאגר';
 const COURSES_BATCH_SIZE = 300;
-const PLAN_META_KEY = 'planPageState';
 const PLAN_META_VERSION = 3;
 const DEFAULT_SEMESTER_COUNT = 6;
 
