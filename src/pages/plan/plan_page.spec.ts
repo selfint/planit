@@ -81,6 +81,17 @@ test.describe('/plan page route', () => {
         await expect(page.locator('[data-page="semester"]')).toBeVisible();
     });
 
+    test('does not navigate when clicking semester row background', async ({
+        page,
+    }) => {
+        await page.goto('plan');
+
+        await page.click('[data-plan-row][data-row-id="אביב-2026-0"]');
+
+        await expect(page).toHaveURL(/\/plan$/);
+        await expect(page.locator('[data-page="plan"]')).toBeVisible();
+    });
+
     test('uses course-page-like grid width management for plan cards', async ({
         page,
     }) => {

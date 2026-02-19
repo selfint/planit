@@ -1293,26 +1293,12 @@ function getRowById(state: PlanState, rowId: string): PlanRow | undefined {
     return getPlanRows(state).find((row) => row.id === rowId);
 }
 
-function navigateToSemesterPage(semesterNumber: number): void {
-    const url = new URL('/semester', window.location.origin);
-    url.searchParams.set('number', String(semesterNumber));
-    window.history.pushState(null, '', url);
-    window.dispatchEvent(new PopStateEvent('popstate'));
-}
-
 async function handleRowClick(
     state: PlanState,
     targetRowId: string,
     rail: HTMLElement
 ): Promise<void> {
     if (state.selected === undefined) {
-        const targetRow = getRowById(state, targetRowId);
-        if (
-            targetRow?.kind === 'semester' &&
-            targetRow.semesterNumber !== undefined
-        ) {
-            navigateToSemesterPage(targetRow.semesterNumber);
-        }
         return;
     }
 
