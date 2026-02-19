@@ -18,7 +18,7 @@ export type Story = StoryObj;
 
 export const Default: Story = {
     render: () => {
-        void state.provider.set(storyProvider);
+        state.provider.set(storyProvider);
         return CatalogPage();
     },
     globals: {
@@ -28,7 +28,7 @@ export const Default: Story = {
 
 export const Dark: Story = {
     render: () => {
-        void state.provider.set(storyProvider);
+        state.provider.set(storyProvider);
         return CatalogPage();
     },
     globals: {

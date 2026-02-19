@@ -73,7 +73,7 @@ describe('stateManagement', () => {
         expect(mocks.getMetaMock).toHaveBeenCalledWith('planPageState');
     });
 
-    it('swaps provider and notifies rerender handler', async () => {
+    it('swaps provider and notifies rerender handler', () => {
         const rerenderHandler = vi.fn();
         setStateProviderChangeHandler(rerenderHandler);
 
@@ -105,11 +105,11 @@ describe('stateManagement', () => {
             },
         };
 
-        await state.provider.set(customProvider);
+        state.provider.set(customProvider);
         expect(state.provider.get()).toBe(customProvider);
         expect(rerenderHandler).toHaveBeenCalledTimes(1);
 
         setStateProviderChangeHandler(undefined);
-        await state.provider.set(createLocalStateProvider());
+        state.provider.set(createLocalStateProvider());
     });
 });

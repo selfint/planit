@@ -32,7 +32,7 @@ type Story = StoryObj<SemesterPageStoryArgs>;
 
 export const Default: Story = {
     render: (args) => {
-        void state.provider.set(storyProvider);
+        state.provider.set(storyProvider);
         window.history.replaceState(null, '', buildSemesterUrl(args.number));
         return SemesterPage();
     },
@@ -43,7 +43,7 @@ export const Default: Story = {
 
 export const Dark: Story = {
     render: (args) => {
-        void state.provider.set(storyProvider);
+        state.provider.set(storyProvider);
         window.history.replaceState(null, '', buildSemesterUrl(args.number));
         return SemesterPage();
     },

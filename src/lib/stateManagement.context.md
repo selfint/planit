@@ -21,8 +21,9 @@ This file should be treated as a context dump for future work on state.
 - Runtime pages use global `state`; constructor DI was intentionally removed.
 - Provider change notifications are internal only (`setStateProviderChangeHandler`).
 - There is no public `onchange` event API yet.
-- `set(...)` methods are allowed to be async and should be treated as
-  write-through operations for persistent slices.
+- Slice `set(...)` methods may be async and should be treated as write-through
+  operations for persistent slices.
+- `state.provider.set(...)` is synchronous and swaps provider immediately.
 - Router wires provider changes to rerender (`src/lib/router.ts`).
 
 ## Exports
@@ -476,7 +477,7 @@ Unused today:
 ## Testing Guidance
 
 - Unit tests can swap provider per test:
-    - `await state.provider.set(mockProvider)`
+    - `state.provider.set(mockProvider)`
 - Router tests should verify rerender on provider swap.
 - Provider mapping tests belong in `src/lib/stateManagement.test.ts`.
 

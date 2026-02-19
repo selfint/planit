@@ -15,7 +15,7 @@ vi.mock('$lib/catalogSync', () => ({
 import { DegreePicker } from './DegreePicker';
 
 describe('DegreePicker', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
         getCatalogsMock.mockReset();
         getRequirementMock.mockReset();
         getActiveRequirementsSelectionMock.mockReset();
@@ -36,7 +36,7 @@ describe('DegreePicker', () => {
         getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
         syncRequirementsMock.mockResolvedValue({ status: 'updated' });
         setActiveRequirementsSelectionMock.mockResolvedValue(undefined);
-        await state.provider.set(createStateProviderMock());
+        state.provider.set(createStateProviderMock());
     });
 
     it('does not persist active selection while path is required but not selected', async () => {

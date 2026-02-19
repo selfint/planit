@@ -23,9 +23,16 @@ if (chromePath === null) {
 }
 
 const lhciCommand = process.argv[2] ?? 'collect';
+const additionalArgs = process.argv.slice(3);
 const result = spawnSync(
     'pnpm',
-    ['exec', 'lhci', lhciCommand, '--config=.lighthouserc.json'],
+    [
+        'exec',
+        'lhci',
+        lhciCommand,
+        '--config=.lighthouserc.json',
+        ...additionalArgs,
+    ],
     {
         stdio: 'inherit',
         env: {

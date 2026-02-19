@@ -40,7 +40,7 @@ vi.mock('$components/ConsoleNav', () => ({
 import { SearchPage } from './search_page';
 
 describe('SearchPage', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
         queryCoursesMock.mockReset();
         getMetaMock.mockReset();
         getCourseFacultiesMock.mockReset();
@@ -54,7 +54,7 @@ describe('SearchPage', () => {
         getMetaMock.mockResolvedValue(undefined);
 
         window.history.replaceState(null, '', '/search');
-        await state.provider.set(createStateProviderMock());
+        state.provider.set(createStateProviderMock());
     });
 
     afterEach(() => {

@@ -33,7 +33,7 @@ vi.mock('$components/ConsoleNav', () => ({
 import { SemesterPage } from './semester_page';
 
 describe('SemesterPage', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
         mocks.getMetaMock.mockReset();
         mocks.setMetaMock.mockReset();
         mocks.queryCoursesMock.mockReset();
@@ -46,7 +46,7 @@ describe('SemesterPage', () => {
         mocks.getCourseFacultiesMock.mockResolvedValue([]);
         mocks.setMetaMock.mockResolvedValue(undefined);
         window.history.replaceState(null, '', '/semester');
-        await state.provider.set(createStateProviderMock());
+        state.provider.set(createStateProviderMock());
     });
 
     it('uses query param number and shows semester metadata in sticky title', async () => {

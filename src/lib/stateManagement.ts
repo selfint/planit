@@ -61,7 +61,7 @@ export type StateProvider = {
 type GlobalState = StateProvider & {
     provider: {
         get(): StateProvider;
-        set(nextProvider: StateProvider): Promise<void>;
+        set(nextProvider: StateProvider): void;
     };
 };
 
@@ -131,10 +131,9 @@ export const state: GlobalState = {
         get(): StateProvider {
             return provider;
         },
-        set(nextProvider: StateProvider): Promise<void> {
+        set(nextProvider: StateProvider): void {
             provider = nextProvider;
             providerChangeHandler?.();
-            return Promise.resolve();
         },
     },
 };

@@ -266,3 +266,7 @@ Do not:
 ## TypeScript conventions
 
 - Prefer function declarations (`function foo() {}`) over const arrow assignments (`const foo = () => {}`) when possible.
+
+## Never use defensive programming
+
+Code MUST crash on unexpected state with a descriptive error message. Do not use silent failures with fallbacks.

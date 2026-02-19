@@ -126,7 +126,7 @@ describe('router lib', () => {
         expect(window.location.search).toBe('?number=3');
     });
 
-    it('rerenders current route after provider swap', async () => {
+    it('rerenders current route after provider swap', () => {
         document.body.innerHTML = '<div id="app"></div>';
         window.history.replaceState(null, '', '/plan');
 
@@ -135,7 +135,7 @@ describe('router lib', () => {
         const app = document.querySelector('#app');
         const firstPage = app?.firstElementChild;
 
-        await state.provider.set(createLocalStateProvider());
+        state.provider.set(createLocalStateProvider());
 
         const secondPage = app?.firstElementChild;
         expect(firstPage).toBeTruthy();
