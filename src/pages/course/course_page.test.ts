@@ -198,6 +198,70 @@ describe('course page', () => {
         expect(adjacentCards).toHaveLength(1);
         expect(exclusiveCards).toHaveLength(1);
     });
+
+    it('shows remove action when course is already in wishlist', async () => {
+        window.history.replaceState(null, '', '/course?code=CS101');
+        mocks.coursesGetMock.mockResolvedValue({
+            code: 'CS101',
+            name: 'Intro to CS',
+        });
+        mocks.userPlanGetMock.mockResolvedValue({
+            value: {
+                version: 3,
+                semesterCount: 6,
+                currentSemester: 0,
+                semesters: [],
+                wishlistCourseCodes: ['CS101'],
+                exemptionsCourseCodes: [],
+            },
+        });
+
+        const page = CoursePage();
+        await flushPromises();
+
+        const removeButton = page.querySelector<HTMLButtonElement>(
+            "[data-role='placement-remove']"
+        );
+        const wishlistAdd = page.querySelector<HTMLButtonElement>(
+            "[data-role='wishlist-add']"
+        );
+
+        expect(removeButton?.classList.contains('hidden')).toBe(false);
+        expect(removeButton?.textContent).toContain('מרשימת המשאלות');
+        expect(wishlistAdd?.classList.contains('hidden')).toBe(true);
+    });
+
+    it('adds course to current semester from primary action', async () => {
+        window.history.replaceState(null, '', '/course?code=CS101');
+        mocks.coursesGetMock.mockResolvedValue({
+            code: 'CS101',
+            name: 'Intro to CS',
+        });
+        mocks.userPlanGetMock.mockResolvedValue({
+            value: {
+                version: 3,
+                semesterCount: 6,
+                currentSemester: 1,
+                semesters: [{ id: 'semester-1', courseCodes: [] }],
+                wishlistCourseCodes: [],
+                exemptionsCourseCodes: [],
+            },
+        });
+
+        const page = CoursePage();
+        await flushPromises();
+
+        const addCurrentSemester = page.querySelector<HTMLButtonElement>(
+            "[data-role='semester-add-current']"
+        );
+        addCurrentSemester?.click();
+        await flushPromises();
+
+        const payload = mocks.userPlanSetMock.mock.calls.at(-1)?.[0] as
+            | { semesters?: { courseCodes?: string[] }[] }
+            | undefined;
+        expect(payload?.semesters?.[1]?.courseCodes).toContain('CS101');
+    });
 });
 
 async function flushPromises(): Promise<void> {

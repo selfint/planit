@@ -85,28 +85,70 @@
                     </dl>
 
                     <div class="flex flex-wrap gap-2 text-xs">
+                        <div
+                            class="relative inline-flex"
+                            data-role="semester-split-control"
+                        >
+                            <button
+                                type="button"
+                                class="bg-accent text-accent-contrast inline-flex min-h-11 touch-manipulation items-center rounded-s-full px-5 font-medium"
+                                data-role="semester-add-current"
+                            >
+                                הוסף לסמסטר הנוכחי
+                            </button>
+                            <details
+                                class="relative"
+                                data-role="semester-dropdown"
+                            >
+                                <summary
+                                    class="bg-accent text-accent-contrast flex min-h-11 touch-manipulation list-none items-center rounded-e-full border-s border-black/10 px-3"
+                                    data-role="semester-dropdown-toggle"
+                                >
+                                    <span aria-hidden="true">▾</span>
+                                    <span class="sr-only">בחירת סמסטר אחר</span>
+                                </summary>
+                                <div
+                                    class="border-border bg-surface-1 absolute end-0 z-20 mt-2 flex min-w-48 flex-col rounded-2xl border p-1 shadow-lg"
+                                    data-role="semester-dropdown-menu"
+                                ></div>
+                            </details>
+                        </div>
                         <button
                             type="button"
-                            class="border-border bg-surface-2 text-text inline-flex min-h-11 items-center rounded-full border px-5 font-medium"
+                            class="border-border bg-surface-2 text-text inline-flex min-h-11 touch-manipulation items-center rounded-full border px-5 font-medium"
                             data-role="wishlist-add"
                         >
                             הוסף לרשימת המשאלות
                         </button>
+                        <button
+                            type="button"
+                            class="border-border bg-surface-2 text-text inline-flex min-h-11 touch-manipulation items-center rounded-full border px-5 font-medium"
+                            data-role="exemptions-add"
+                        >
+                            הוסף לפטורים
+                        </button>
+                        <button
+                            type="button"
+                            class="border-border bg-surface-2 text-text hidden min-h-11 touch-manipulation items-center rounded-full border px-5 font-medium"
+                            data-role="placement-remove"
+                        >
+                            הסר
+                        </button>
                         <a
-                            class="bg-accent text-accent-contrast inline-flex min-h-11 items-center rounded-full px-5 font-medium"
+                            class="bg-accent text-accent-contrast inline-flex min-h-11 touch-manipulation items-center rounded-full px-5 font-medium"
                             data-role="search-link"
                             href="/search"
                         >
                             פתיחה בחיפוש
                         </a>
                         <a
-                            class="border-border bg-surface-2 text-text inline-flex min-h-11 items-center rounded-full border px-5 font-medium"
+                            class="border-border bg-surface-2 text-text inline-flex min-h-11 touch-manipulation items-center rounded-full border px-5 font-medium"
                             href="/catalog"
                         >
                             מעבר לקטלוגים
                         </a>
                         <a
-                            class="border-border bg-surface-2 text-text inline-flex min-h-11 items-center rounded-full border px-5 font-medium"
+                            class="border-border bg-surface-2 text-text inline-flex min-h-11 touch-manipulation items-center rounded-full border px-5 font-medium"
                             href="/plan"
                         >
                             חזרה למתכנן
@@ -114,7 +156,7 @@
                     </div>
                     <p
                         class="text-text-muted text-xs"
-                        data-role="wishlist-status"
+                        data-role="action-status"
                     ></p>
                 </div>
             </header>

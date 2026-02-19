@@ -32,8 +32,14 @@ type CoursePageElements = {
     courseMedianCard: HTMLElement;
     courseFacultyCard: HTMLElement;
     courseSeasonsCard: HTMLElement;
+    semesterSplitControl: HTMLElement;
+    semesterAddCurrent: HTMLButtonElement;
+    semesterDropdown: HTMLDetailsElement;
+    semesterDropdownMenu: HTMLElement;
     wishlistAdd: HTMLButtonElement;
-    wishlistStatus: HTMLElement;
+    exemptionsAdd: HTMLButtonElement;
+    placementRemove: HTMLButtonElement;
+    actionStatus: HTMLElement;
     searchLink: HTMLAnchorElement;
     notFoundState: HTMLElement;
     notFoundMessage: HTMLElement;
@@ -63,6 +69,12 @@ type PersistedPlan = {
     exemptionsCourseCodes?: string[];
 };
 
+type CoursePlacement =
+    | { kind: 'none' }
+    | { kind: 'semester'; semesterIndex: number }
+    | { kind: 'wishlist' }
+    | { kind: 'exemptions' };
+
 export function CoursePage(): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
@@ -85,23 +97,15 @@ export function CoursePage(): HTMLElement {
     const elements = queryElements(root);
     const requestedCode = getRequestedCourseCode(window.location.search);
     updateSearchLink(elements.searchLink, requestedCode);
-
-    void refreshWishlistUi(elements, requestedCode);
-    elements.wishlistAdd.addEventListener('click', () => {
-        if (requestedCode === undefined) {
-            return;
-        }
-        void handleWishlistAdd(elements, requestedCode);
-    });
+    setupCourseActions(root, elements, requestedCode);
 
     if (requestedCode === undefined) {
         showNotFound(
             elements,
             'נדרש פרמטר code בכתובת, למשל /course?code=104031.'
         );
-        elements.wishlistAdd.disabled = true;
-        elements.wishlistStatus.textContent =
-            'אי אפשר להוסיף לרשימת המשאלות בלי קוד קורס.';
+        disableCourseActions(elements);
+        elements.actionStatus.textContent = 'אי אפשר לעדכן תכנית בלי קוד קורס.';
         return root;
     }
 
@@ -170,11 +174,29 @@ function queryElements(root: HTMLElement): CoursePageElements {
     const courseSeasonsCard = root.querySelector<HTMLElement>(
         "[data-role='course-seasons-card']"
     );
+    const semesterSplitControl = root.querySelector<HTMLElement>(
+        "[data-role='semester-split-control']"
+    );
+    const semesterAddCurrent = root.querySelector<HTMLButtonElement>(
+        "[data-role='semester-add-current']"
+    );
+    const semesterDropdown = root.querySelector<HTMLDetailsElement>(
+        "[data-role='semester-dropdown']"
+    );
+    const semesterDropdownMenu = root.querySelector<HTMLElement>(
+        "[data-role='semester-dropdown-menu']"
+    );
     const wishlistAdd = root.querySelector<HTMLButtonElement>(
         "[data-role='wishlist-add']"
     );
-    const wishlistStatus = root.querySelector<HTMLElement>(
-        "[data-role='wishlist-status']"
+    const exemptionsAdd = root.querySelector<HTMLButtonElement>(
+        "[data-role='exemptions-add']"
+    );
+    const placementRemove = root.querySelector<HTMLButtonElement>(
+        "[data-role='placement-remove']"
+    );
+    const actionStatus = root.querySelector<HTMLElement>(
+        "[data-role='action-status']"
     );
     const searchLink = root.querySelector<HTMLAnchorElement>(
         "[data-role='search-link']"
@@ -233,8 +255,14 @@ function queryElements(root: HTMLElement): CoursePageElements {
         courseMedianCard === null ||
         courseFacultyCard === null ||
         courseSeasonsCard === null ||
+        semesterSplitControl === null ||
+        semesterAddCurrent === null ||
+        semesterDropdown === null ||
+        semesterDropdownMenu === null ||
         wishlistAdd === null ||
-        wishlistStatus === null ||
+        exemptionsAdd === null ||
+        placementRemove === null ||
+        actionStatus === null ||
         searchLink === null ||
         notFoundState === null ||
         notFoundMessage === null ||
@@ -265,8 +293,14 @@ function queryElements(root: HTMLElement): CoursePageElements {
         courseMedianCard,
         courseFacultyCard,
         courseSeasonsCard,
+        semesterSplitControl,
+        semesterAddCurrent,
+        semesterDropdown,
+        semesterDropdownMenu,
         wishlistAdd,
-        wishlistStatus,
+        exemptionsAdd,
+        placementRemove,
+        actionStatus,
         searchLink,
         notFoundState,
         notFoundMessage,
@@ -312,60 +346,382 @@ function updateSearchLink(
     link.href = `/search?q=${encodeURIComponent(code)}`;
 }
 
-async function handleWishlistAdd(
+function setupCourseActions(
+    root: HTMLElement,
     elements: CoursePageElements,
-    courseCode: string
-): Promise<void> {
-    elements.wishlistAdd.disabled = true;
-    elements.wishlistStatus.textContent = 'מעדכן רשימת משאלות...';
+    requestedCode: string | undefined
+): void {
+    void refreshCourseActionsUi(elements, requestedCode);
 
-    try {
-        const added = await addCourseToWishlist(courseCode);
-        if (added) {
-            elements.wishlistStatus.textContent = 'הקורס נוסף לרשימת המשאלות.';
-        } else {
-            elements.wishlistStatus.textContent =
-                'הקורס כבר קיים ברשימת המשאלות.';
+    elements.semesterAddCurrent.addEventListener('click', () => {
+        if (requestedCode === undefined) {
+            return;
         }
-        await refreshWishlistUi(elements, courseCode);
-    } catch {
-        elements.wishlistAdd.disabled = false;
-        elements.wishlistStatus.textContent =
-            'לא הצלחנו לעדכן את רשימת המשאלות.';
-    }
+        void handleAddToCurrentSemester(elements, requestedCode);
+    });
+
+    elements.wishlistAdd.addEventListener('click', () => {
+        if (requestedCode === undefined) {
+            return;
+        }
+        void handleAddToWishlist(elements, requestedCode);
+    });
+
+    elements.exemptionsAdd.addEventListener('click', () => {
+        if (requestedCode === undefined) {
+            return;
+        }
+        void handleAddToExemptions(elements, requestedCode);
+    });
+
+    elements.placementRemove.addEventListener('click', () => {
+        if (requestedCode === undefined) {
+            return;
+        }
+        void handleRemovePlacement(elements, requestedCode);
+    });
+
+    elements.semesterDropdownMenu.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+            return;
+        }
+
+        const semesterButton = target.closest<HTMLButtonElement>(
+            '[data-semester-option]'
+        );
+        if (semesterButton === null) {
+            return;
+        }
+        const semesterIndex = Number.parseInt(
+            semesterButton.dataset.semesterIndex ?? '',
+            10
+        );
+        if (!Number.isFinite(semesterIndex) || requestedCode === undefined) {
+            return;
+        }
+
+        void handleAddToSemester(elements, requestedCode, semesterIndex);
+    });
+
+    root.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof Node)) {
+            return;
+        }
+        if (elements.semesterDropdown.contains(target)) {
+            return;
+        }
+        elements.semesterDropdown.open = false;
+    });
 }
 
-async function refreshWishlistUi(
+function disableCourseActions(elements: CoursePageElements): void {
+    elements.semesterSplitControl.classList.add('hidden');
+    elements.wishlistAdd.classList.add('hidden');
+    elements.exemptionsAdd.classList.add('hidden');
+    elements.placementRemove.classList.remove('hidden');
+    elements.placementRemove.disabled = true;
+    elements.semesterDropdown.open = false;
+}
+
+async function refreshCourseActionsUi(
     elements: CoursePageElements,
     code: string | undefined
 ): Promise<void> {
     if (code === undefined) {
-        elements.wishlistAdd.disabled = true;
-        if (elements.wishlistStatus.textContent.trim().length === 0) {
-            elements.wishlistStatus.textContent =
-                'אי אפשר להוסיף לרשימת המשאלות בלי קוד קורס.';
+        disableCourseActions(elements);
+        if (elements.actionStatus.textContent.trim().length === 0) {
+            elements.actionStatus.textContent =
+                'אי אפשר לעדכן תכנית בלי קוד קורס.';
         }
         return;
     }
 
-    const wishlist = await readWishlistCourseCodes();
-    const isAdded = wishlist.includes(code);
-    elements.wishlistAdd.disabled = isAdded;
-    if (isAdded) {
-        elements.wishlistStatus.textContent = 'הקורס כבר ברשימת המשאלות.';
+    const plan = await readPersistedPlan();
+    const placement = resolveCoursePlacement(plan, code);
+    renderSemesterOptions(elements, plan.semesters, plan.currentSemester);
+
+    if (placement.kind === 'none') {
+        elements.semesterSplitControl.classList.remove('hidden');
+        elements.wishlistAdd.classList.remove('hidden');
+        elements.exemptionsAdd.classList.remove('hidden');
+        elements.placementRemove.classList.add('hidden');
+        elements.placementRemove.disabled = true;
         return;
     }
 
-    if (elements.wishlistStatus.textContent.trim().length === 0) {
-        elements.wishlistStatus.textContent =
-            'אפשר להוסיף את הקורס לרשימת המשאלות.';
+    elements.semesterSplitControl.classList.add('hidden');
+    elements.wishlistAdd.classList.add('hidden');
+    elements.exemptionsAdd.classList.add('hidden');
+    elements.placementRemove.classList.remove('hidden');
+    elements.placementRemove.disabled = false;
+    elements.placementRemove.textContent = getPlacementRemoveLabel(placement);
+    elements.semesterDropdown.open = false;
+}
+
+function renderSemesterOptions(
+    elements: CoursePageElements,
+    semesters: { id?: string; courseCodes?: string[] }[],
+    currentSemester: number
+): void {
+    const semesterCount = Math.max(DEFAULT_SEMESTER_COUNT, semesters.length);
+    const normalizedCurrent = normalizeCurrentSemester(
+        currentSemester,
+        semesterCount
+    );
+    elements.semesterAddCurrent.textContent = `הוסף לסמסטר ${String(normalizedCurrent + 1)}`;
+
+    elements.semesterDropdownMenu.replaceChildren();
+    for (
+        let semesterIndex = 0;
+        semesterIndex < semesterCount;
+        semesterIndex += 1
+    ) {
+        const button = document.createElement('button');
+        button.type = 'button';
+        button.className =
+            'hover:bg-surface-2 text-text touch-manipulation min-h-11 rounded-xl px-3 py-2 text-start text-xs';
+        button.dataset.semesterOption = 'true';
+        button.dataset.semesterIndex = String(semesterIndex);
+        const isCurrent = semesterIndex === normalizedCurrent;
+        button.textContent = isCurrent
+            ? `סמסטר ${String(semesterIndex + 1)} (נוכחי)`
+            : `סמסטר ${String(semesterIndex + 1)}`;
+        elements.semesterDropdownMenu.append(button);
     }
 }
 
-async function readWishlistCourseCodes(): Promise<string[]> {
+function getPlacementRemoveLabel(
+    placement: Exclude<CoursePlacement, { kind: 'none' }>
+): string {
+    if (placement.kind === 'semester') {
+        return `הסר מסמסטר ${String(placement.semesterIndex + 1)}`;
+    }
+    if (placement.kind === 'wishlist') {
+        return 'הסר מרשימת המשאלות';
+    }
+    return 'הסר מהפטורים';
+}
+
+async function handleAddToCurrentSemester(
+    elements: CoursePageElements,
+    courseCode: string
+): Promise<void> {
+    setCourseActionsBusy(elements, true);
+    elements.actionStatus.textContent = 'מוסיף לסמסטר הנוכחי...';
+
+    const plan = await readPersistedPlan();
+    const added = await addCourseToSemester(courseCode, plan.currentSemester);
+    elements.actionStatus.textContent = added
+        ? `הקורס נוסף לסמסטר ${String(plan.currentSemester + 1)}.`
+        : 'הקורס כבר קיים בסמסטר הנוכחי.';
+    await refreshCourseActionsUi(elements, courseCode);
+    setCourseActionsBusy(elements, false);
+}
+
+async function handleAddToSemester(
+    elements: CoursePageElements,
+    courseCode: string,
+    semesterIndex: number
+): Promise<void> {
+    setCourseActionsBusy(elements, true);
+    elements.actionStatus.textContent = `מוסיף לסמסטר ${String(semesterIndex + 1)}...`;
+
+    const added = await addCourseToSemester(courseCode, semesterIndex);
+    elements.actionStatus.textContent = added
+        ? `הקורס נוסף לסמסטר ${String(semesterIndex + 1)}.`
+        : `הקורס כבר קיים בסמסטר ${String(semesterIndex + 1)}.`;
+    await refreshCourseActionsUi(elements, courseCode);
+    setCourseActionsBusy(elements, false);
+}
+
+async function handleAddToWishlist(
+    elements: CoursePageElements,
+    courseCode: string
+): Promise<void> {
+    setCourseActionsBusy(elements, true);
+    elements.actionStatus.textContent = 'מעדכן רשימת משאלות...';
+
+    const added = await addCourseToWishlist(courseCode);
+    elements.actionStatus.textContent = added
+        ? 'הקורס נוסף לרשימת המשאלות.'
+        : 'הקורס כבר קיים ברשימת המשאלות.';
+    await refreshCourseActionsUi(elements, courseCode);
+    setCourseActionsBusy(elements, false);
+}
+
+async function handleAddToExemptions(
+    elements: CoursePageElements,
+    courseCode: string
+): Promise<void> {
+    setCourseActionsBusy(elements, true);
+    elements.actionStatus.textContent = 'מעדכן פטורים...';
+
+    const added = await addCourseToExemptions(courseCode);
+    elements.actionStatus.textContent = added
+        ? 'הקורס נוסף לפטורים.'
+        : 'הקורס כבר קיים בפטורים.';
+    await refreshCourseActionsUi(elements, courseCode);
+    setCourseActionsBusy(elements, false);
+}
+
+async function handleRemovePlacement(
+    elements: CoursePageElements,
+    courseCode: string
+): Promise<void> {
+    setCourseActionsBusy(elements, true);
+    elements.actionStatus.textContent = 'מסיר את הקורס מהתכנית...';
+
+    const plan = await readPersistedPlan();
+    const placement = resolveCoursePlacement(plan, courseCode);
+    if (placement.kind === 'none') {
+        elements.actionStatus.textContent = 'הקורס לא נמצא בתכנית כרגע.';
+        await refreshCourseActionsUi(elements, courseCode);
+        setCourseActionsBusy(elements, false);
+        return;
+    }
+
+    if (placement.kind === 'semester') {
+        await removeCourseFromSemester(courseCode, placement.semesterIndex);
+        elements.actionStatus.textContent = `הקורס הוסר מסמסטר ${String(placement.semesterIndex + 1)}.`;
+    } else if (placement.kind === 'wishlist') {
+        await removeCourseFromWishlist(courseCode);
+        elements.actionStatus.textContent = 'הקורס הוסר מרשימת המשאלות.';
+    } else {
+        await removeCourseFromExemptions(courseCode);
+        elements.actionStatus.textContent = 'הקורס הוסר מהפטורים.';
+    }
+
+    await refreshCourseActionsUi(elements, courseCode);
+    setCourseActionsBusy(elements, false);
+}
+
+function setCourseActionsBusy(
+    elements: CoursePageElements,
+    busy: boolean
+): void {
+    elements.semesterAddCurrent.disabled = busy;
+    elements.wishlistAdd.disabled = busy;
+    elements.exemptionsAdd.disabled = busy;
+    elements.placementRemove.disabled = busy;
+
+    const semesterButtons =
+        elements.semesterDropdownMenu.querySelectorAll<HTMLButtonElement>(
+            '[data-semester-option]'
+        );
+    for (const semesterButton of semesterButtons) {
+        semesterButton.disabled = busy;
+    }
+
+    if (busy) {
+        elements.semesterDropdown.open = false;
+    }
+}
+
+async function readPersistedPlan(): Promise<PersistedPlan> {
     const metaEntry = await appState.userPlan.get();
-    const plan = toPersistedPlan(metaEntry?.value);
-    return normalizeCourseCodes(plan?.wishlistCourseCodes);
+    const rawPlan = toPersistedPlan(metaEntry?.value);
+    const semesterCount = normalizeSemesterCount(rawPlan?.semesterCount);
+    return {
+        version: PLAN_META_VERSION,
+        semesterCount,
+        currentSemester: normalizeCurrentSemester(
+            rawPlan?.currentSemester,
+            semesterCount
+        ),
+        semesters: ensureSemesters(
+            normalizeSemesters(rawPlan?.semesters),
+            semesterCount
+        ),
+        wishlistCourseCodes: normalizeCourseCodes(rawPlan?.wishlistCourseCodes),
+        exemptionsCourseCodes: normalizeCourseCodes(
+            rawPlan?.exemptionsCourseCodes
+        ),
+    };
+}
+
+function resolveCoursePlacement(
+    plan: PersistedPlan,
+    courseCode: string
+): CoursePlacement {
+    const normalizedCode = courseCode.trim().toUpperCase();
+    if (normalizedCode.length === 0) {
+        return { kind: 'none' };
+    }
+
+    for (const [semesterIndex, semester] of plan.semesters.entries()) {
+        const courseCodes = normalizeCourseCodes(semester.courseCodes);
+        if (courseCodes.includes(normalizedCode)) {
+            return { kind: 'semester', semesterIndex };
+        }
+    }
+
+    if (
+        normalizeCourseCodes(plan.wishlistCourseCodes).includes(normalizedCode)
+    ) {
+        return { kind: 'wishlist' };
+    }
+    if (
+        normalizeCourseCodes(plan.exemptionsCourseCodes).includes(
+            normalizedCode
+        )
+    ) {
+        return { kind: 'exemptions' };
+    }
+    return { kind: 'none' };
+}
+
+function ensureSemesters(
+    semesters: { id?: string; courseCodes?: string[] }[],
+    semesterCount: number
+): { id?: string; courseCodes?: string[] }[] {
+    const normalizedSemesters = semesters.map((semester) => ({
+        id: semester.id,
+        courseCodes: normalizeCourseCodes(semester.courseCodes),
+    }));
+    while (normalizedSemesters.length < semesterCount) {
+        normalizedSemesters.push({ courseCodes: [] });
+    }
+    return normalizedSemesters;
+}
+
+async function updatePersistedPlan(
+    update: (plan: PersistedPlan) => boolean
+): Promise<boolean> {
+    const plan = await readPersistedPlan();
+    const changed = update(plan);
+    if (!changed) {
+        return false;
+    }
+
+    await appState.userPlan.set(plan);
+    return true;
+}
+
+async function addCourseToSemester(
+    courseCode: string,
+    semesterIndex: number
+): Promise<boolean> {
+    const code = courseCode.trim().toUpperCase();
+    if (code.length === 0) {
+        return false;
+    }
+
+    return updatePersistedPlan((plan) => {
+        const safeIndex = normalizeCurrentSemester(
+            semesterIndex,
+            plan.semesterCount
+        );
+        plan.semesters = ensureSemesters(plan.semesters, plan.semesterCount);
+        const semester = plan.semesters[safeIndex];
+        const currentCodes = normalizeCourseCodes(semester.courseCodes);
+        if (currentCodes.includes(code)) {
+            return false;
+        }
+        semester.courseCodes = [...currentCodes, code];
+        return true;
+    });
 }
 
 async function addCourseToWishlist(courseCode: string): Promise<boolean> {
@@ -374,32 +730,92 @@ async function addCourseToWishlist(courseCode: string): Promise<boolean> {
         return false;
     }
 
-    const metaEntry = await appState.userPlan.get();
-    const plan = toPersistedPlan(metaEntry?.value);
-    const wishlist = normalizeCourseCodes(plan?.wishlistCourseCodes);
-    if (wishlist.includes(code)) {
+    return updatePersistedPlan((plan) => {
+        const wishlist = normalizeCourseCodes(plan.wishlistCourseCodes);
+        if (wishlist.includes(code)) {
+            return false;
+        }
+        plan.wishlistCourseCodes = [...wishlist, code];
+        return true;
+    });
+}
+
+async function addCourseToExemptions(courseCode: string): Promise<boolean> {
+    const code = courseCode.trim().toUpperCase();
+    if (code.length === 0) {
         return false;
     }
 
-    const wishlistWithCode = [...wishlist, code];
-    const semesterCount = normalizeSemesterCount(plan?.semesterCount);
-    const payload: PersistedPlan = {
-        version: PLAN_META_VERSION,
-        semesterCount,
-        currentSemester: normalizeCurrentSemester(
-            plan?.currentSemester,
-            semesterCount
-        ),
-        semesters: normalizeSemesters(plan?.semesters),
-        wishlistCourseCodes: wishlistWithCode,
-        exemptionsCourseCodes: normalizeCourseCodes(
-            plan?.exemptionsCourseCodes
-        ),
-    };
+    return updatePersistedPlan((plan) => {
+        const exemptions = normalizeCourseCodes(plan.exemptionsCourseCodes);
+        if (exemptions.includes(code)) {
+            return false;
+        }
+        plan.exemptionsCourseCodes = [...exemptions, code];
+        return true;
+    });
+}
 
-    await appState.userPlan.set(payload);
+async function removeCourseFromSemester(
+    courseCode: string,
+    semesterIndex: number
+): Promise<boolean> {
+    const code = courseCode.trim().toUpperCase();
+    if (code.length === 0) {
+        return false;
+    }
 
-    return true;
+    return updatePersistedPlan((plan) => {
+        const safeIndex = normalizeCurrentSemester(
+            semesterIndex,
+            plan.semesterCount
+        );
+        plan.semesters = ensureSemesters(plan.semesters, plan.semesterCount);
+        const semester = plan.semesters[safeIndex];
+        const currentCodes = normalizeCourseCodes(semester.courseCodes);
+        const nextCodes = currentCodes.filter((entry) => entry !== code);
+        if (nextCodes.length === currentCodes.length) {
+            return false;
+        }
+        semester.courseCodes = nextCodes;
+        return true;
+    });
+}
+
+async function removeCourseFromWishlist(courseCode: string): Promise<boolean> {
+    const code = courseCode.trim().toUpperCase();
+    if (code.length === 0) {
+        return false;
+    }
+
+    return updatePersistedPlan((plan) => {
+        const wishlist = normalizeCourseCodes(plan.wishlistCourseCodes);
+        const nextWishlist = wishlist.filter((entry) => entry !== code);
+        if (nextWishlist.length === wishlist.length) {
+            return false;
+        }
+        plan.wishlistCourseCodes = nextWishlist;
+        return true;
+    });
+}
+
+async function removeCourseFromExemptions(
+    courseCode: string
+): Promise<boolean> {
+    const code = courseCode.trim().toUpperCase();
+    if (code.length === 0) {
+        return false;
+    }
+
+    return updatePersistedPlan((plan) => {
+        const exemptions = normalizeCourseCodes(plan.exemptionsCourseCodes);
+        const nextExemptions = exemptions.filter((entry) => entry !== code);
+        if (nextExemptions.length === exemptions.length) {
+            return false;
+        }
+        plan.exemptionsCourseCodes = nextExemptions;
+        return true;
+    });
 }
 
 function toPersistedPlan(value: unknown): Partial<PersistedPlan> | undefined {

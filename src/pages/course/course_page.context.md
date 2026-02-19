@@ -10,6 +10,10 @@ navigation and is rendered by the client-side router.
 
 - Header card with course name and description.
 - Key stats tiles for points, median, faculty, and seasons.
+- Planner actions that switch between add-mode and remove-mode based on
+  persisted placement (semester / wishlist / exemptions).
+- A split primary action that adds to the current semester and exposes a
+  dropdown for adding to any other semester.
 - Loading skeleton state, query validation state, and course-not-found state.
 - Related course sections for dependencies, dependants (inverse dependency
   lookup), adjacent courses, and exclusive courses.
@@ -27,19 +31,24 @@ navigation and is rendered by the client-side router.
 5. It scans courses in batches via `state.courses.count()` and
    `state.courses.page(...)` to find dependants (courses whose dependency groups
    include the current course code).
-6. Wishlist actions read/write the persisted plan through `state.userPlan.*` so
+6. Planner actions read/write the persisted plan through `state.userPlan.*` so
    course-page persistence follows the same state boundary as other routes.
-7. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
+7. Action mode uses placement priority (`semester` -> `wishlist` ->
+   `exemptions`): existing placement renders a remove button; no placement
+   renders add actions.
+8. The primary action adds to `currentSemester`, while the arrow menu lists all
+   available semesters for explicit placement.
+9. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
    `חורף`, `spring`/`B` -> `אביב`, `summer`/`C` -> `קיץ`).
-8. Section headers are always visible to keep layout stable.
-9. During loading, each relation grid starts with 3 pre-rendered `CourseCard`
-   skeletons from the HTML template, and section counts use shimmer
-   placeholders (without loading text).
-10. During loading, the full points/median/faculty/seasons stat cards use
+10. Section headers are always visible to keep layout stable.
+11. During loading, each relation grid starts with 3 pre-rendered `CourseCard`
+    skeletons from the HTML template, and section counts use shimmer
+    placeholders (without loading text).
+12. During loading, the full points/median/faculty/seasons stat cards use
     shimmer placeholders via `data-loading="true"` on each stat tile.
-11. After data resolves, grids are replaced with real cards and empty labels are
+13. After data resolves, grids are replaced with real cards and empty labels are
     shown only for empty result sets.
-11. Wishlist writes keep planner metadata intact in `planPageState`, including
+14. Planner writes keep metadata intact in `planPageState`, including
     `semesterCount`, `semesters`, and `currentSemester`.
 
 ## Storybook
@@ -93,6 +102,37 @@ assert text('[data-role="course-name"]') == 'Intro to CS'
 assert count('[data-role="dependencies-grid"] section') == 2
 assert count('[data-role="dependants-grid"] [data-component="CourseCard"]') == 2
 assert count('[data-component="CourseCard"][data-skeleton="true"]') == 0
+```
+
+### `shows remove action when course is already in wishlist`
+
+WHAT: Verifies action mode switches to remove when the course already appears in
+`wishlistCourseCodes`.
+WHY: Prevents duplicate-add flows and matches user intent for quick removal.
+HOW: Mocks persisted wishlist membership, renders the page, flushes async work,
+then asserts the remove button is visible with wishlist-specific text.
+
+```python
+mock_plan(wishlistCourseCodes=['CS101'])
+page = CoursePage('/course?code=CS101')
+flush_promises()
+assert visible('[data-role="placement-remove"]')
+assert 'מרשימת המשאלות' in text('[data-role="placement-remove"]')
+```
+
+### `adds course to current semester from primary action`
+
+WHAT: Verifies the primary split action writes to the current semester row.
+WHY: This is now the default planner action when a course is not yet placed.
+HOW: Mocks `currentSemester=1`, clicks
+`[data-role="semester-add-current"]`, then verifies the persisted payload
+contains the course in `semesters[1].courseCodes`.
+
+```python
+mock_plan(currentSemester=1, semesters=[[]])
+page = CoursePage('/course?code=CS101')
+click('[data-role="semester-add-current"]')
+assert 'CS101' in last_user_plan_set().semesters[1].courseCodes
 ```
 
 ## Integration Tests
