@@ -63,12 +63,23 @@ type FirebaseAuthModule = {
 };
 
 type FirebaseFirestoreModule = {
+    collection(database: unknown, path: string): unknown;
     connectFirestoreEmulator(
         database: unknown,
         host: string,
         port: number
     ): void;
+    doc(collectionReference: unknown, path: string): unknown;
+    getDoc(documentReference: unknown): Promise<{
+        exists(): boolean;
+        data(): Record<string, unknown> | undefined;
+    }>;
     getFirestore(app: unknown): unknown;
+    setDoc(
+        documentReference: unknown,
+        data: Record<string, unknown>,
+        options?: { merge?: boolean }
+    ): Promise<void>;
 };
 
 type FirebaseSdkModules = {
@@ -80,6 +91,8 @@ type FirebaseSdkModules = {
 type FirebaseRuntime = {
     auth: FirebaseAuth;
     authModule: FirebaseAuthModule;
+    firestore: unknown;
+    firestoreModule: FirebaseFirestoreModule;
 };
 
 type FirebaseSdkLoader = () => Promise<FirebaseSdkModules>;
@@ -91,6 +104,8 @@ let firebaseRuntime: FirebaseRuntime | null = null;
 let firebaseRuntimePromise: Promise<FirebaseRuntime> | null = null;
 let firebaseUser: FirebaseUser | null = null;
 let emulatorsConnected = false;
+
+const FIRESTORE_USER_COLLECTION = 'users-v2';
 
 export async function preloadFirebase(): Promise<void> {
     await ensureFirebaseRuntime();
@@ -133,6 +148,59 @@ export function onUserChange(
     return () => {
         userChangeListeners.delete(listener);
     };
+}
+
+export async function loadUserData<T>(key: string): Promise<T | undefined> {
+    const runtime = await ensureFirebaseRuntime();
+    const user = runtime.auth.currentUser;
+    if (user === null) {
+        throw new Error(
+            'Cannot load Firestore user data without an authenticated user.'
+        );
+    }
+
+    const collectionReference = runtime.firestoreModule.collection(
+        runtime.firestore,
+        FIRESTORE_USER_COLLECTION
+    );
+    const documentReference = runtime.firestoreModule.doc(
+        collectionReference,
+        user.uid
+    );
+    const snapshot = await runtime.firestoreModule.getDoc(documentReference);
+    if (!snapshot.exists()) {
+        return undefined;
+    }
+
+    const payload = snapshot.data();
+    return payload?.[key] as T | undefined;
+}
+
+export async function saveUserData(key: string, value: unknown): Promise<void> {
+    const runtime = await ensureFirebaseRuntime();
+    const user = runtime.auth.currentUser;
+    if (user === null) {
+        throw new Error(
+            'Cannot save Firestore user data without an authenticated user.'
+        );
+    }
+
+    const collectionReference = runtime.firestoreModule.collection(
+        runtime.firestore,
+        FIRESTORE_USER_COLLECTION
+    );
+    const documentReference = runtime.firestoreModule.doc(
+        collectionReference,
+        user.uid
+    );
+    await runtime.firestoreModule.setDoc(
+        documentReference,
+        {
+            [key]: value,
+            updatedAt: new Date().toISOString(),
+        },
+        { merge: true }
+    );
 }
 
 async function ensureFirebaseRuntime(): Promise<FirebaseRuntime> {
@@ -180,6 +248,8 @@ async function createFirebaseRuntime(): Promise<FirebaseRuntime> {
     return {
         auth,
         authModule,
+        firestore,
+        firestoreModule,
     };
 }
 
@@ -247,8 +317,7 @@ async function loadFirebaseSdkFromCdn(): Promise<FirebaseSdkModules> {
     return {
         appModule: appModuleUnknown as FirebaseAppModule,
         authModule: authModuleUnknown as FirebaseAuthModule,
-        firestoreModule:
-            firestoreModuleUnknown as FirebaseFirestoreModule,
+        firestoreModule: firestoreModuleUnknown as FirebaseFirestoreModule,
     };
 }
 
