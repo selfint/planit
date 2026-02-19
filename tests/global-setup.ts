@@ -1,6 +1,6 @@
 import type { FullConfig } from '@playwright/test';
-import path from 'node:path';
 import fs from 'node:fs/promises';
+import path from 'node:path';
 
 const STORAGE_STATE_PATH = path.join(
     process.cwd(),
@@ -25,9 +25,10 @@ async function globalSetup(config: FullConfig): Promise<void> {
         readJsonFile<UserDegree>('tests/state/userDegree.json'),
     ]);
 
+    const configuredBaseURL = config.projects[0]?.use?.baseURL;
     const baseURL =
-        config.projects[0]?.use?.baseURL !== undefined
-            ? String(config.projects[0].use.baseURL)
+        typeof configuredBaseURL === 'string'
+            ? configuredBaseURL
             : 'http://localhost:4173/planit/';
     const origin = new URL(baseURL).origin;
 

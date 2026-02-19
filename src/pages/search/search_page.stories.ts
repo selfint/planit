@@ -19,7 +19,7 @@ type Story = StoryObj;
 
 export const Default: Story = {
     render: () => {
-        void state.provider.set(storyStateManagement);
+        state.provider.set(storyStateManagement);
         return SearchPage();
     },
     globals: {
@@ -29,7 +29,7 @@ export const Default: Story = {
 
 export const Dark: Story = {
     render: () => {
-        void state.provider.set(storyStateManagement);
+        state.provider.set(storyStateManagement);
         return SearchPage();
     },
     globals: {

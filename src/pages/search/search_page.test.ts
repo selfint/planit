@@ -40,7 +40,7 @@ vi.mock('$components/ConsoleNav', () => ({
 import { SearchPage } from './search_page';
 
 describe('SearchPage', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
         queryCoursesMock.mockReset();
         getMetaMock.mockReset();
         getCourseFacultiesMock.mockReset();

@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
 import {
+    type DevStatePayload,
     createDevStateProvider,
     parseDevStatePayload,
-    type DevStatePayload,
 } from './devStateProvider';
 
 describe('devStateProvider', () => {

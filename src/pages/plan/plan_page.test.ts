@@ -32,7 +32,7 @@ vi.mock('$components/CourseCard', () => ({
 import { PlanPage } from './plan_page';
 
 describe('plan page', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
         if (typeof window.CSS === 'undefined') {
             Object.defineProperty(window, 'CSS', {
                 configurable: true,

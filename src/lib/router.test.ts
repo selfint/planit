@@ -126,7 +126,7 @@ describe('router lib', () => {
         expect(window.location.search).toBe('?number=3');
     });
 
-    it('rerenders current route after provider swap', async () => {
+    it('rerenders current route after provider swap', () => {
         document.body.innerHTML = '<div id="app"></div>';
         window.history.replaceState(null, '', '/plan');
 

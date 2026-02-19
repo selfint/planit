@@ -15,7 +15,7 @@ vi.mock('$lib/catalogSync', () => ({
 import { DegreePicker } from './DegreePicker';
 
 describe('DegreePicker', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
         getCatalogsMock.mockReset();
         getRequirementMock.mockReset();
         getActiveRequirementsSelectionMock.mockReset();

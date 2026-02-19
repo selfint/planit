@@ -73,7 +73,7 @@ describe('stateManagement', () => {
         expect(mocks.getMetaMock).toHaveBeenCalledWith('planPageState');
     });
 
-    it('swaps provider and notifies rerender handler', async () => {
+    it('swaps provider and notifies rerender handler', () => {
         const rerenderHandler = vi.fn();
         setStateProviderChangeHandler(rerenderHandler);
 

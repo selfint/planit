@@ -33,7 +33,7 @@ vi.mock('$components/ConsoleNav', () => ({
 import { SemesterPage } from './semester_page';
 
 describe('SemesterPage', () => {
-    beforeEach(async () => {
+    beforeEach(() => {
         mocks.getMetaMock.mockReset();
         mocks.setMetaMock.mockReset();
         mocks.queryCoursesMock.mockReset();
