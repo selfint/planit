@@ -433,6 +433,13 @@ test.describe('/plan page route', () => {
         page,
     }) => {
         await page.goto('plan');
+        await page.waitForFunction(() => {
+            return (
+                document.querySelector('[data-app-loading-screen]') === null &&
+                document.querySelector('[data-semester-rail]') !== null &&
+                document.querySelector('[data-schedule-problems]') !== null
+            );
+        });
 
         const isProblemsSectionAfterRail = await page.evaluate(() => {
             const rail = document.querySelector('[data-semester-rail]');
