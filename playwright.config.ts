@@ -1,6 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
-const port = process.env.PW_PORT ?? '4173';
+const port = process.env.PW_PORT ?? '6173';
 const host = process.env.PW_HOST ?? 'localhost';
 const baseURL = process.env.PW_BASE_URL ?? `http://${host}:${port}/planit/`;
 
