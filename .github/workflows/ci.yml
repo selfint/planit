@@ -55,6 +55,14 @@ jobs:
 
   integration_tests:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        profile:
+          - desktop-chrome-light
+          - desktop-chrome-dark
+          - mobile-chrome-light
+          - mobile-chrome-dark
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -79,14 +87,14 @@ jobs:
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps
 
-      - name: Run integration tests
-        run: pnpm integtest
+      - name: Run integration tests (${{ matrix.profile }})
+        run: pnpm exec playwright test --project="${{ matrix.profile }}"
 
       - name: Upload Playwright artifacts on failure
         if: failure()
         uses: actions/upload-artifact@v4
         with:
-          name: playwright-artifacts-ci
+          name: playwright-artifacts-${{ matrix.profile }}
           path: |
             test-results
             playwright-report
