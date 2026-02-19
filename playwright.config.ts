@@ -30,7 +30,6 @@ const traceMode = (process.env.PW_TRACE ??
     | 'on-first-retry';
 
 export default defineConfig({
-    globalSetup: 'tests/global-setup.ts',
     testDir: '.',
     testMatch: ['tests/**/*.spec.ts', 'src/pages/**/*.spec.ts'],
     testIgnore: ['**/unit/**', '**/node_modules/**', '**/.*/**'],
@@ -38,7 +37,7 @@ export default defineConfig({
     workers: demoMode ? 1 : undefined,
     use: {
         baseURL,
-        storageState: 'test-results/playwright.storage-state.json',
+        storageState: 'tests/state/playwright.storage-state.json',
         video: demoMode
             ? {
                   mode: 'on',
