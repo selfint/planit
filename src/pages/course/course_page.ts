@@ -11,6 +11,7 @@ const UNKNOWN_COURSE_LABEL = 'קורס לא זמין במאגר';
 const COURSES_BATCH_SIZE = 300;
 const PLAN_META_VERSION = 3;
 const DEFAULT_SEMESTER_COUNT = 6;
+const SEMESTER_SEASONS = ['אביב', 'קיץ', 'חורף'] as const;
 
 const COUNT_SKELETON_CLASS = [
     'skeleton-shimmer',
@@ -470,7 +471,11 @@ function renderSemesterOptions(
         currentSemester,
         semesterCount
     );
-    elements.semesterAddCurrent.textContent = `הוסף לסמסטר ${String(normalizedCurrent + 1)}`;
+    const currentSemesterLabel = getSemesterDisplayLabel(
+        normalizedCurrent,
+        semesters[normalizedCurrent]?.id
+    );
+    elements.semesterAddCurrent.textContent = `הוסף ל${currentSemesterLabel}`;
 
     elements.semesterDropdownMenu.replaceChildren();
     for (
@@ -485,11 +490,54 @@ function renderSemesterOptions(
         button.dataset.semesterOption = 'true';
         button.dataset.semesterIndex = String(semesterIndex);
         const isCurrent = semesterIndex === normalizedCurrent;
+        const semesterLabel = getSemesterDisplayLabel(
+            semesterIndex,
+            semesters[semesterIndex]?.id
+        );
         button.textContent = isCurrent
-            ? `סמסטר ${String(semesterIndex + 1)} (נוכחי)`
-            : `סמסטר ${String(semesterIndex + 1)}`;
+            ? `${semesterLabel} (נוכחי)`
+            : semesterLabel;
         elements.semesterDropdownMenu.append(button);
     }
+}
+
+function getSemesterDisplayLabel(
+    semesterIndex: number,
+    semesterId: string | undefined
+): string {
+    const parsedFromId = parseSemesterId(semesterId);
+    if (parsedFromId !== undefined) {
+        return `${parsedFromId.season} ${String(parsedFromId.year)}`;
+    }
+
+    const fallbackInfo = getFallbackSemesterInfo(semesterIndex + 1);
+    return `${fallbackInfo.season} ${String(fallbackInfo.year)}`;
+}
+
+function parseSemesterId(
+    semesterId: string | undefined
+): { season: string; year: number } | undefined {
+    if (semesterId === undefined) {
+        return undefined;
+    }
+    const match = /^(אביב|קיץ|חורף)-(\d{4})-/.exec(semesterId);
+    if (match === null) {
+        return undefined;
+    }
+    return {
+        season: match[1],
+        year: Number.parseInt(match[2], 10),
+    };
+}
+
+function getFallbackSemesterInfo(number: number): { season: string; year: number } {
+    const index = Math.max(0, number - 1);
+    const season = SEMESTER_SEASONS[index % SEMESTER_SEASONS.length];
+    const year = 2026 + Math.floor(number / SEMESTER_SEASONS.length);
+    return {
+        season,
+        year,
+    };
 }
 
 function getPlacementRemoveLabel(
@@ -583,8 +631,12 @@ async function handleRemovePlacement(
     }
 
     if (placement.kind === 'semester') {
+        const semesterLabel = getSemesterDisplayLabel(
+            placement.semesterIndex,
+            plan.semesters[placement.semesterIndex]?.id
+        );
         await removeCourseFromSemester(courseCode, placement.semesterIndex);
-        elements.actionStatus.textContent = `הקורס הוסר מסמסטר ${String(placement.semesterIndex + 1)}.`;
+        elements.actionStatus.textContent = `הקורס הוסר מ${semesterLabel}.`;
     } else if (placement.kind === 'wishlist') {
         await removeCourseFromWishlist(courseCode);
         elements.actionStatus.textContent = 'הקורס הוסר מרשימת המשאלות.';

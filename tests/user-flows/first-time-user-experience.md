@@ -11,10 +11,10 @@ video:
 1. Start directly on catalog
 2. Degree selection (catalog/faculty/program/path)
 3. Open selected course (`01140075`)
-4. Add to wishlist (if action exists)
+4. Add to current semester from course page
 5. Go to plan
-6. Move from wishlist to semester
-7. Enter semester 1 and verify render + course presence
+6. Move selected course to semester 3
+7. Enter semester 3 and verify render + course presence
 
 ## Current run command
 
@@ -86,8 +86,11 @@ Current behavior:
   - program: `SC00001314_CG00006245`
   - path: `CG00006246`
 - Path selection is explicit and asserted (not conditional on `required`).
-- Wishlist actions are guarded:
-  if wishlist controls are absent, flow continues without failing.
+- Course action uses `[data-role="semester-add-current"]` and verifies
+  `[data-role="action-status"]` contains an add/exists confirmation.
+- Plan move is deterministic:
+  select course card by `data-course-code`, click semester row index 3, then
+  verify the course is rendered in that row before navigating.
 - Semester render completion signal:
   waits for `[data-role="current-semester-title"]` containing `סמסטר`.
 
@@ -96,8 +99,9 @@ Current behavior:
 1. Catalog data readiness:
    if no visible course link for preferred code appears in time, navigation to
    course step fails.
-2. UI conditional controls:
-   wishlist add/move controls may not always render depending on state/data.
+2. Plan row order:
+   move step assumes semester rows are rendered before wishlist/exemptions and
+   uses the third semester row (`nth(2)`).
    The test handles this with count checks.
 3. Timing changes:
    if pauses are reduced too much, route/assertion races can reappear.

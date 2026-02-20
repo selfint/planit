@@ -263,6 +263,47 @@ describe('course page', () => {
         expect(payload?.semesters?.[1]?.courseCodes).toContain('CS101');
     });
 
+    it('renders semester dropdown with season-year labels aligned to split control start', async () => {
+        window.history.replaceState(null, '', '/course?code=CS101');
+        mocks.coursesGetMock.mockResolvedValue({
+            code: 'CS101',
+            name: 'Intro to CS',
+        });
+        mocks.userPlanGetMock.mockResolvedValue({
+            value: {
+                version: 3,
+                semesterCount: 3,
+                currentSemester: 1,
+                semesters: [
+                    { id: 'חורף-2026-1', courseCodes: [] },
+                    { id: 'אביב-2027-2', courseCodes: [] },
+                    { id: 'קיץ-2027-3', courseCodes: [] },
+                ],
+                wishlistCourseCodes: [],
+                exemptionsCourseCodes: [],
+            },
+        });
+
+        const page = CoursePage();
+        await flushPromises();
+
+        const addCurrentSemester = page.querySelector<HTMLButtonElement>(
+            "[data-role='semester-add-current']"
+        );
+        const dropdownButtons =
+            page.querySelectorAll<HTMLButtonElement>('[data-semester-option]');
+        const dropdownMenu = page.querySelector<HTMLElement>(
+            "[data-role='semester-dropdown-menu']"
+        );
+
+        expect(addCurrentSemester?.textContent).toContain('אביב 2027');
+        expect(dropdownButtons.item(0).textContent).toContain('חורף 2026');
+        expect(dropdownButtons.item(1).textContent).toContain('אביב 2027');
+        expect(dropdownButtons.item(1).textContent).toContain('(נוכחי)');
+        expect(dropdownButtons.item(2).textContent).toContain('קיץ 2027');
+        expect(dropdownMenu?.classList.contains('start-0')).toBe(true);
+    });
+
     it('shows remove action when course is in a legacy semester courses list', async () => {
         window.history.replaceState(null, '', '/course?code=CS101');
         mocks.coursesGetMock.mockResolvedValue({

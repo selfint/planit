@@ -78,15 +78,13 @@ test.describe('first-time-user-experience', () => {
         await expect(page.locator('[data-page="course"]')).toBeVisible();
         await pause(page, 1500);
 
-        const wishlistAdd = page.locator('[data-role="wishlist-add"]');
-        if ((await wishlistAdd.count()) > 0) {
-            await humanClick(page, wishlistAdd);
-            await pause(page, 900);
-            await expect(
-                page.locator('[data-role="wishlist-status"]')
-            ).toContainText(/נוסף|כבר/);
-            await pause(page, 1200);
-        }
+        const addToSemester = page.locator('[data-role="semester-add-current"]');
+        await humanClick(page, addToSemester);
+        await pause(page, 900);
+        await expect(page.locator('[data-role="action-status"]')).toContainText(
+            /נוסף|כבר/
+        );
+        await pause(page, 1200);
 
         await humanClick(
             page,
@@ -97,51 +95,44 @@ test.describe('first-time-user-experience', () => {
         await expect(page.locator('[data-page="plan"]')).toBeVisible();
         await pause(page, 1800);
 
-        const wishlistCourse = page.locator(
-            `[data-course-action][data-row-id="wishlist"][data-course-code="${selectedCourseCode}"]`
+        const plannedCourse = page.locator(
+            `[data-course-action][data-course-code="${selectedCourseCode}"]`
         );
-        const wishlistCount = await wishlistCourse.count();
-        if (wishlistCount > 0) {
-            await humanClick(page, wishlistCourse);
-            await pause(page, 900);
-        }
+        await expect(plannedCourse).toHaveCount(1);
+        await humanClick(page, plannedCourse.first());
+        await pause(page, 900);
 
-        const firstSemesterRow = page
+        const thirdSemesterRow = page
             .locator('[data-plan-row][data-row-kind="semester"]')
-            .first();
-        await humanClick(page, firstSemesterRow.locator('header'));
+            .nth(2);
+        await expect(thirdSemesterRow).toBeVisible();
+        await humanClick(page, thirdSemesterRow);
+        await pause(page, 1200);
+
+        await expect(
+            thirdSemesterRow.locator(
+                `[data-course-action][data-course-code="${selectedCourseCode}"]`
+            )
+        ).toHaveCount(1);
+        await pause(page, 1500);
+
+        await humanClick(
+            page,
+            thirdSemesterRow.locator('[data-semester-link]').first()
+        );
         await pause(page, 1000);
 
-        if (wishlistCount > 0) {
-            await expect(
-                firstSemesterRow.locator(
-                    `[data-course-action][data-course-code="${selectedCourseCode}"]`
-                )
-            ).toHaveCount(1);
-            await expect(wishlistCourse).toHaveCount(0);
-            await pause(page, 1500);
-        }
-
-        if (!page.url().includes('/semester?number=1')) {
-            await humanClick(
-                page,
-                firstSemesterRow.locator('[data-semester-link]').first()
-            );
-            await pause(page, 1000);
-        }
-        await expect(page).toHaveURL(/\/semester\?number=1$/);
+        await expect(page).toHaveURL(/\/semester\?number=3$/);
         await expect(
             page.locator('[data-role="current-semester-title"]')
         ).toContainText('סמסטר');
         await pause(page, 1800);
-        if (wishlistCount > 0) {
-            await expect(
-                page.locator(
-                    `[data-role="current-semester-courses"] [data-course-code="${selectedCourseCode}"]`
-                )
-            ).toHaveCount(1);
-            await pause(page, 1200);
-        }
+        await expect(
+            page.locator(
+                `[data-role="current-semester-courses"] [data-course-code="${selectedCourseCode}"]`
+            )
+        ).toHaveCount(1);
+        await pause(page, 1200);
 
         if (IS_DEMO_MODE) {
             await saveFtuxVideo(page, testInfo);

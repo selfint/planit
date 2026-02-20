@@ -39,23 +39,26 @@ navigation and is rendered by the client-side router.
    `exemptions`): existing placement renders a remove button; no placement
    renders add actions.
 8. The primary action adds to `currentSemester`, while the arrow menu lists all
-   available semesters for explicit placement.
-9. Semester placement detection supports both current `courseCodes` metadata and
+   available semesters for explicit placement using season/year labels derived
+   from semester IDs (with deterministic fallback when IDs are missing).
+9. Removal success status for semester placement uses the same season/year
+   label mapping (instead of numeric `סמסטר N`) for consistency with add flows.
+10. Semester placement detection supports both current `courseCodes` metadata and
    legacy semester `courses` arrays (string codes or `{ code }` records) so
    existing users still get remove-mode when a course is already planned.
-10. Action visibility toggles switch between `inline-flex` and `hidden` classes
+11. Action visibility toggles switch between `inline-flex` and `hidden` classes
     together to avoid conflicting display utilities when mode changes.
-11. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
+12. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
     `חורף`, `spring`/`B` -> `אביב`, `summer`/`C` -> `קיץ`).
-12. Section headers are always visible to keep layout stable.
-13. During loading, each relation grid starts with 3 pre-rendered `CourseCard`
+13. Section headers are always visible to keep layout stable.
+14. During loading, each relation grid starts with 3 pre-rendered `CourseCard`
     skeletons from the HTML template, and section counts use shimmer
     placeholders (without loading text).
-14. During loading, the full points/median/faculty/seasons stat cards use
+15. During loading, the full points/median/faculty/seasons stat cards use
     shimmer placeholders via `data-loading="true"` on each stat tile.
-15. After data resolves, grids are replaced with real cards and empty labels are
+16. After data resolves, grids are replaced with real cards and empty labels are
     shown only for empty result sets.
-16. Planner writes keep metadata intact in `planPageState`, including
+17. Planner writes keep metadata intact in `planPageState`, including
     `semesterCount`, `semesters`, and `currentSemester`.
 
 ## Storybook
@@ -140,6 +143,23 @@ mock_plan(currentSemester=1, semesters=[[]])
 page = CoursePage('/course?code=CS101')
 click('[data-role="semester-add-current"]')
 assert 'CS101' in last_user_plan_set().semesters[1].courseCodes
+```
+
+### `renders semester dropdown with season-year labels aligned to split control start`
+
+WHAT: Verifies split-action labels use semester season/year names and dropdown
+menu anchoring starts at the split-control start edge.
+WHY: Improves planner clarity by showing real term names and keeps menu position
+visually aligned with the primary add action.
+HOW: Mocks semester IDs like `אביב-2027-2`, renders page, then asserts button
+labels use season/year text and dropdown menu keeps `start-0` alignment class.
+
+```python
+mock_plan(currentSemester=1, semesters=[id('חורף-2026-1'), id('אביב-2027-2')])
+page = CoursePage('/course?code=CS101')
+flush_promises()
+assert 'אביב 2027' in text('[data-role="semester-add-current"]')
+assert has_class('[data-role="semester-dropdown-menu"]', 'start-0')
 ```
 
 ### `shows remove action when course is in a legacy semester courses list`
