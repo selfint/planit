@@ -220,6 +220,17 @@ describe('SemesterPage', () => {
         ).map((node) => node.textContent.trim());
         expect(freeTitles).toContain('בחירה חופשית: מתמטיקה');
         expect(freeTitles).toContain('בחירה חופשית: פיזיקה');
+
+        const freeRows = Array.from(
+            page.querySelectorAll<HTMLElement>(
+                '[data-group-kind="free"] [data-role="group-row"]'
+            )
+        );
+        expect(freeRows.length).toBeGreaterThan(0);
+        for (const row of freeRows) {
+            expect(row.classList.contains('snap-x')).toBe(true);
+            expect(row.classList.contains('md:grid')).toBe(false);
+        }
     });
 
     it('selects a course and adds it into current semester panel', async () => {

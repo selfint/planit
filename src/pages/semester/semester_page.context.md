@@ -15,7 +15,7 @@ semester selected by the `number` query parameter.
   current semester adds it, second click on the same selected course opens
   the course page.
 - Cancel button in the current semester panel clears pending move selection.
-- Horizontal scroll rows on mobile and denser row/grid behavior on wider screens.
+- Horizontal scroll rows for requirement and free-elective groups.
 - Row-level skeleton placeholders render before each row hydrates (up to 10 cards
   per row) and are non-interactive until data is loaded.
 - Error state message when local data reads fail.
@@ -60,7 +60,7 @@ assert 'חורף 2027' in title
 
 WHAT: Verifies data is split into current, requirement, and free-elective groups.
 WHY: Prevents mixing scopes and keeps semester planning context clear.
-HOW: Mocks semester/course/requirement payloads, renders page, then asserts course codes and group titles appear in separate containers.
+HOW: Mocks semester/course/requirement payloads, renders page, then asserts course codes and group titles appear in separate containers and free-elective containers use row classes.
 
 ```python
 mock_semester_courses(['A100'])
