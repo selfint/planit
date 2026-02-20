@@ -13,7 +13,7 @@ Provides client-side SPA route rendering and internal link interception.
 - `shouldHandleClickNavigation(event)`: Decides if a click should be handled by the SPA router.
 - `REDIRECT_SESSION_KEY`: Session storage key used for GitHub Pages deep-link recovery.
 - `initRouterNavigationInterception()`: Registers delegated same-origin anchor interception.
-- `initRouter()`: Initializes initial render and history/state-change rerender handling.
+- `initRendering()`: Initializes initial render and history/state-change rerender handling.
 
 ## Data Flow
 

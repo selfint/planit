@@ -10,19 +10,20 @@ temporary loading overlay, then mounts routing and PWA update handling.
 
 1. Loads global styles.
 2. In dev with seeded payload key, runs `initDevSync()` first.
-3. Initializes click navigation interception (`initRouterNavigationInterception()`)
-   before any startup waits, so internal link clicks are captured even while the
-   loading screen is shown.
-4. If online and not running with seeded dev payload (`import.meta.env.DEV` +
+3. Starts PWA registration/update checks (`initPWA()`).
+4. Initializes router navigation interception (`initRouterNavigationInterception()`)
+   before any startup waits. This wires `popstate`/anchor interception, restores
+   any session redirect path, and registers route rerendering on state-provider
+   swaps.
+5. If online and not running with seeded dev payload (`import.meta.env.DEV` +
    `planit:dev-state` in localStorage), mounts `AppLoadingScreen.html`, awaits
    `preloadFirebase()`, then awaits one-time startup sync for
    `courseData.json` and `catalogs.json`.
-5. Removes the loading overlay after preload/sync finishes.
-6. If offline, or if seeded dev payload is present, skips startup online preload.
-7. Initializes SPA route rendering/history wiring (`initRouter()`).
-8. Appends `PwaUpdateToast()` to `document.body` so update prompts can be shown
+6. Removes the loading overlay after preload/sync finishes.
+7. If offline, or if seeded dev payload is present, skips startup online preload.
+8. Initializes SPA route rendering (`initRendering()`).
+9. Appends `PwaUpdateToast()` to `document.body` so update prompts can be shown
    from anywhere in the app.
-9. Starts PWA registration/update checks (`initPWA()`).
 
 ## Business/User Flow Rationale
 

@@ -198,7 +198,7 @@ function restoreRedirectFromSession(): void {
     window.history.replaceState(null, '', redirectUrl);
 }
 
-export function initRouter(): void {
+export function initRendering(): void {
     renderRoute(window.location.pathname, true);
 }
 

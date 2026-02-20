@@ -1,7 +1,7 @@
 import './style.css';
 
 import { DEV_STATE_STORAGE_KEY, initDevSync } from '$lib/test-utils/devSync';
-import { initRouter, initRouterNavigationInterception } from '$lib/router';
+import { initRendering, initRouterNavigationInterception } from '$lib/router';
 import { PwaUpdateToast } from '$components/PwaUpdateToast';
 import { initPWA } from '$lib/pwa';
 import { preloadFirebase } from '$lib/firebase';
@@ -27,7 +27,7 @@ async function main(): Promise<void> {
         loadingScreen.remove();
     }
 
-    initRouter();
+    initRendering();
     document.body.append(PwaUpdateToast());
 }
 
