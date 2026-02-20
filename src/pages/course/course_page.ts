@@ -40,7 +40,6 @@ type CoursePageElements = {
     exemptionsAdd: HTMLButtonElement;
     placementRemove: HTMLButtonElement;
     actionStatus: HTMLElement;
-    searchLink: HTMLAnchorElement;
     notFoundState: HTMLElement;
     notFoundMessage: HTMLElement;
     dependenciesGrid: HTMLElement;
@@ -67,6 +66,15 @@ type PersistedPlan = {
     semesters: { id?: string; courseCodes?: string[] }[];
     wishlistCourseCodes?: string[];
     exemptionsCourseCodes?: string[];
+};
+
+type NormalizedPersistedPlan = {
+    version: number;
+    semesterCount: number;
+    currentSemester: number;
+    semesters: { id?: string; courseCodes?: string[] }[];
+    wishlistCourseCodes: string[];
+    exemptionsCourseCodes: string[];
 };
 
 type CoursePlacement =
@@ -96,7 +104,6 @@ export function CoursePage(): HTMLElement {
 
     const elements = queryElements(root);
     const requestedCode = getRequestedCourseCode(window.location.search);
-    updateSearchLink(elements.searchLink, requestedCode);
     setupCourseActions(root, elements, requestedCode);
 
     if (requestedCode === undefined) {
@@ -198,9 +205,6 @@ function queryElements(root: HTMLElement): CoursePageElements {
     const actionStatus = root.querySelector<HTMLElement>(
         "[data-role='action-status']"
     );
-    const searchLink = root.querySelector<HTMLAnchorElement>(
-        "[data-role='search-link']"
-    );
     const notFoundState = root.querySelector<HTMLElement>(
         "[data-state='not-found']"
     );
@@ -263,7 +267,6 @@ function queryElements(root: HTMLElement): CoursePageElements {
         exemptionsAdd === null ||
         placementRemove === null ||
         actionStatus === null ||
-        searchLink === null ||
         notFoundState === null ||
         notFoundMessage === null ||
         dependenciesGrid === null ||
@@ -301,7 +304,6 @@ function queryElements(root: HTMLElement): CoursePageElements {
         exemptionsAdd,
         placementRemove,
         actionStatus,
-        searchLink,
         notFoundState,
         notFoundMessage,
         dependenciesGrid,
@@ -332,18 +334,6 @@ function getRequestedCourseCode(search: string): string | undefined {
     }
 
     return normalized;
-}
-
-function updateSearchLink(
-    link: HTMLAnchorElement,
-    code: string | undefined
-): void {
-    if (code === undefined) {
-        link.href = '/search';
-        return;
-    }
-
-    link.href = `/search?q=${encodeURIComponent(code)}`;
 }
 
 function setupCourseActions(
@@ -481,7 +471,7 @@ function renderSemesterOptions(
         const button = document.createElement('button');
         button.type = 'button';
         button.className =
-            'hover:bg-surface-2 text-text touch-manipulation min-h-11 rounded-xl px-3 py-2 text-start text-xs';
+            'hover:bg-surface-2 text-text touch-manipulation min-h-10 rounded-xl px-2.5 py-1.5 text-start text-xs';
         button.dataset.semesterOption = 'true';
         button.dataset.semesterIndex = String(semesterIndex);
         const isCurrent = semesterIndex === normalizedCurrent;
@@ -619,7 +609,7 @@ function setCourseActionsBusy(
     }
 }
 
-async function readPersistedPlan(): Promise<PersistedPlan> {
+async function readPersistedPlan(): Promise<NormalizedPersistedPlan> {
     const metaEntry = await appState.userPlan.get();
     const rawPlan = toPersistedPlan(metaEntry?.value);
     const semesterCount = normalizeSemesterCount(rawPlan?.semesterCount);
@@ -642,7 +632,7 @@ async function readPersistedPlan(): Promise<PersistedPlan> {
 }
 
 function resolveCoursePlacement(
-    plan: PersistedPlan,
+    plan: NormalizedPersistedPlan,
     courseCode: string
 ): CoursePlacement {
     const normalizedCode = courseCode.trim().toUpperCase();
@@ -681,13 +671,13 @@ function ensureSemesters(
         courseCodes: normalizeCourseCodes(semester.courseCodes),
     }));
     while (normalizedSemesters.length < semesterCount) {
-        normalizedSemesters.push({ courseCodes: [] });
+        normalizedSemesters.push({ id: undefined, courseCodes: [] });
     }
     return normalizedSemesters;
 }
 
 async function updatePersistedPlan(
-    update: (plan: PersistedPlan) => boolean
+    update: (plan: NormalizedPersistedPlan) => boolean
 ): Promise<boolean> {
     const plan = await readPersistedPlan();
     const changed = update(plan);

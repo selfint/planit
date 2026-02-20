@@ -14,6 +14,8 @@ navigation and is rendered by the client-side router.
   persisted placement (semester / wishlist / exemptions).
 - A split primary action that adds to the current semester and exposes a
   dropdown for adding to any other semester.
+- The action row is planner-focused only (no legacy navigation shortcut
+  buttons), with compact button sizing for denser mobile/desktop layout.
 - Loading skeleton state, query validation state, and course-not-found state.
 - Related course sections for dependencies, dependants (inverse dependency
   lookup), adjacent courses, and exclusive courses.

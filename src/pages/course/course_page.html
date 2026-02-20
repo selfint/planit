@@ -91,7 +91,7 @@
                         >
                             <button
                                 type="button"
-                                class="bg-accent text-accent-contrast inline-flex min-h-11 touch-manipulation items-center rounded-s-full px-5 font-medium"
+                                class="bg-accent text-accent-contrast inline-flex min-h-10 touch-manipulation items-center rounded-s-full px-4 font-medium"
                                 data-role="semester-add-current"
                             >
                                 הוסף לסמסטר הנוכחי
@@ -101,10 +101,14 @@
                                 data-role="semester-dropdown"
                             >
                                 <summary
-                                    class="bg-accent text-accent-contrast flex min-h-11 touch-manipulation list-none items-center rounded-e-full border-s border-black/10 px-3"
+                                    class="bg-accent text-accent-contrast flex min-h-10 touch-manipulation list-none items-center rounded-e-full border-s border-black/10 px-2.5"
                                     data-role="semester-dropdown-toggle"
                                 >
-                                    <span aria-hidden="true">▾</span>
+                                    <span
+                                        aria-hidden="true"
+                                        class="text-lg leading-none"
+                                        >▾</span
+                                    >
                                     <span class="sr-only">בחירת סמסטר אחר</span>
                                 </summary>
                                 <div
@@ -115,44 +119,25 @@
                         </div>
                         <button
                             type="button"
-                            class="border-border bg-surface-2 text-text inline-flex min-h-11 touch-manipulation items-center rounded-full border px-5 font-medium"
+                            class="border-border bg-surface-2 text-text inline-flex min-h-10 touch-manipulation items-center rounded-full border px-4 font-medium"
                             data-role="wishlist-add"
                         >
                             הוסף לרשימת המשאלות
                         </button>
                         <button
                             type="button"
-                            class="border-border bg-surface-2 text-text inline-flex min-h-11 touch-manipulation items-center rounded-full border px-5 font-medium"
+                            class="border-border bg-surface-2 text-text inline-flex min-h-10 touch-manipulation items-center rounded-full border px-4 font-medium"
                             data-role="exemptions-add"
                         >
                             הוסף לפטורים
                         </button>
                         <button
                             type="button"
-                            class="border-border bg-surface-2 text-text hidden min-h-11 touch-manipulation items-center rounded-full border px-5 font-medium"
+                            class="border-border bg-surface-2 text-text hidden min-h-10 touch-manipulation items-center rounded-full border px-4 font-medium"
                             data-role="placement-remove"
                         >
                             הסר
                         </button>
-                        <a
-                            class="bg-accent text-accent-contrast inline-flex min-h-11 touch-manipulation items-center rounded-full px-5 font-medium"
-                            data-role="search-link"
-                            href="/search"
-                        >
-                            פתיחה בחיפוש
-                        </a>
-                        <a
-                            class="border-border bg-surface-2 text-text inline-flex min-h-11 touch-manipulation items-center rounded-full border px-5 font-medium"
-                            href="/catalog"
-                        >
-                            מעבר לקטלוגים
-                        </a>
-                        <a
-                            class="border-border bg-surface-2 text-text inline-flex min-h-11 touch-manipulation items-center rounded-full border px-5 font-medium"
-                            href="/plan"
-                        >
-                            חזרה למתכנן
-                        </a>
                     </div>
                     <p
                         class="text-text-muted text-xs"
