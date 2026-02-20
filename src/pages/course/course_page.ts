@@ -846,12 +846,45 @@ function normalizeSemesters(
         if (typeof entry !== 'object' || entry === null) {
             return { courseCodes: [] };
         }
-        const raw = entry as { id?: unknown; courseCodes?: unknown };
+        const raw = entry as {
+            id?: unknown;
+            courseCodes?: unknown;
+            courses?: unknown;
+        };
+        const courseCodes = normalizeCourseCodes(raw.courseCodes);
         return {
             id: typeof raw.id === 'string' ? raw.id : undefined,
-            courseCodes: normalizeCourseCodes(raw.courseCodes),
+            courseCodes:
+                courseCodes.length > 0
+                    ? courseCodes
+                    : normalizeLegacySemesterCourses(raw.courses),
         };
     });
+}
+
+function normalizeLegacySemesterCourses(value: unknown): string[] {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    const legacyCodes: string[] = [];
+    for (const entry of value) {
+        if (typeof entry === 'string') {
+            legacyCodes.push(entry);
+            continue;
+        }
+
+        if (typeof entry !== 'object' || entry === null) {
+            continue;
+        }
+
+        const record = entry as { code?: unknown };
+        if (typeof record.code === 'string') {
+            legacyCodes.push(record.code);
+        }
+    }
+
+    return normalizeCourseCodes(legacyCodes);
 }
 
 function normalizeSemesterCount(value: unknown): number {

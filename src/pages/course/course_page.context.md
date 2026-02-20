@@ -40,17 +40,20 @@ navigation and is rendered by the client-side router.
    renders add actions.
 8. The primary action adds to `currentSemester`, while the arrow menu lists all
    available semesters for explicit placement.
-9. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
-   `חורף`, `spring`/`B` -> `אביב`, `summer`/`C` -> `קיץ`).
-10. Section headers are always visible to keep layout stable.
-11. During loading, each relation grid starts with 3 pre-rendered `CourseCard`
+9. Semester placement detection supports both current `courseCodes` metadata and
+   legacy semester `courses` arrays (string codes or `{ code }` records) so
+   existing users still get remove-mode when a course is already planned.
+10. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
+    `חורף`, `spring`/`B` -> `אביב`, `summer`/`C` -> `קיץ`).
+11. Section headers are always visible to keep layout stable.
+12. During loading, each relation grid starts with 3 pre-rendered `CourseCard`
     skeletons from the HTML template, and section counts use shimmer
     placeholders (without loading text).
-12. During loading, the full points/median/faculty/seasons stat cards use
+13. During loading, the full points/median/faculty/seasons stat cards use
     shimmer placeholders via `data-loading="true"` on each stat tile.
-13. After data resolves, grids are replaced with real cards and empty labels are
+14. After data resolves, grids are replaced with real cards and empty labels are
     shown only for empty result sets.
-14. Planner writes keep metadata intact in `planPageState`, including
+15. Planner writes keep metadata intact in `planPageState`, including
     `semesterCount`, `semesters`, and `currentSemester`.
 
 ## Storybook
@@ -135,6 +138,23 @@ mock_plan(currentSemester=1, semesters=[[]])
 page = CoursePage('/course?code=CS101')
 click('[data-role="semester-add-current"]')
 assert 'CS101' in last_user_plan_set().semesters[1].courseCodes
+```
+
+### `shows remove action when course is in a legacy semester courses list`
+
+WHAT: Verifies remove-mode still works for persisted plans using legacy semester
+`courses` arrays instead of `courseCodes`.
+WHY: Existing users may carry older metadata, and they still need placement-aware
+actions to hide the add split button.
+HOW: Mocks a v2 plan with `semesters[0].courses=[{ code: 'CS101' }]`, renders the
+page, and asserts the remove button is visible with a semester-specific label.
+
+```python
+mock_plan(version=2, semesters=[{'courses': [{'code': 'CS101'}]}])
+page = CoursePage('/course?code=CS101')
+flush_promises()
+assert visible('[data-role="placement-remove"]')
+assert 'מסמסטר 1' in text('[data-role="placement-remove"]')
 ```
 
 ## Integration Tests

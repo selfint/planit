@@ -262,6 +262,43 @@ describe('course page', () => {
             | undefined;
         expect(payload?.semesters?.[1]?.courseCodes).toContain('CS101');
     });
+
+    it('shows remove action when course is in a legacy semester courses list', async () => {
+        window.history.replaceState(null, '', '/course?code=CS101');
+        mocks.coursesGetMock.mockResolvedValue({
+            code: 'CS101',
+            name: 'Intro to CS',
+        });
+        mocks.userPlanGetMock.mockResolvedValue({
+            value: {
+                version: 2,
+                semesterCount: 6,
+                currentSemester: 0,
+                semesters: [
+                    {
+                        id: 'legacy-semester-1',
+                        courses: [{ code: 'CS101' }],
+                    },
+                ],
+                wishlistCourseCodes: [],
+                exemptionsCourseCodes: [],
+            },
+        });
+
+        const page = CoursePage();
+        await flushPromises();
+
+        const removeButton = page.querySelector<HTMLButtonElement>(
+            "[data-role='placement-remove']"
+        );
+        const semesterSplitControl = page.querySelector<HTMLElement>(
+            "[data-role='semester-split-control']"
+        );
+
+        expect(removeButton?.classList.contains('hidden')).toBe(false);
+        expect(removeButton?.textContent).toContain('מסמסטר 1');
+        expect(semesterSplitControl?.classList.contains('hidden')).toBe(true);
+    });
 });
 
 async function flushPromises(): Promise<void> {
