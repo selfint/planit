@@ -43,17 +43,19 @@ navigation and is rendered by the client-side router.
 9. Semester placement detection supports both current `courseCodes` metadata and
    legacy semester `courses` arrays (string codes or `{ code }` records) so
    existing users still get remove-mode when a course is already planned.
-10. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
+10. Action visibility toggles switch between `inline-flex` and `hidden` classes
+    together to avoid conflicting display utilities when mode changes.
+11. Seasons are normalized to Hebrew labels (for example: `winter`/`A` ->
     `חורף`, `spring`/`B` -> `אביב`, `summer`/`C` -> `קיץ`).
-11. Section headers are always visible to keep layout stable.
-12. During loading, each relation grid starts with 3 pre-rendered `CourseCard`
+12. Section headers are always visible to keep layout stable.
+13. During loading, each relation grid starts with 3 pre-rendered `CourseCard`
     skeletons from the HTML template, and section counts use shimmer
     placeholders (without loading text).
-13. During loading, the full points/median/faculty/seasons stat cards use
+14. During loading, the full points/median/faculty/seasons stat cards use
     shimmer placeholders via `data-loading="true"` on each stat tile.
-14. After data resolves, grids are replaced with real cards and empty labels are
+15. After data resolves, grids are replaced with real cards and empty labels are
     shown only for empty result sets.
-15. Planner writes keep metadata intact in `planPageState`, including
+16. Planner writes keep metadata intact in `planPageState`, including
     `semesterCount`, `semesters`, and `currentSemester`.
 
 ## Storybook
@@ -183,4 +185,18 @@ page.goto('/course?code=104031')
 assert page.main().is_visible()
 assert page.heading('פרטי קורס').is_visible()
 assert page.text('/course?code=104031').count() == 0
+```
+
+### `switches to remove action after adding course to current semester`
+
+WHAT: Verifies the add action transitions the UI into remove-mode immediately.
+WHY: Prevents users from seeing conflicting add/remove controls after placement updates.
+HOW: Opens `/course?code=104031`, clicks the current-semester add action, then asserts remove button visibility and add button hidden state.
+
+```python
+page.goto('/course?code=104031')
+click('[data-role="semester-add-current"]')
+assert visible('[data-role="placement-remove"]')
+assert 'הסר מסמסטר 1' in text('[data-role="placement-remove"]')
+assert hidden('[data-role="semester-add-current"]')
 ```

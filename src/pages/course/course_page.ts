@@ -407,10 +407,10 @@ function setupCourseActions(
 }
 
 function disableCourseActions(elements: CoursePageElements): void {
-    elements.semesterSplitControl.classList.add('hidden');
-    elements.wishlistAdd.classList.add('hidden');
-    elements.exemptionsAdd.classList.add('hidden');
-    elements.placementRemove.classList.remove('hidden');
+    hideInlineFlexElement(elements.semesterSplitControl);
+    hideInlineFlexElement(elements.wishlistAdd);
+    hideInlineFlexElement(elements.exemptionsAdd);
+    showInlineFlexElement(elements.placementRemove);
     elements.placementRemove.disabled = true;
     elements.semesterDropdown.open = false;
 }
@@ -433,21 +433,31 @@ async function refreshCourseActionsUi(
     renderSemesterOptions(elements, plan.semesters, plan.currentSemester);
 
     if (placement.kind === 'none') {
-        elements.semesterSplitControl.classList.remove('hidden');
-        elements.wishlistAdd.classList.remove('hidden');
-        elements.exemptionsAdd.classList.remove('hidden');
-        elements.placementRemove.classList.add('hidden');
+        showInlineFlexElement(elements.semesterSplitControl);
+        showInlineFlexElement(elements.wishlistAdd);
+        showInlineFlexElement(elements.exemptionsAdd);
+        hideInlineFlexElement(elements.placementRemove);
         elements.placementRemove.disabled = true;
         return;
     }
 
-    elements.semesterSplitControl.classList.add('hidden');
-    elements.wishlistAdd.classList.add('hidden');
-    elements.exemptionsAdd.classList.add('hidden');
-    elements.placementRemove.classList.remove('hidden');
+    hideInlineFlexElement(elements.semesterSplitControl);
+    hideInlineFlexElement(elements.wishlistAdd);
+    hideInlineFlexElement(elements.exemptionsAdd);
+    showInlineFlexElement(elements.placementRemove);
     elements.placementRemove.disabled = false;
     elements.placementRemove.textContent = getPlacementRemoveLabel(placement);
     elements.semesterDropdown.open = false;
+}
+
+function hideInlineFlexElement(element: HTMLElement): void {
+    element.classList.remove('inline-flex');
+    element.classList.add('hidden');
+}
+
+function showInlineFlexElement(element: HTMLElement): void {
+    element.classList.remove('hidden');
+    element.classList.add('inline-flex');
 }
 
 function renderSemesterOptions(
