@@ -7,8 +7,6 @@ type UpdateEventDetail = {
     updateSW: UpdateSW;
 };
 
-const IS_DEVELOPMENT_MODE = import.meta.env.MODE === 'development';
-
 export function PwaUpdateToast(): HTMLElement {
     const template = document.createElement('template');
     template.innerHTML = templateHtml;
@@ -34,17 +32,6 @@ export function PwaUpdateToast(): HTMLElement {
     }
 
     let pendingUpdate: UpdateSW | null = null;
-
-    if (IS_DEVELOPMENT_MODE) {
-        // function must be async
-        // eslint-disable-next-line @typescript-eslint/require-await
-        pendingUpdate = async (reloadPage = true): Promise<void> => {
-            if (reloadPage) {
-                window.location.reload();
-            }
-        };
-        toast.classList.remove('hidden');
-    }
 
     window.addEventListener(PWA_UPDATE_EVENT, (event) => {
         const customEvent = event as CustomEvent<UpdateEventDetail>;

@@ -117,15 +117,30 @@ function collectCourses(node: RequirementNode, courses: Set<string>): void {
 }
 
 function isPathNode(node: RequirementNode): boolean {
-    if (typeof node.en !== 'string') {
-        return false;
+    if (typeof node.he === 'string') {
+        const normalized = node.he.toLowerCase();
+        return (
+            node.he.includes('מסלול') ||
+            node.he.includes('נתיב') ||
+            normalized.includes('path')
+        );
     }
-    return node.en.toLowerCase().includes('path');
+
+    if (typeof node.en === 'string') {
+        return node.en.toLowerCase().includes('path');
+    }
+
+    return false;
 }
 
 function isElectiveNode(node: RequirementNode): boolean {
-    if (typeof node.en !== 'string') {
-        return false;
+    if (typeof node.he === 'string') {
+        return node.he.includes('בחירה');
     }
-    return node.en.toLowerCase().includes('elective');
+
+    if (typeof node.en === 'string') {
+        return node.en.toLowerCase().includes('elective');
+    }
+
+    return false;
 }

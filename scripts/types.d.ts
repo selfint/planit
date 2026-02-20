@@ -1,0 +1,86 @@
+type TreeOnDemandSetResponse = {
+    ParentStext: string;
+    Short: string;
+    HasChildren: boolean;
+    HasDetails: boolean;
+    IsNotApplicable: boolean;
+    SpecialInfo: string;
+    HasModules: boolean;
+    Otjid: string;
+    ParentOtjid: string;
+    Otype: string;
+    Objid: string;
+    Stext: string;
+    Cgcat: string;
+    Ects: string;
+    Invisible: string;
+    Vpriox: string;
+    Peryr: string;
+    Perid: string;
+    Orgid: string;
+};
+
+type I18N = {
+    he: string;
+};
+
+type Track = {
+    Otjid: string;
+    Peryr: string;
+    Perid: SemesterNumber;
+    Name: I18N;
+    OrgId: string;
+    OrgText: I18N;
+    ZzQualifications: I18N;
+};
+
+type TreeHead = {
+    courses?: string[];
+    children?: Tree[];
+};
+
+type Tree = {
+    Otjid: string;
+    Name: I18N;
+    courses?: string[];
+    children?: Tree[];
+};
+
+type Catalog = {
+    track: Track;
+    tree: TreeHead;
+};
+
+type Degree = Track[];
+
+type Faculty = {
+    Name: I18N;
+    PiqYear: string;
+    PiqSession: string;
+    ZzOrgId: string;
+    ZzOrgName: string;
+};
+
+type SemesterNumber = '200' | '201' | '202';
+
+type SemesterYear = {
+    PiqSession: SemesterNumber;
+    PiqYear: string;
+    IsCurrent: 0 | -1;
+};
+
+type CourseHeader = {
+    Otjid: string;
+    Peryr: string;
+    Perid: string;
+};
+
+type Result<T, E> =
+    | {
+          status: 'ok';
+          value: T;
+      }
+    | {
+          status: 'err';
+          value: E;
+      };

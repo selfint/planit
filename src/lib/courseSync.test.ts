@@ -12,6 +12,8 @@ vi.mock('$lib/indexeddb', () => ({
 const mockGetMeta = vi.mocked(getMeta);
 const mockSetMeta = vi.mocked(setMeta);
 const mockPutCourses = vi.mocked(putCourses);
+const generatedTimestamp = 1739894400000;
+const generatedAtIso = new Date(generatedTimestamp).toISOString();
 
 function stubNavigator(online: boolean): void {
     vi.stubGlobal('navigator', { onLine: online });
@@ -19,22 +21,6 @@ function stubNavigator(online: boolean): void {
 
 function stubFetch(impl: (input: RequestInfo) => Promise<Response>): void {
     vi.stubGlobal('fetch', vi.fn(impl));
-}
-
-function getRequestUrl(input: RequestInfo): string {
-    if (typeof input === 'string') {
-        return input;
-    }
-
-    if (input instanceof URL) {
-        return input.toString();
-    }
-
-    if (input instanceof Request) {
-        return input.url;
-    }
-
-    return '';
 }
 
 function makeJsonResponse(data: unknown, init?: ResponseInit): Response {
@@ -63,26 +49,10 @@ describe('course sync lib', () => {
     });
 
     it('skips when remote data is unchanged', async () => {
-        const remoteDate = '2024-01-01T00:00:00Z';
         stubNavigator(true);
-        stubFetch((input) => {
-            if (getRequestUrl(input).includes('api.github.com')) {
-                return Promise.resolve(
-                    makeJsonResponse([
-                        { commit: { committer: { date: remoteDate } } },
-                    ])
-                );
-            }
-            return Promise.resolve(makeJsonResponse({}, { status: 304 }));
-        });
+        stubFetch(() => Promise.resolve(new Response(null, { status: 304 })));
 
         mockGetMeta.mockImplementation((key) => {
-            if (key === 'courseDataRemoteUpdatedAt') {
-                return Promise.resolve({ key, value: remoteDate });
-            }
-            if (key === 'courseDataLastSync') {
-                return Promise.resolve({ key, value: '2024-01-02T00:00:00Z' });
-            }
             if (key === 'courseDataEtag') {
                 return Promise.resolve({ key, value: 'etag' });
             }
@@ -96,41 +66,36 @@ describe('course sync lib', () => {
 
         expect(result.status).toBe('skipped');
         expect(mockPutCourses).not.toHaveBeenCalled();
-        expect(mockSetMeta).toHaveBeenCalledWith({
-            key: 'courseDataRemoteUpdatedAt',
-            value: remoteDate,
-        });
-        expect(mockSetMeta).toHaveBeenCalledWith(
-            expect.objectContaining({ key: 'courseDataLastChecked' })
-        );
+        expect(mockSetMeta).not.toHaveBeenCalled();
     });
 
     it('updates courses when remote data changes', async () => {
-        const remoteDate = '2024-02-01T00:00:00Z';
         stubNavigator(true);
-        stubFetch((input) => {
-            if (getRequestUrl(input).includes('api.github.com')) {
+        let callIndex = 0;
+        stubFetch(() => {
+            callIndex += 1;
+            if (callIndex === 1) {
                 return Promise.resolve(
-                    makeJsonResponse([
-                        { commit: { committer: { date: remoteDate } } },
-                    ])
+                    makeJsonResponse(
+                        {
+                            CS101: { code: 'CS101', name: 'Intro' },
+                            CS102: {
+                                code: 'CS102',
+                                name: 'Data Structures',
+                            },
+                        },
+                        {
+                            status: 200,
+                            headers: {
+                                etag: 'etag-1',
+                                'last-modified': 'Wed, 21 Oct 2015 07:28:00 GMT',
+                            },
+                        }
+                    )
                 );
             }
-
             return Promise.resolve(
-                makeJsonResponse(
-                    {
-                        CS101: { code: 'CS101', name: 'Intro' },
-                        CS102: { code: 'CS102', name: 'Data Structures' },
-                    },
-                    {
-                        status: 200,
-                        headers: {
-                            etag: 'etag-1',
-                            'last-modified': 'Wed, 21 Oct 2015 07:28:00 GMT',
-                        },
-                    }
-                )
+                makeJsonResponse({ timestamp: generatedTimestamp }, { status: 200 })
             );
         });
 
@@ -147,6 +112,10 @@ describe('course sync lib', () => {
         expect(mockSetMeta).toHaveBeenCalledWith({
             key: 'courseDataCount',
             value: 2,
+        });
+        expect(mockSetMeta).toHaveBeenCalledWith({
+            key: 'courseDataGeneratedAt',
+            value: generatedAtIso,
         });
     });
 });

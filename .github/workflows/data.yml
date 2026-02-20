@@ -1,0 +1,88 @@
+name: Data
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 0 * * *'
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  generate-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create branch
+        run: |
+          git checkout -B generate-data
+          git reset --hard origin/main
+
+      - name: Update data files
+        run: |
+          pnpm run data:generate
+
+      - name: Check if data has changed
+        id: check_changes
+        run: |
+          if git diff --quiet public/_data; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            echo "No changes under public/_data, stopping workflow."
+          else
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Push changes to branch
+        if: steps.check_changes.outputs.changed == 'true'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/_data
+          git commit -m "[Automated] Update data"
+          git push --force origin generate-data
+
+      - name: Create or update pull request
+        if: steps.check_changes.outputs.changed == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          DATE=$(date +'%d-%m-%Y')
+          gh pr create --base main --head generate-data \
+            --title "[Automated] Update data ${DATE}" \
+            --body "This automated PR updates generated data under \`public/_data\`." \
+          || gh pr edit --base main --head generate-data \
+            --title "[Automated] Update data ${DATE}" \
+            --body "This automated PR updates generated data under \`public/_data\`."
+
+      # - name: Merge directly to main (alternative to PR)
+      #   if: steps.check_changes.outputs.changed == 'true'
+      #   env:
+      #     GH_TOKEN: ${{ github.token }}
+      #   run: |
+      #     git config user.name "github-actions[bot]"
+      #     git config user.email "github-actions[bot]@users.noreply.github.com"
+      #     git checkout main
+      #     git reset --hard origin/main
+      #     git merge --ff-only generate-data
+      #     git push origin main

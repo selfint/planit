@@ -37,7 +37,6 @@ export default defineConfig({
     workers: demoMode ? 1 : undefined,
     use: {
         baseURL,
-        storageState: 'tests/state/playwright.storage-state.json',
         video: demoMode
             ? {
                   mode: 'on',

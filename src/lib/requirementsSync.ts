@@ -30,7 +30,7 @@ function isOnline(): boolean {
 }
 
 function buildRequirementsUrl(selection: RequirementsSelection): string {
-    return `https://raw.githubusercontent.com/selfint/degree-planner/main/static/_catalogs/${selection.catalogId}/${selection.facultyId}/${selection.programId}/requirementsData.json`;
+    return `_data/_catalogs/${selection.catalogId}/${selection.facultyId}/${selection.programId}/requirementsData.json`;
 }
 
 export async function getActiveRequirementsSelection(): Promise<

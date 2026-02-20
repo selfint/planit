@@ -63,6 +63,7 @@ describe('stateManagement', () => {
         await localProvider.courses.page(10, 0);
         await localProvider.courses.count();
         await localProvider.courses.faculties();
+        await localProvider.courses.getLastSync();
         await localProvider.catalogs.get();
         await localProvider.requirements.get('0324');
         await localProvider.userDegree.get();
@@ -79,6 +80,7 @@ describe('stateManagement', () => {
         expect(mocks.getCoursesPageMock).toHaveBeenCalledWith(10, 0);
         expect(mocks.getCoursesCountMock).toHaveBeenCalled();
         expect(mocks.getCourseFacultiesMock).toHaveBeenCalled();
+        expect(mocks.getMetaMock).toHaveBeenCalledWith('courseDataGeneratedAt');
         expect(mocks.getCatalogsMock).toHaveBeenCalled();
         expect(mocks.getRequirementMock).toHaveBeenCalledWith('0324');
         expect(mocks.getActiveRequirementsSelectionMock).toHaveBeenCalled();

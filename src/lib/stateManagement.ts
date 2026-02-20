@@ -31,7 +31,7 @@ import {
 } from '$lib/requirementsSync';
 
 const PLAN_META_KEY = 'planPageState';
-const COURSE_LAST_SYNC_META_KEY = 'courseDataLastSync';
+const COURSE_LAST_SYNC_META_KEY = 'courseDataGeneratedAt';
 
 export type StateProvider = {
     courses: {

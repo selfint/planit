@@ -26,3 +26,4 @@ dev-dist
 *.sw?
 .pnpm-store
 test-results
+scripts/.cache

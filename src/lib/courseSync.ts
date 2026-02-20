@@ -1,16 +1,31 @@
 import { getMeta, putCourses, setMeta } from '$lib/indexeddb';
 import type { CourseRecord } from '$lib/indexeddb';
 
-const COURSE_DATA_URL =
-    'https://raw.githubusercontent.com/selfint/degree-planner/main/static/courseData.json';
+function getEnvString(name: string, fallback: string): string {
+    const env = import.meta.env as Record<string, unknown>;
+    const value = env[name];
+
+    if (typeof value === 'string' && value.length > 0) {
+        return value;
+    }
+
+    return fallback;
+}
+
+const DATA_BASE_URL = getEnvString(
+    'VITE_DATA_BASE_URL',
+    '_data'
+);
+
+const COURSE_DATA_URL = `${DATA_BASE_URL}/courseData.json`;
+const DATA_GENERATED_AT_URL = `${DATA_BASE_URL}/generatedAt.json`;
 
 const COURSE_META_KEYS = {
     etag: 'courseDataEtag',
     lastModified: 'courseDataLastModified',
     lastSync: 'courseDataLastSync',
     count: 'courseDataCount',
-    remoteUpdatedAt: 'courseDataRemoteUpdatedAt',
-    lastChecked: 'courseDataLastChecked',
+    generatedAt: 'courseDataGeneratedAt',
 };
 
 export const COURSE_SYNC_EVENT = 'planit:course-sync';
@@ -53,60 +68,31 @@ async function fetchCourseData(): Promise<Response> {
     return fetch(COURSE_DATA_URL, { headers });
 }
 
-async function fetchRemoteUpdatedAt(): Promise<string | undefined> {
-    const response = await fetch(
-        'https://api.github.com/repos/selfint/degree-planner/commits?path=static/courseData.json&per_page=1',
-        {
-            headers: {
-                Accept: 'application/vnd.github+json',
-            },
-        }
-    );
-
+async function fetchGeneratedAt(): Promise<string> {
+    const response = await fetch(DATA_GENERATED_AT_URL);
     if (!response.ok) {
         throw new Error(
-            `Failed to fetch remote update metadata: ${String(
-                response.status
-            )} ${response.statusText}`
+            `Failed to fetch generated-at metadata: ${String(response.status)} ${
+                response.statusText
+            }`
         );
     }
 
-    const data = (await response.json()) as {
-        commit?: { committer?: { date?: string } };
-    }[];
-    const date = data[0]?.commit?.committer?.date;
-    if (typeof date === 'string' && date.length > 0) {
-        return date;
+    const payload = (await response.json()) as { timestamp?: unknown };
+    if (typeof payload.timestamp !== 'number') {
+        throw new Error(
+            'generatedAt.json is missing a numeric "timestamp" field'
+        );
     }
 
-    return undefined;
-}
-
-async function shouldFetchCourseData(
-    remoteUpdatedAt: string | undefined
-): Promise<boolean> {
-    const [storedRemote, lastSync] = await Promise.all([
-        getMeta(COURSE_META_KEYS.remoteUpdatedAt),
-        getMeta(COURSE_META_KEYS.lastSync),
-    ]);
-    const storedRemoteValue =
-        typeof storedRemote?.value === 'string'
-            ? storedRemote.value
-            : undefined;
-
-    if (remoteUpdatedAt === undefined) {
-        return true;
+    const generatedAt = new Date(payload.timestamp);
+    if (Number.isNaN(generatedAt.getTime())) {
+        throw new Error(
+            `generatedAt.json has invalid timestamp: ${String(payload.timestamp)}`
+        );
     }
 
-    if (storedRemoteValue === undefined || storedRemoteValue.length === 0) {
-        return true;
-    }
-
-    if (storedRemoteValue !== remoteUpdatedAt) {
-        return true;
-    }
-
-    return lastSync?.value === undefined;
+    return generatedAt.toISOString();
 }
 
 export async function syncCourseData(): Promise<CourseSyncResult> {
@@ -114,34 +100,8 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
         return { status: 'offline' };
     }
 
-    let remoteUpdatedAt: string | undefined;
-    try {
-        remoteUpdatedAt = await fetchRemoteUpdatedAt();
-    } catch (error) {
-        console.error('Failed to fetch remote course metadata', error);
-    }
-
-    if (remoteUpdatedAt !== undefined) {
-        await setMeta({
-            key: COURSE_META_KEYS.remoteUpdatedAt,
-            value: remoteUpdatedAt,
-        });
-        await setMeta({
-            key: COURSE_META_KEYS.lastChecked,
-            value: new Date().toISOString(),
-        });
-    }
-
-    if (!(await shouldFetchCourseData(remoteUpdatedAt))) {
-        return { status: 'skipped' };
-    }
-
     const response = await fetchCourseData();
     if (response.status === 304) {
-        await setMeta({
-            key: COURSE_META_KEYS.lastSync,
-            value: new Date().toISOString(),
-        });
         return { status: 'skipped' };
     }
 
@@ -155,6 +115,7 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
 
     const data = (await response.json()) as Record<string, CourseRecord>;
     const courses = Object.values(data);
+    const generatedAt = await fetchGeneratedAt();
 
     await putCourses(courses);
 
@@ -175,12 +136,10 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
             value: new Date().toISOString(),
         }),
         setMeta({ key: COURSE_META_KEYS.count, value: courses.length }),
-        remoteUpdatedAt !== undefined
-            ? setMeta({
-                  key: COURSE_META_KEYS.remoteUpdatedAt,
-                  value: remoteUpdatedAt,
-              })
-            : Promise.resolve(),
+        setMeta({
+            key: COURSE_META_KEYS.generatedAt,
+            value: generatedAt,
+        }),
     ]);
 
     return { status: 'updated', count: courses.length };
@@ -199,12 +158,6 @@ export function initCourseSync(options?: CourseSyncOptions): void {
             options?.onError?.(error);
         }
     }
-
-    function handleOnline(): void {
-        void runSync();
-    }
-
-    window.addEventListener('online', handleOnline);
 
     if (isOnline()) {
         void runSync();

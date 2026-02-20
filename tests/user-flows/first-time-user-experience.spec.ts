@@ -33,10 +33,13 @@ const DEMO_TIME_SCALE =
         : 1;
 
 test.describe('first-time-user-experience', () => {
+    test.use({ storageState: 'tests/state/playwright.storage-state.json' });
     test('completes landing to semester journey with selected catalog course', async ({
         page,
     }, testInfo) => {
-        test.setTimeout(120_000);
+        if (IS_DEMO_MODE) {
+            test.setTimeout(120_000);
+        }
 
         await page.goto('catalog');
         await installDemoCursor(page);

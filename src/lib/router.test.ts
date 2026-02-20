@@ -32,7 +32,8 @@ vi.mock('../pages/404/not_found_page', () => ({
 import {
     REDIRECT_SESSION_KEY,
     addBasePath,
-    initRouter,
+    initRendering,
+    initRouterNavigationInterception,
     normalizeBasePath,
     normalizePath,
     shouldHandleClickNavigation,
@@ -101,14 +102,14 @@ describe('router lib', () => {
         expect(shouldHandleClickNavigation(event)).toBe(true);
     });
 
-    it('restores redirected deep-link path from session storage on init', () => {
+    it('restores redirected deep-link path during navigation interception init', () => {
         document.body.innerHTML = '<div id="app"></div>';
         window.sessionStorage.setItem(
             REDIRECT_SESSION_KEY,
             '/search?q=test#top'
         );
 
-        initRouter();
+        initRouterNavigationInterception();
 
         expect(window.location.pathname).toBe('/search');
         expect(window.location.search).toBe('?q=test');
@@ -120,7 +121,7 @@ describe('router lib', () => {
         document.body.innerHTML = '<div id="app"></div>';
         window.history.replaceState(null, '', '/semester?number=3');
 
-        initRouter();
+        initRouterNavigationInterception();
 
         expect(window.location.pathname).toBe('/semester');
         expect(window.location.search).toBe('?number=3');
@@ -130,7 +131,8 @@ describe('router lib', () => {
         document.body.innerHTML = '<div id="app"></div>';
         window.history.replaceState(null, '', '/plan');
 
-        initRouter();
+        initRouterNavigationInterception();
+        initRendering();
 
         const app = document.querySelector('#app');
         const firstPage = app?.firstElementChild;
