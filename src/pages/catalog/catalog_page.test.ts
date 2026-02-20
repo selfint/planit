@@ -61,7 +61,7 @@ describe('CatalogPage', () => {
         expect(state?.textContent).toContain('בחרו תכנית ומסלול');
     });
 
-    it('renders one page of three course cards and supports paging', async () => {
+    it('renders all group cards in a single sorted row without paging', async () => {
         setViewportWidth(620);
         getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
@@ -137,33 +137,24 @@ describe('CatalogPage', () => {
         const cards = page.querySelectorAll<HTMLElement>(
             '[data-component="CourseCard"]'
         );
-        expect(cards.length).toBe(3);
-
-        const firstPageLinks = page.querySelectorAll<HTMLAnchorElement>(
-            'a[href^="/course?code="]'
-        );
-        expect(firstPageLinks.item(0).getAttribute('href')).toContain('236363');
-        expect(firstPageLinks.item(1).getAttribute('href')).toContain('236501');
-        expect(firstPageLinks.item(2).getAttribute('href')).toContain('234123');
-
-        const nonCurrentLink =
-            page.querySelector<HTMLAnchorElement>('a[href*="236501"]');
-        expect(nonCurrentLink?.classList.contains('opacity-70')).toBe(true);
-
-        const pageLabel = page.querySelector('[data-catalog-group-page]');
-        expect(pageLabel?.textContent).toContain('עמוד 1 מתוך 2');
-
-        const nextButton = Array.from(page.querySelectorAll('button')).find(
-            (button) => button.textContent === 'הבא'
-        );
-        nextButton?.click();
-        await waitForUiWork();
+        expect(cards.length).toBe(4);
+        const row = page.querySelector<HTMLElement>('[data-role="group-row"]');
+        expect(row).toBeTruthy();
+        expect(row?.classList.contains('snap-x')).toBe(true);
+        expect(row?.classList.contains('grid')).toBe(false);
 
         const links = page.querySelectorAll<HTMLAnchorElement>(
             'a[href^="/course?code="]'
         );
-        expect(links.length).toBe(1);
-        expect(links.item(0).getAttribute('href')).toContain('236343');
+        expect(links.item(0).getAttribute('href')).toContain('236363');
+        expect(links.item(1).getAttribute('href')).toContain('236501');
+        expect(links.item(2).getAttribute('href')).toContain('234123');
+        expect(links.item(3).getAttribute('href')).toContain('236343');
+
+        const nonCurrentLink =
+            page.querySelector<HTMLAnchorElement>('a[href*="236501"]');
+        expect(nonCurrentLink?.classList.contains('opacity-70')).toBe(true);
+        expect(page.querySelector('[data-catalog-group-page]')).toBeNull();
     });
 
     it('hides rendered requirements while picker selection is changing', async () => {
@@ -228,7 +219,7 @@ describe('CatalogPage', () => {
         expect(state?.textContent).toContain('מעדכן בחירה');
     });
 
-    it('renders three cards per page on narrow mobile width', async () => {
+    it('renders all cards on narrow mobile width without pager controls', async () => {
         setViewportWidth(430);
         getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
@@ -279,13 +270,16 @@ describe('CatalogPage', () => {
         const links = page.querySelectorAll<HTMLAnchorElement>(
             'a[href^="/course?code="]'
         );
-        expect(links.length).toBe(3);
-
-        const pageLabel = page.querySelector('[data-catalog-group-page]');
-        expect(pageLabel?.textContent).toContain('עמוד 1 מתוך 2');
+        expect(links.length).toBe(4);
+        expect(page.querySelector('[data-catalog-group-page]')).toBeNull();
+        const pagerButtons = Array.from(page.querySelectorAll('button')).filter(
+            (button) =>
+                button.textContent === 'הבא' || button.textContent === 'הקודם'
+        );
+        expect(pagerButtons.length).toBe(0);
     });
 
-    it('renders nine cards per page on tablet and wider view', async () => {
+    it('renders all cards on tablet and wider view without pager controls', async () => {
         setViewportWidth(900);
         getActiveRequirementsSelectionMock.mockResolvedValue({
             catalogId: '2025_200',
@@ -342,10 +336,8 @@ describe('CatalogPage', () => {
         const links = page.querySelectorAll<HTMLAnchorElement>(
             'a[href^="/course?code="]'
         );
-        expect(links.length).toBe(9);
-
-        const pageLabel = page.querySelector('[data-catalog-group-page]');
-        expect(pageLabel?.textContent).toContain('עמוד 1 מתוך 2');
+        expect(links.length).toBe(10);
+        expect(page.querySelector('[data-catalog-group-page]')).toBeNull();
     });
 });
 

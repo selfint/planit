@@ -9,9 +9,13 @@ their courses from local IndexedDB data.
 
 - Console navigation mounted with `/catalog` active state.
 - Degree selection panel mounted from `src/pages/catalog/components/DegreePicker.ts`.
-- Requirement-group sections with title, subtitle, page label, and next/previous controls.
+- Requirement-group sections with title, subtitle, and horizontal course rows.
 - Course cards rendered as links to `/course?code=<code>`.
 - Info states for waiting, loading, pending picker sync, empty path, and missing requirements.
+- Rows use `content-visibility: auto` with intrinsic-size hints and horizontal overflow containment.
+- Card intrinsic sizes are aligned to real card breakpoints (`base`/`sm`/`lg`) so deferred rendering preserves row geometry.
+- Row containers intentionally use zero row-level margin/padding so mobile/tablet rows span the full section width.
+- Page gutters are applied per element in 1-column layouts and collapse at `xl` (2-column view), while course-row scrollers remain gutter-free.
 
 ## Data Flow
 
@@ -23,7 +27,7 @@ their courses from local IndexedDB data.
    flattened into course-bearing requirement groups.
 4. Each course code resolves to optional course details using `state.courses.get(code)`.
 5. Courses render as linked `CourseCard` entries (`/course?code=<code>`).
-6. Cards per page are viewport-aware: 3 on mobile widths and 9 on tablet and wider widths.
+6. All cards in each requirement group render in one horizontally scrollable row.
 7. Cards inside each requirement are sorted by course median (highest first),
    and non-current courses (`current !== true`) are dimmed visually.
 8. If picker values are changing and are not yet in sync with persisted
@@ -34,7 +38,7 @@ their courses from local IndexedDB data.
 ## Unit Tests
 
 These are Vitest/jsdom tests focused on logic implemented in
-`catalog_page.ts` (state transitions, paging rules, and render decisions) with
+`catalog_page.ts` (state transitions and render decisions) with
 mocked data dependencies.
 
 ### `renders waiting state when no active selection exists`
@@ -50,21 +54,20 @@ wait_for_ui()
 assert 'בחרו תכנית ומסלול' in page.query('[data-catalog-state]').text
 ```
 
-### `renders one page of three course cards and supports paging`
+### `renders all group cards in a single sorted row without paging`
 
-WHAT: Verifies card ordering, page size, and next-page navigation.
-WHY: Ensures requirement browsing stays predictable on mobile-sized rendering.
-HOW: Mocks selection + requirements + courses with medians, checks first-page order and dimming, clicks `הבא`, then checks second-page contents.
+WHAT: Verifies card ordering and no-paging row rendering.
+WHY: Ensures requirement browsing stays predictable with a single-row interaction model.
+HOW: Mocks selection + requirements + courses with medians, checks full sorted order in one row, and confirms pager UI is absent.
 
 ```python
 set_viewport(width=620)
 mock_active_selection_and_requirement_data()
 mock_courses_with_medians_and_current_flags()
 page = CatalogPage(); wait_for_ui()
-assert first_page_links(page) == ['236363', '236501', '234123']
+assert row_links(page) == ['236363', '236501', '234123', '236343']
 assert link_for('236501').has_class('opacity-70')
-click_button('הבא'); wait_for_ui()
-assert current_page_links(page) == ['236343']
+assert not exists('[data-catalog-group-page]')
 ```
 
 ### `hides rendered requirements while picker selection is changing`
@@ -83,30 +86,31 @@ assert count('[data-component="CourseCard"]') == 0
 assert 'מעדכן בחירה' in page.query('[data-catalog-state]').text
 ```
 
-### `renders three cards per page on narrow mobile width`
+### `renders all cards on narrow mobile width without pager controls`
 
-WHAT: Verifies mobile page-size behavior for requirement cards.
-WHY: Keeps the layout readable and horizontal scroll manageable on narrow screens.
-HOW: Sets narrow viewport, renders with mocked data, and asserts first page contains exactly three course links.
+WHAT: Verifies mobile width still renders the full row without paging controls.
+WHY: Keeps behavior consistent across viewport sizes.
+HOW: Sets narrow viewport, renders mocked data, and asserts all links are present and pager controls are absent.
 
 ```python
 set_viewport(width=430)
 mock_selection_and_courses()
 page = CatalogPage(); wait_for_ui()
-assert count('a[href^="/course?code="]') == 3
+assert count('a[href^="/course?code="]') == 4
+assert not exists('[data-catalog-group-page]')
 ```
 
-### `renders nine cards per page on tablet and wider view`
+### `renders all cards on tablet and wider view without pager controls`
 
-WHAT: Verifies larger viewport page-size behavior.
-WHY: Uses available width efficiently on tablet/desktop without unnecessary paging.
-HOW: Sets wide viewport, renders with 10 mock courses, and asserts first page shows nine links.
+WHAT: Verifies larger viewport also renders the full row with no pager.
+WHY: Keeps behavior consistent and avoids viewport-specific paging logic.
+HOW: Sets wide viewport, renders with 10 mock courses, and asserts all 10 links are visible.
 
 ```python
 set_viewport(width=900)
 mock_selection_and_ten_courses()
 page = CatalogPage(); wait_for_ui()
-assert count('a[href^="/course?code="]') == 9
+assert count('a[href^="/course?code="]') == 10
 ```
 
 ## Integration Tests

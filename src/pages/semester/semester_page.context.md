@@ -15,9 +15,11 @@ semester selected by the `number` query parameter.
   current semester adds it, second click on the same selected course opens
   the course page.
 - Cancel button in the current semester panel clears pending move selection.
-- Horizontal scroll rows for requirement and free-elective groups.
+- Horizontal scroll rows for requirement and free-elective groups, with constrained row wrappers (`min-w-0`/`max-w-full`) to prevent layout stretch.
 - Row-level skeleton placeholders render before each row hydrates (up to 10 cards
   per row) and are non-interactive until data is loaded.
+- Course links use breakpoint-matched intrinsic sizes (`base`, `sm`, `lg` for row cards) to keep scroll geometry stable while deferred rendering is active.
+- Row containers use zero row-level margin/padding so mobile/tablet rows span full section width.
 - Error state message when local data reads fail.
 
 ## Data Flow

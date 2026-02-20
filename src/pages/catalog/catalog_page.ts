@@ -20,10 +20,11 @@ const GROUP_PENDING_MESSAGE = 'מעדכן בחירה בתכנית...';
 const GROUP_MISSING_MESSAGE =
     'אין דרישות שמורות לתכנית זו. התחברו לאינטרנט ונסו לטעון שוב.';
 const COURSE_NAME_FALLBACK_PREFIX = 'קורס';
-const TABLET_MIN_WIDTH = 768;
-const MOBILE_CARDS_PER_PAGE = 3;
-const TABLET_CARDS_PER_PAGE = 9;
-const COURSE_ROW_GRID_CLASS = 'grid min-w-0 grid-cols-3 gap-3';
+const GROUP_SKELETON_CARD_COUNT = 6;
+const COURSE_ROW_SCROLL_CLASS =
+    'min-w-0 max-w-full overflow-x-auto overflow-y-hidden pb-2 [scrollbar-width:thin]';
+const COURSE_ROW_CLASS =
+    'flex w-max min-w-full snap-x snap-mandatory gap-2';
 
 type RequirementGroup = {
     id: string;
@@ -130,7 +131,7 @@ export function CatalogPage(): HTMLElement {
         scheduleCatalogGroupsRefresh(context);
     });
 
-    renderGroupSkeleton(context.root, 4, getCardsPerPageForViewport());
+    renderGroupSkeleton(context.root, 4);
     void refreshCatalogGroups(context);
 
     return root;
@@ -206,13 +207,7 @@ async function refreshCatalogGroups(
         return;
     }
 
-    const cardsPerPage = getCardsPerPageForViewport();
-    renderRequirementGroups(
-        context.root,
-        groups,
-        context.courseCache,
-        cardsPerPage
-    );
+    renderRequirementGroups(context.root, groups, context.courseCache);
 
     const totalCourses = collectUniqueCodes(groups).length;
     context.summary.textContent = `נטענו ${String(totalCourses)} קורסים מתוך ${String(groups.length)} קבוצות דרישה.`;
@@ -283,17 +278,17 @@ function isPickerSelectionComplete(pickerRoot: HTMLElement): boolean {
 function renderRequirementGroups(
     root: HTMLElement,
     groups: RequirementGroup[],
-    courseCache: Map<string, CourseRecord | null>,
-    cardsPerPage: number
+    courseCache: Map<string, CourseRecord | null>
 ): void {
     root.replaceChildren();
 
     groups.forEach((group) => {
         const section = document.createElement('section');
-        section.className = 'flex min-w-0 flex-col gap-3 py-4';
+        section.className =
+            'flex min-w-0 flex-col gap-3 py-4 [content-visibility:auto] [contain-intrinsic-size:24rem]';
 
         const heading = document.createElement('div');
-        heading.className = 'flex flex-col gap-1';
+        heading.className = 'mx-4 flex flex-col gap-1 xl:mx-0';
 
         const title = document.createElement('h3');
         title.className = 'text-sm font-medium';
@@ -307,47 +302,15 @@ function renderRequirementGroups(
         heading.append(subtitle);
         section.append(heading);
 
-        const pager = document.createElement('div');
-        pager.className = 'flex flex-wrap items-center justify-between gap-2';
-
-        const pageLabel = document.createElement('p');
-        pageLabel.className = 'text-text-muted min-w-0 text-xs';
-        pageLabel.setAttribute('data-catalog-group-page', group.id);
-
-        const controls = document.createElement('div');
-        controls.className = 'flex shrink-0 items-center gap-2';
-
-        const prevButton = document.createElement('button');
-        prevButton.type = 'button';
-        prevButton.className =
-            'border-border/60 bg-surface-2/70 text-text-muted hover:text-text rounded-full border px-3 py-1 text-xs transition duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-50';
-        prevButton.textContent = 'הקודם';
-
-        const nextButton = document.createElement('button');
-        nextButton.type = 'button';
-        nextButton.className =
-            'border-border/60 bg-surface-2/70 text-text-muted hover:text-text rounded-full border px-3 py-1 text-xs transition duration-200 ease-out disabled:cursor-not-allowed disabled:opacity-50';
-        nextButton.textContent = 'הבא';
-
-        controls.append(prevButton);
-        controls.append(nextButton);
-        pager.append(pageLabel);
-        pager.append(controls);
-        section.append(pager);
+        const rowScroll = document.createElement('div');
+        rowScroll.className = COURSE_ROW_SCROLL_CLASS;
 
         const row = document.createElement('div');
-        row.className = COURSE_ROW_GRID_CLASS;
-        section.append(row);
+        row.className = COURSE_ROW_CLASS;
+        row.dataset.role = 'group-row';
+        rowScroll.append(row);
+        section.append(rowScroll);
 
-        const totalPages = getTotalPages(
-            group.courseCodes.length,
-            cardsPerPage
-        );
-        if (totalPages <= 1) {
-            controls.classList.add('hidden');
-        }
-
-        let pageIndex = 0;
         let renderToken = 0;
         let sortedCodes: string[] | undefined;
         let recordsByCode: Map<string, CourseRecord | null> | undefined;
@@ -389,15 +352,9 @@ function renderRequirementGroups(
                 return;
             }
 
-            const pageCodes = getCourseCodesForPage(
-                groupData.codes,
-                pageIndex,
-                cardsPerPage
-            );
-
             row.replaceChildren();
 
-            for (const code of pageCodes) {
+            for (const code of groupData.codes) {
                 const record = groupData.records.get(code);
                 const card =
                     record === undefined || record === null
@@ -410,34 +367,14 @@ function renderRequirementGroups(
                 const anchor = document.createElement('a');
                 anchor.href = `/course?code=${encodeURIComponent(code)}`;
                 anchor.className =
-                    'focus-visible:ring-accent/60 block min-w-0 w-full rounded-2xl focus-visible:ring-2';
+                    'touch-manipulation focus-visible:ring-accent/60 block h-[7.5rem] w-[7.5rem] shrink-0 snap-start rounded-2xl focus-visible:ring-2 sm:h-[6.5rem] lg:w-[10.5rem] [content-visibility:auto] [contain-intrinsic-size:7.5rem_7.5rem] sm:[contain-intrinsic-size:7.5rem_6.5rem] lg:[contain-intrinsic-size:10.5rem_6.5rem]';
                 if (record?.current !== true) {
                     anchor.classList.add('opacity-70');
                 }
                 anchor.append(card);
                 row.append(anchor);
             }
-
-            pageLabel.textContent = `עמוד ${String(pageIndex + 1)} מתוך ${String(totalPages)} • ${String(group.courseCodes.length)} קורסים`;
-            prevButton.disabled = pageIndex <= 0;
-            nextButton.disabled = pageIndex + 1 >= totalPages;
         }
-
-        prevButton.addEventListener('click', () => {
-            if (pageIndex <= 0) {
-                return;
-            }
-            pageIndex -= 1;
-            void renderCurrentPage();
-        });
-
-        nextButton.addEventListener('click', () => {
-            if (pageIndex + 1 >= totalPages) {
-                return;
-            }
-            pageIndex += 1;
-            void renderCurrentPage();
-        });
 
         void renderCurrentPage();
 
@@ -464,19 +401,6 @@ function getCourseMedian(record: CourseRecord | null | undefined): number {
         return Number.NEGATIVE_INFINITY;
     }
     return record.median;
-}
-
-function getTotalPages(courseCount: number, cardsPerPage: number): number {
-    return Math.max(1, Math.ceil(courseCount / cardsPerPage));
-}
-
-function getCourseCodesForPage(
-    courseCodes: string[],
-    pageIndex: number,
-    cardsPerPage: number
-): string[] {
-    const from = pageIndex * cardsPerPage;
-    return courseCodes.slice(from, from + cardsPerPage);
 }
 
 async function loadCourseRecords(
@@ -567,15 +491,14 @@ function toRequirementNode(value: unknown): RequirementNode | undefined {
 function renderInfoState(root: HTMLElement, message: string): void {
     root.replaceChildren();
     const text = document.createElement('p');
-    text.className = 'text-text-muted py-3 text-xs';
+    text.className = 'text-text-muted mx-4 py-3 text-xs xl:mx-0';
     text.textContent = message;
     root.append(text);
 }
 
 function renderGroupSkeleton(
     root: HTMLElement,
-    count: number,
-    cardsPerPage: number
+    count: number
 ): void {
     root.replaceChildren();
     for (let index = 0; index < count; index += 1) {
@@ -583,27 +506,30 @@ function renderGroupSkeleton(
         wrapper.className = 'flex flex-col gap-3 py-4';
 
         const title = document.createElement('span');
-        title.className = 'skeleton-shimmer h-4 w-44 rounded-md';
+        title.className = 'skeleton-shimmer mx-4 h-4 w-44 rounded-md xl:mx-0';
         wrapper.append(title);
 
-        const row = document.createElement('div');
-        row.className = COURSE_ROW_GRID_CLASS;
-        for (let cardIndex = 0; cardIndex < cardsPerPage; cardIndex += 1) {
-            row.append(CourseCard());
-        }
-        wrapper.append(row);
+        const rowScroll = document.createElement('div');
+        rowScroll.className = COURSE_ROW_SCROLL_CLASS;
 
-        const pager = document.createElement('span');
-        pager.className = 'skeleton-shimmer h-3 w-36 rounded-md';
-        wrapper.append(pager);
+        const row = document.createElement('div');
+        row.className = COURSE_ROW_CLASS;
+        row.dataset.role = 'group-row';
+        for (
+            let cardIndex = 0;
+            cardIndex < GROUP_SKELETON_CARD_COUNT;
+            cardIndex += 1
+        ) {
+            const cardShell = document.createElement('div');
+            cardShell.className =
+                'pointer-events-none block h-[7.5rem] w-[7.5rem] shrink-0 snap-start rounded-2xl sm:h-[6.5rem] lg:w-[10.5rem]';
+            cardShell.setAttribute('aria-hidden', 'true');
+            cardShell.append(CourseCard());
+            row.append(cardShell);
+        }
+        rowScroll.append(row);
+        wrapper.append(rowScroll);
 
         root.append(wrapper);
     }
-}
-
-function getCardsPerPageForViewport(): number {
-    if (window.innerWidth >= TABLET_MIN_WIDTH) {
-        return TABLET_CARDS_PER_PAGE;
-    }
-    return MOBILE_CARDS_PER_PAGE;
 }

@@ -443,7 +443,7 @@ function renderCurrentSemesterCourses(
     container.replaceChildren();
     const row = document.createElement('div');
     row.className =
-        'me-2 flex min-h-0 snap-x snap-mandatory gap-2 p-2 lg:me-0 lg:snap-none lg:flex-col lg:p-0';
+        'flex min-h-0 snap-x snap-mandatory gap-2 lg:snap-none lg:flex-col';
     container.append(row);
 
     if (courses.length === 0) {
@@ -466,7 +466,7 @@ function renderCurrentSemesterSkeleton(
     empty.classList.add('hidden');
     const row = document.createElement('div');
     row.className =
-        'me-2 flex min-h-0 snap-x snap-mandatory gap-2 p-2 lg:me-0 lg:snap-none lg:flex-col lg:p-0';
+        'flex min-h-0 snap-x snap-mandatory gap-2 lg:snap-none lg:flex-col';
     container.append(row);
 
     appendRowSkeletons(row, courseCount);
@@ -568,10 +568,12 @@ function appendGroupSection(
     section.append(title);
 
     const rowScroll = document.createElement('div');
-    rowScroll.className = 'overflow-x-auto pb-2 [scrollbar-width:thin]';
+    rowScroll.className =
+        'min-w-0 max-w-full overflow-x-auto overflow-y-hidden pb-2 [scrollbar-width:thin]';
 
     const row = document.createElement('div');
-    row.className = 'me-2 flex min-w-0 snap-x snap-mandatory gap-2 p-2 lg:me-0 lg:p-0';
+    row.className =
+        'flex w-max min-w-full snap-x snap-mandatory gap-2';
     row.dataset.role = 'group-row';
 
     if (skeletonCount > 0) {
@@ -753,7 +755,7 @@ function getOrCreateCurrentSemesterRow(container: HTMLElement): HTMLElement {
 
     const row = document.createElement('div');
     row.className =
-        'me-2 flex min-h-0 snap-x snap-mandatory gap-2 p-2 lg:me-0 lg:snap-none lg:flex-col lg:p-0';
+        'flex min-h-0 snap-x snap-mandatory gap-2 lg:snap-none lg:flex-col';
     container.append(row);
     return row;
 }
@@ -849,8 +851,12 @@ function createCourseLink(
     link.href = `/course?code=${encodeURIComponent(course.code)}`;
     const widthClass =
         kind === 'row' ? 'w-[7.5rem] lg:w-[10.5rem]' : 'w-[7.5rem] lg:w-auto';
+    const intrinsicSizeClass =
+        kind === 'row'
+            ? '[contain-intrinsic-size:7.5rem_7.5rem] sm:[contain-intrinsic-size:7.5rem_6.5rem] lg:[contain-intrinsic-size:10.5rem_6.5rem]'
+            : '[contain-intrinsic-size:7.5rem_7.5rem] sm:[contain-intrinsic-size:7.5rem_6.5rem]';
     link.className =
-        `touch-manipulation focus-visible:ring-accent/60 block h-[7.5rem] ${widthClass} shrink-0 snap-start rounded-2xl focus-visible:ring-2 sm:h-[6.5rem] [content-visibility:auto] [contain-intrinsic-size:7.5rem] sm:[contain-intrinsic-size:6.5rem]`.trim();
+        `touch-manipulation focus-visible:ring-accent/60 block h-[7.5rem] ${widthClass} shrink-0 snap-start rounded-2xl focus-visible:ring-2 sm:h-[6.5rem] [content-visibility:auto] ${intrinsicSizeClass}`.trim();
     link.dataset.courseCode = course.code;
     link.dataset.courseKind = kind;
     if (course.current !== true) {

@@ -2,9 +2,9 @@
     <section class="text-text min-h-screen w-full" data-page="catalog">
         <div data-console-nav></div>
         <main
-            class="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 px-4 pt-6 pb-[calc(env(safe-area-inset-bottom)+2rem)] sm:px-6 lg:px-8"
+            class="mx-auto flex min-h-screen w-full max-w-6xl flex-col gap-6 pt-6 pb-[calc(env(safe-area-inset-bottom)+2rem)]"
         >
-            <header class="flex flex-col gap-3">
+            <header class="mx-4 flex flex-col gap-3 xl:mx-0">
                 <div class="flex flex-col gap-2">
                     <h1 class="text-2xl font-medium sm:text-3xl">
                         קטלוג מסלולים
@@ -22,11 +22,11 @@
                 <div data-catalog-degree-picker></div>
 
                 <section
-                    class="flex min-h-88 flex-col gap-4"
+                    class="flex min-h-88 min-w-0 flex-col gap-4 overflow-x-hidden"
                     aria-live="polite"
                 >
                     <div
-                        class="border-border/60 flex flex-wrap items-center justify-between gap-3 border-b pb-3"
+                        class="border-border/60 mx-4 flex flex-wrap items-center justify-between gap-3 border-b pb-3 xl:mx-0"
                     >
                         <h2 class="text-lg font-medium">
                             קבוצות דרישה וקורסים
@@ -37,7 +37,7 @@
                     </div>
 
                     <div
-                        class="divide-border/45 flex flex-col divide-y"
+                        class="divide-border/45 min-w-0 max-w-full flex flex-col divide-y"
                         data-catalog-groups
                     ></div>
                 </section>
