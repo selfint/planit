@@ -20,7 +20,7 @@ video:
 
 - Script: `pnpm demo:ftux`
 - Current command value (from `package.json`):
-  `pnpm build && PW_DEMO=on PW_VIDEO=on PW_SLOWMO=275 PW_DEMO_TIME_SCALE=0.5 playwright test tests/user-flows/first-time-user-experience.spec.ts`
+  `PW_DEMO=on PW_VIDEO=on PW_SLOWMO=275 PW_DEMO_TIME_SCALE=0.5 playwright test tests/user-flows/first-time-user-experience.spec.ts`
 
 What this means:
 
@@ -46,9 +46,8 @@ What this means:
 
 From `playwright.config.ts`:
 
-- Demo base URL: `http://localhost:4173/planit/`
-- Non-demo base URL: `http://localhost:5173/planit/`
-- Demo web server command: `pnpm preview --host`
+- Base URL (default): `http://localhost:8175/planit/`
+- Web server command (all modes): `pnpm dev --host localhost --strictPort --port 8175`
 
 Important implication:
 

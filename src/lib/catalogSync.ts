@@ -13,16 +13,18 @@ function getEnvString(name: string, fallback: string): string {
 
 const DATA_BASE_URL = getEnvString(
     'VITE_DATA_BASE_URL',
-    'https://tom.selfin.io/planit/_data'
+    '_data'
 );
 
 const CATALOGS_DATA_URL = `${DATA_BASE_URL}/catalogs.json`;
+const DATA_GENERATED_AT_URL = `${DATA_BASE_URL}/generatedAt.json`;
 
 const CATALOGS_META_KEYS = {
     etag: 'catalogsDataEtag',
     lastModified: 'catalogsDataLastModified',
     lastSync: 'catalogsDataLastSync',
     count: 'catalogsDataCount',
+    generatedAt: 'catalogsDataGeneratedAt',
 };
 
 export const CATALOG_SYNC_EVENT = 'planit:catalog-sync';
@@ -65,6 +67,33 @@ async function fetchCatalogsData(): Promise<Response> {
     return fetch(CATALOGS_DATA_URL, { headers });
 }
 
+async function fetchGeneratedAt(): Promise<string> {
+    const response = await fetch(DATA_GENERATED_AT_URL);
+    if (!response.ok) {
+        throw new Error(
+            `Failed to fetch generated-at metadata: ${String(response.status)} ${
+                response.statusText
+            }`
+        );
+    }
+
+    const payload = (await response.json()) as { timestamp?: unknown };
+    if (typeof payload.timestamp !== 'number') {
+        throw new Error(
+            'generatedAt.json is missing a numeric "timestamp" field'
+        );
+    }
+
+    const generatedAt = new Date(payload.timestamp);
+    if (Number.isNaN(generatedAt.getTime())) {
+        throw new Error(
+            `generatedAt.json has invalid timestamp: ${String(payload.timestamp)}`
+        );
+    }
+
+    return generatedAt.toISOString();
+}
+
 export async function syncCatalogs(): Promise<CatalogSyncResult> {
     if (!isOnline()) {
         return { status: 'offline' };
@@ -72,10 +101,6 @@ export async function syncCatalogs(): Promise<CatalogSyncResult> {
 
     const response = await fetchCatalogsData();
     if (response.status === 304) {
-        await setMeta({
-            key: CATALOGS_META_KEYS.lastSync,
-            value: new Date().toISOString(),
-        });
         return { status: 'skipped' };
     }
 
@@ -89,6 +114,7 @@ export async function syncCatalogs(): Promise<CatalogSyncResult> {
 
     const data = (await response.json()) as Record<string, unknown>;
     const count = Object.keys(data).length;
+    const generatedAt = await fetchGeneratedAt();
 
     await putCatalogs(data);
 
@@ -109,6 +135,10 @@ export async function syncCatalogs(): Promise<CatalogSyncResult> {
             value: new Date().toISOString(),
         }),
         setMeta({ key: CATALOGS_META_KEYS.count, value: count }),
+        setMeta({
+            key: CATALOGS_META_KEYS.generatedAt,
+            value: generatedAt,
+        }),
     ]);
 
     return { status: 'updated', count };
@@ -127,12 +157,6 @@ export function initCatalogSync(options?: CatalogSyncOptions): void {
             options?.onError?.(error);
         }
     }
-
-    function handleOnline(): void {
-        void runSync();
-    }
-
-    window.addEventListener('online', handleOnline);
 
     if (isOnline()) {
         void runSync();

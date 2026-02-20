@@ -1,6 +1,8 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('SPA router behavior', () => {
+    test.use({ storageState: undefined });
+
     test('intercepts internal links with query and hash without reload', async ({
         page,
     }) => {

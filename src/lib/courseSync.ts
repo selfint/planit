@@ -14,16 +14,18 @@ function getEnvString(name: string, fallback: string): string {
 
 const DATA_BASE_URL = getEnvString(
     'VITE_DATA_BASE_URL',
-    'https://tom.selfin.io/planit/_data'
+    '_data'
 );
 
 const COURSE_DATA_URL = `${DATA_BASE_URL}/courseData.json`;
+const DATA_GENERATED_AT_URL = `${DATA_BASE_URL}/generatedAt.json`;
 
 const COURSE_META_KEYS = {
     etag: 'courseDataEtag',
     lastModified: 'courseDataLastModified',
     lastSync: 'courseDataLastSync',
     count: 'courseDataCount',
+    generatedAt: 'courseDataGeneratedAt',
 };
 
 export const COURSE_SYNC_EVENT = 'planit:course-sync';
@@ -66,6 +68,33 @@ async function fetchCourseData(): Promise<Response> {
     return fetch(COURSE_DATA_URL, { headers });
 }
 
+async function fetchGeneratedAt(): Promise<string> {
+    const response = await fetch(DATA_GENERATED_AT_URL);
+    if (!response.ok) {
+        throw new Error(
+            `Failed to fetch generated-at metadata: ${String(response.status)} ${
+                response.statusText
+            }`
+        );
+    }
+
+    const payload = (await response.json()) as { timestamp?: unknown };
+    if (typeof payload.timestamp !== 'number') {
+        throw new Error(
+            'generatedAt.json is missing a numeric "timestamp" field'
+        );
+    }
+
+    const generatedAt = new Date(payload.timestamp);
+    if (Number.isNaN(generatedAt.getTime())) {
+        throw new Error(
+            `generatedAt.json has invalid timestamp: ${String(payload.timestamp)}`
+        );
+    }
+
+    return generatedAt.toISOString();
+}
+
 export async function syncCourseData(): Promise<CourseSyncResult> {
     if (!isOnline()) {
         return { status: 'offline' };
@@ -73,10 +102,6 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
 
     const response = await fetchCourseData();
     if (response.status === 304) {
-        await setMeta({
-            key: COURSE_META_KEYS.lastSync,
-            value: new Date().toISOString(),
-        });
         return { status: 'skipped' };
     }
 
@@ -90,6 +115,7 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
 
     const data = (await response.json()) as Record<string, CourseRecord>;
     const courses = Object.values(data);
+    const generatedAt = await fetchGeneratedAt();
 
     await putCourses(courses);
 
@@ -110,6 +136,10 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
             value: new Date().toISOString(),
         }),
         setMeta({ key: COURSE_META_KEYS.count, value: courses.length }),
+        setMeta({
+            key: COURSE_META_KEYS.generatedAt,
+            value: generatedAt,
+        }),
     ]);
 
     return { status: 'updated', count: courses.length };
@@ -128,12 +158,6 @@ export function initCourseSync(options?: CourseSyncOptions): void {
             options?.onError?.(error);
         }
     }
-
-    function handleOnline(): void {
-        void runSync();
-    }
-
-    window.addEventListener('online', handleOnline);
 
     if (isOnline()) {
         void runSync();

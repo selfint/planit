@@ -14,7 +14,7 @@ export function getUsage() {
     };
 }
 
-async function requestSAP(endpoint, queries, lang = 'en') {
+async function requestSAP(endpoint, queries, lang = 'he') {
     if (queries.length === 0) {
         return [];
     }
@@ -135,7 +135,7 @@ async function requestSAP(endpoint, queries, lang = 'en') {
 async function requestBatch(
     endpoint,
     queries,
-    lang = 'en',
+    lang = 'he',
     options = {
         maxRetry: 7,
         maxBatchSize: 500,
@@ -217,28 +217,12 @@ async function loadChildren(batch) {
             $filter: `ParentOtjid eq '${Otjid}' and Peryr eq '${Peryr}' and Perid eq '${Perid}'`,
             $orderby: 'Otjid asc',
             $select: 'Stext,Otjid,Peryr,Perid',
-        })),
-        'en'
-    );
-
-    const batchResponsesHebrew = await requestBatch(
-        'TreeOnDemandSet',
-        batch.map(({ Otjid, Peryr, Perid }) => ({
-            'sap-client': '700',
-            $filter: `ParentOtjid eq '${Otjid}' and Peryr eq '${Peryr}' and Perid eq '${Perid}'`,
-            $orderby: 'Otjid asc',
-            $select: 'Stext,Otjid',
-        })),
-        'he'
+        }))
     );
 
     if (batchResponses === undefined) {
         throw new Error('Failed fetch tree');
     }
-
-    const heNames = new Map(
-        batchResponsesHebrew.flat().map((tree) => [tree.Otjid, tree.Stext])
-    );
 
     const batchCourses = batchResponses.map((children) =>
         children
@@ -270,16 +254,11 @@ async function loadChildren(batch) {
         let children = batchSlice.map(
             ({ courses: nestedCourses, children }, index) => {
                 const response = group[index];
-                const heName = heNames.get(response.Otjid);
-                if (heName === undefined) {
-                    throw new Error(`No Hebrew name for ${response.Otjid}`);
-                }
 
                 return {
                     Otjid: response.Otjid,
                     Name: {
-                        en: response.Stext,
-                        he: heName,
+                        he: response.Stext,
                     },
                     courses: nestedCourses,
                     children,
@@ -327,7 +306,8 @@ export async function getFaculties(semesterYears) {
             $filter: `PiqYear eq '${PiqYear}' and PiqSession eq '${PiqSession}'`,
             $inlinecount: 'allpages',
             $select: 'ZzOrgId,ZzOrgName,PiqYear,PiqSession',
-        }))
+        })),
+        'he'
     ).then((results) =>
         results.flat().map((faculty) => {
             delete faculty.__metadata;
@@ -335,24 +315,9 @@ export async function getFaculties(semesterYears) {
         })
     );
 
-    const facultiesHebrew = await requestBatch(
-        facultiesSet,
-        faculties.map(({ PiqYear, PiqSession, ZzOrgId }) => ({
-            $filter: `PiqYear eq '${PiqYear}' and PiqSession eq '${PiqSession}' and ZzOrgId eq '${ZzOrgId}'`,
-            $select: 'ZzOrgName,ZzOrgId',
-        })),
-        'he'
-    ).then((results) => results.flat());
-
-    for (let i = 0; i < faculties.length; i += 1) {
-        const faculty = faculties[i];
-        const facultyHebrew = facultiesHebrew.find(
-            (heFaculty) => heFaculty.ZzOrgId === faculty.ZzOrgId
-        );
-
+    for (const faculty of faculties) {
         faculty.Name = {
-            en: faculty.ZzOrgName,
-            he: facultyHebrew.ZzOrgName,
+            he: faculty.ZzOrgName,
         };
     }
 
@@ -370,14 +335,6 @@ export async function getDegrees(faculties) {
             $filter: `Peryr eq '${PiqYear}' and Perid eq '${PiqSession}' and OrgId eq '${ZzOrgId}' and ZzAcademicLevel eq '1'`,
             $select: 'Name,OrgText,ZzQualifications,Otjid,OrgId,Peryr,Perid',
             $inlinecount: 'allpages',
-        }))
-    );
-
-    const degreesHebrew = await requestBatch(
-        'ScObjectSet',
-        degrees.flat().map(({ Otjid, Peryr, Perid }) => ({
-            $filter: `Otjid eq '${Otjid}' and Peryr eq '${Peryr}' and Perid eq '${Perid}'`,
-            $select: 'Name,OrgText,ZzQualifications,Otjid,Peryr,Perid',
         })),
         'he'
     );
@@ -386,23 +343,17 @@ export async function getDegrees(faculties) {
         const degree = degrees[degreeIndex];
         for (let trackIndex = 0; trackIndex < degree.length; trackIndex += 1) {
             const track = degree[trackIndex];
-            const trackHebrew = degreesHebrew
-                .flat()
-                .find((heTrack) => heTrack.Otjid === track.Otjid);
 
             track.Name = {
-                en: track.Name,
-                he: trackHebrew.Name,
+                he: track.Name,
             };
 
             track.OrgText = {
-                en: track.OrgText,
-                he: trackHebrew.OrgText,
+                he: track.OrgText,
             };
 
             track.ZzQualifications = {
-                en: track.ZzQualifications,
-                he: trackHebrew.ZzQualifications,
+                he: track.ZzQualifications,
             };
 
             delete track.__metadata;

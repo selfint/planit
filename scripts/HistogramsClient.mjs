@@ -48,7 +48,12 @@ async function _getMedian(code) {
 
     for (const semester of Object.values(info).slice(-5)) {
         const median = semester.Finals?.median;
-        if (median !== undefined && median !== null && !Number.isNaN(median)) {
+        if (
+            median !== undefined &&
+            median !== null &&
+            !Number.isNaN(median) &&
+            !Number.isNaN(Number.parseFloat(median))
+        ) {
             allMedians.push(median);
             medians += Number.parseFloat(median);
             count += 1;

@@ -1,22 +1,6 @@
 import { getMeta, replaceRequirementsWithCow, setMeta } from '$lib/indexeddb';
 import type { RequirementRecord } from '$lib/indexeddb';
 
-function getEnvString(name: string, fallback: string): string {
-    const env = import.meta.env as Record<string, unknown>;
-    const value = env[name];
-
-    if (typeof value === 'string' && value.length > 0) {
-        return value;
-    }
-
-    return fallback;
-}
-
-const DATA_BASE_URL = getEnvString(
-    'VITE_DATA_BASE_URL',
-    'https://tom.selfin.io/planit/_data'
-);
-
 const REQUIREMENTS_META_KEYS = {
     activeCatalogId: 'requirementsActiveCatalogId',
     activeFacultyId: 'requirementsActiveFacultyId',
@@ -46,7 +30,7 @@ function isOnline(): boolean {
 }
 
 function buildRequirementsUrl(selection: RequirementsSelection): string {
-    return `${DATA_BASE_URL}/_catalogs/${selection.catalogId}/${selection.facultyId}/${selection.programId}/requirementsData.json`;
+    return `_data/_catalogs/${selection.catalogId}/${selection.facultyId}/${selection.programId}/requirementsData.json`;
 }
 
 export async function getActiveRequirementsSelection(): Promise<

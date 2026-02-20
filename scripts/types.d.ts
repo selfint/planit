@@ -21,7 +21,6 @@ type TreeOnDemandSetResponse = {
 };
 
 type I18N = {
-    en: string;
     he: string;
 };
 

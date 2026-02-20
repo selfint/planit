@@ -83,7 +83,7 @@ Current local provider methods map to existing modules as follows:
 - `courses.page` -> `indexeddb.getCoursesPage`
 - `courses.count` -> `indexeddb.getCoursesCount`
 - `courses.faculties` -> `indexeddb.getCourseFaculties`
-- `courses.getLastSync` -> `indexeddb.getMeta('courseDataLastSync')`
+- `courses.getLastSync` -> `indexeddb.getMeta('courseDataGeneratedAt')`
 - `catalogs.get` -> `indexeddb.getCatalogs`
 - `catalogs.set` -> `indexeddb.putCatalogs`
 - `requirements.get` -> `indexeddb.getRequirement`
@@ -98,8 +98,9 @@ Current local provider methods map to existing modules as follows:
 
 ## Data Sync Ownership
 
-- App bootstrap (`src/main.ts`) initializes global dataset sync by calling
-  `initCourseSync()` and `initCatalogSync()`.
+- App bootstrap (`src/main.ts`) initializes global dataset sync by running
+  one-time startup `syncCourseData()` and `syncCatalogs()` before first render
+  when online.
 - Course and catalog pages read those synced datasets through `state` and never
   block on network fetches during route render.
 - Requirements sync is user-selection driven: `DegreePicker` calls
@@ -272,7 +273,7 @@ sequenceDiagram
   SP-->>S: total count
   Q->>S: courses.getLastSync()
   S->>SP: courses.getLastSync()
-  SP->>DB: getMeta("courseDataLastSync")
+  SP->>DB: getMeta("courseDataGeneratedAt")
   DB-->>SP: timestamp | undefined
   SP-->>S: timestamp | undefined
 ```

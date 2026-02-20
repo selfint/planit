@@ -1,43 +1,66 @@
-import { readdirSync, statSync, writeFileSync, readFileSync } from 'node:fs';
+import { writeFileSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { getSemesterName } from './SAPClient.mjs';
 
-const dbPath = join(process.cwd(), 'public', '_data', '_catalogs');
+const rawCatalogsPath = join(
+    process.cwd(),
+    'scripts',
+    '.cache',
+    'catalogs.raw.json'
+);
 const manifestPath = join(process.cwd(), 'public', '_data', 'catalogs.json');
 
-function parseI18N(path) {
-    const en = readFileSync(join(path, 'en')).toString();
-    const he = readFileSync(join(path, 'he')).toString();
+function buildManifest(catalogs) {
+    const manifest = {};
 
-    return {
-        en,
-        he,
-    };
-}
+    for (const catalog of catalogs) {
+        const track = catalog.track;
+        const rootTree = catalog.tree.children?.at(0);
+        if (rootTree === undefined) {
+            continue;
+        }
 
-function parseDir(path, depth) {
-    if (depth === 0) {
-        return {
-            ...parseI18N(path),
+        const catalogId = `${track.Peryr}_${track.Perid}`;
+        const facultyId = track.OrgId;
+        const programId = `${track.Otjid}_${rootTree.Otjid}`;
+
+        if (manifest[catalogId] === undefined) {
+            const semester = getSemesterName(track.Perid);
+            if (semester === undefined) {
+                throw new Error(
+                    `Unknown semester '${track.Perid}' for track ${track.Otjid}`
+                );
+            }
+            manifest[catalogId] = {
+                he: `${track.Peryr} ${semester.he}`,
+            };
+        }
+
+        if (manifest[catalogId][facultyId] === undefined) {
+            if (typeof track.OrgText?.he !== 'string') {
+                throw new Error(
+                    `Missing faculty he label for track ${track.Otjid}`
+                );
+            }
+            manifest[catalogId][facultyId] = {
+                he: track.OrgText.he,
+            };
+        }
+
+        if (typeof track.ZzQualifications?.he !== 'string') {
+            throw new Error(
+                `Missing program he label for track ${track.Otjid}`
+            );
+        }
+
+        manifest[catalogId][facultyId][programId] = {
+            he: track.ZzQualifications.he,
         };
     }
 
-    const subdirs = readdirSync(path)
-        .filter((entry) => !['en', 'he'].includes(entry))
-        .map((entry) => [entry, parseDir(join(path, entry), depth - 1)]);
-
-    return {
-        ...parseI18N(path),
-        ...Object.fromEntries(subdirs),
-    };
+    return manifest;
 }
 
-function parseDb(path) {
-    const years = readdirSync(path)
-        .filter((entry) => statSync(join(path, entry)).isDirectory())
-        .map((year) => [year, parseDir(join(path, year), 2)]);
-
-    return { ...Object.fromEntries(years) };
-}
-
-const manifest = parseDb(dbPath);
+const catalogs = JSON.parse(readFileSync(rawCatalogsPath, 'utf-8'));
+const manifest = buildManifest(catalogs);
 writeFileSync(manifestPath, JSON.stringify(manifest));

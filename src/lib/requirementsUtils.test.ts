@@ -12,8 +12,8 @@ describe('requirements utils', () => {
         const root: RequirementNode = {
             name: 'root',
             nested: [
-                { name: 'PATH_A', en: 'Data Science Path' },
-                { name: 'REQ_1', en: 'Mandatory' },
+                { name: 'PATH_A', he: 'מסלול מדעי הנתונים' },
+                { name: 'REQ_1', he: 'חובה' },
             ],
         };
 
@@ -21,7 +21,22 @@ describe('requirements utils', () => {
 
         expect(options).toHaveLength(1);
         expect(options[0]?.id).toBe('PATH_A');
-        expect(options[0]?.label).toBe('Data Science Path');
+        expect(options[0]?.label).toBe('מסלול מדעי הנתונים');
+    });
+
+    it('detects path options for he labels that use נתיב or Path', () => {
+        const root: RequirementNode = {
+            name: 'root',
+            nested: [
+                { name: 'PATH_A', he: 'נתיב: מדעי המחשב תלת שנתי' },
+                { name: 'PATH_B', he: 'Path: Computer Science and Bioinformatic' },
+                { name: 'REQ_1', he: 'חובה' },
+            ],
+        };
+
+        const options = buildPathOptions(root);
+
+        expect(options.map((option) => option.id)).toEqual(['PATH_A', 'PATH_B']);
     });
 
     it('filters requirements by selected path contents', () => {
@@ -30,19 +45,19 @@ describe('requirements utils', () => {
             nested: [
                 {
                     name: 'PATH_A',
-                    en: 'Systems Path',
+                    he: 'מסלול מערכות',
                     nested: [
                         {
                             name: 'REQ_IN_PATH',
-                            en: 'Mandatory',
+                            he: 'חובה',
                             courses: ['001'],
                         },
                     ],
                 },
-                { name: 'REQ_1', en: 'Mandatory', courses: ['002'] },
+                { name: 'REQ_1', he: 'חובה', courses: ['002'] },
                 {
                     name: 'EL_1',
-                    en: 'All-Technion Electives',
+                    he: 'בחירה כלל טכניונית',
                     courses: ['003'],
                 },
             ],
@@ -60,8 +75,8 @@ describe('requirements utils', () => {
         const root: RequirementNode = {
             name: 'root',
             nested: [
-                { name: 'PATH_A', en: 'Systems Path', nested: [] },
-                { name: 'REQ_1', en: 'Mandatory', courses: ['002'] },
+                { name: 'PATH_A', he: 'מסלול מערכות', nested: [] },
+                { name: 'REQ_1', he: 'חובה', courses: ['002'] },
             ],
         };
 

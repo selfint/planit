@@ -11,15 +11,19 @@ function writeFileSync(path, data) {
 const cacheDir = join(process.cwd(), 'scripts', '.cache');
 const rawCatalogs = join(cacheDir, 'catalogs.raw.json');
 
+function isStructureElement(name) {
+    const normalized = name.trim().toLowerCase();
+    return normalized === 'מבנה' || normalized === 'structure element';
+}
+
 function writeTreeSync(path, tree) {
     let treePath = join(path, tree.Otjid);
 
-    if (tree.Name.en.toLowerCase().startsWith('structure element')) {
+    if (isStructureElement(tree.Name.he)) {
         treePath = path;
     } else {
         mkdirSync(treePath, { recursive: true });
 
-        writeFileSync(join(treePath, 'en'), tree.Name.en);
         writeFileSync(join(treePath, 'he'), tree.Name.he);
         if (tree.courses !== undefined) {
             writeFileSync(
@@ -54,25 +58,15 @@ function writeCatalog(dbPath, catalog) {
 
     mkdirSync(yearSemesterPath, { recursive: true });
     writeFileSync(
-        join(yearSemesterPath, 'en'),
-        `${year} ${sap.getSemesterName(semester).en}`
-    );
-    writeFileSync(
         join(yearSemesterPath, 'he'),
         `${year} ${sap.getSemesterName(semester).he}`
     );
 
     mkdirSync(orgPath, { recursive: true });
-    writeFileSync(join(orgPath, 'en'), track.OrgText.en);
     writeFileSync(join(orgPath, 'he'), track.OrgText.he);
 
     mkdirSync(join(orgTracksPath, 'requirement'), { recursive: true });
-    writeFileSync(join(orgTracksPath, 'en'), track.ZzQualifications.en);
     writeFileSync(join(orgTracksPath, 'he'), track.ZzQualifications.he);
-    writeFileSync(
-        join(orgTracksPath, 'requirement', 'en'),
-        track.ZzQualifications.en
-    );
     writeFileSync(
         join(orgTracksPath, 'requirement', 'he'),
         track.ZzQualifications.he
@@ -93,7 +87,7 @@ async function main() {
         `Semester years: ${semesterYears
             .map(
                 ({ PiqSession, PiqYear }) =>
-                    `${sap.getSemesterName(PiqSession).en} ${PiqYear}`
+                    `${sap.getSemesterName(PiqSession).he} ${PiqYear}`
             )
             .join(', ')}`
     );
@@ -102,7 +96,7 @@ async function main() {
     console.log(
         faculties.length,
         'Faculties:',
-        faculties.map((faculty) => faculty.Name.en).join(', ')
+        faculties.map((faculty) => faculty.Name.he).join(', ')
     );
 
     const tracks = await sap

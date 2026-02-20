@@ -199,8 +199,11 @@ function restoreRedirectFromSession(): void {
 }
 
 export function initRouter(): void {
-    restoreRedirectFromSession();
     renderRoute(window.location.pathname, true);
+}
+
+export function initRouterNavigationInterception(): void {
+    restoreRedirectFromSession();
     setStateProviderChangeHandler(() => {
         renderRoute(window.location.pathname, true);
     });
@@ -208,7 +211,6 @@ export function initRouter(): void {
     window.addEventListener('popstate', () => {
         renderRoute(window.location.pathname, true);
     });
-
     document.addEventListener('click', (event) => {
         if (!shouldHandleClickNavigation(event)) {
             return;
