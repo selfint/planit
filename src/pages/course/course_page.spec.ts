@@ -18,4 +18,22 @@ test.describe('/course page route', () => {
         ).toBeVisible();
         await expect(page.getByText('/course?code=104031')).toHaveCount(0);
     });
+
+    test('switches to remove action after adding course to current semester', async ({
+        page,
+    }) => {
+        await page.goto('course?code=104031');
+
+        const addCurrentSemester = page.locator(
+            '[data-role="semester-add-current"]'
+        );
+        const removePlacement = page.locator('[data-role="placement-remove"]');
+
+        await expect(addCurrentSemester).toBeVisible();
+        await addCurrentSemester.click();
+
+        await expect(removePlacement).toBeVisible();
+        await expect(removePlacement).toContainText('הסר מסמסטר 1');
+        await expect(addCurrentSemester).toBeHidden();
+    });
 });
