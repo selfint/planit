@@ -43,6 +43,6 @@ jobs:
         uses: rajyan/preview-pages@v1
         with:
           source-dir: storybook-static
-          preview-name: storybook
+          preview-name: storybook-ui
           pr-comment: sticky
           pr-per-commit: false
