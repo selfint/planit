@@ -1,4 +1,4 @@
-name: Deploy Preview Pages
+name: Deploy Storybook Preview Pages
 
 on:
   pull_request:
@@ -36,12 +36,12 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
+      - name: Build Storybook
+        run: pnpm build-storybook
 
-      - name: Deploy preview to GitHub Pages
+      - name: Deploy Storybook preview to GitHub Pages
         uses: rajyan/preview-pages@v1
         with:
-          source-dir: dist
+          source-dir: storybook-static
           pr-comment: sticky
           pr-per-commit: false
