@@ -1,4 +1,4 @@
-name: Deploy Preview Pages
+name: Deploy Storybook Preview Pages
 
 on:
   pull_request:
@@ -12,11 +12,11 @@ permissions:
   contents: write
 
 concurrency:
-  group: preview-pages-${{ github.event.pull_request.number }}
+  group: preview-storybook-pages-${{ github.event.pull_request.number }}
   cancel-in-progress: true
 
 jobs:
-  preview:
+  preview-storybook:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -36,12 +36,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Build
-        run: pnpm build
+      - name: Build Storybook
+        run: pnpm build-storybook
 
-      - name: Deploy preview to GitHub Pages
+      - name: Deploy Storybook preview to GitHub Pages
         uses: rajyan/preview-pages@v1
         with:
-          source-dir: dist
+          source-dir: storybook-static
+          preview-name: storybook
           pr-comment: sticky
           pr-per-commit: false
