@@ -46,5 +46,7 @@ jobs:
         uses: rajyan/preview-pages@v1
         with:
           source-dir: dist
+          configured-domain: tom.selfin.io
+          configured-dir: planit
           pr-comment: sticky
           pr-per-commit: false
