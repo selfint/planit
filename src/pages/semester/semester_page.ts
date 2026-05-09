@@ -213,12 +213,12 @@ async function hydratePage(pageState: SemesterPageState): Promise<void> {
             semesterCourseCodes,
             courseCache
         );
-        void hydrateRequirementSections(
+        const requirementHydrationPromise = hydrateRequirementSections(
             elements.groupsRoot,
             requirementCodeGroups,
             courseCache
         );
-        void hydrateFreeElectiveSections(
+        const freeElectiveHydrationPromise = hydrateFreeElectiveSections(
             elements.groupsRoot,
             requirementCodeSet,
             semesterCourseCodeSet
@@ -230,6 +230,10 @@ async function hydratePage(pageState: SemesterPageState): Promise<void> {
             elements.currentEmpty,
             semesterCourses
         );
+        await Promise.all([
+            requirementHydrationPromise,
+            freeElectiveHydrationPromise,
+        ]);
         setCurrentSemesterMoveUi(pageState, false);
     } catch {
         elements.groupsRoot.replaceChildren();
