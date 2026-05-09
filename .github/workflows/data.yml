@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: write
-  pull-requests: write
 
 jobs:
   generate-data:
@@ -62,27 +61,12 @@ jobs:
           git commit -m "[Automated] Update data"
           git push --force origin generate-data
 
-      - name: Create or update pull request
+      - name: Merge changes directly to main
         if: steps.check_changes.outputs.changed == 'true'
-        env:
-          GH_TOKEN: ${{ github.token }}
         run: |
-          DATE=$(date +'%d-%m-%Y')
-          gh pr create --base main --head generate-data \
-            --title "[Automated] Update data ${DATE}" \
-            --body "This automated PR updates generated data under \`public/_data\`." \
-          || gh pr edit --base main --head generate-data \
-            --title "[Automated] Update data ${DATE}" \
-            --body "This automated PR updates generated data under \`public/_data\`."
-
-      # - name: Merge directly to main (alternative to PR)
-      #   if: steps.check_changes.outputs.changed == 'true'
-      #   env:
-      #     GH_TOKEN: ${{ github.token }}
-      #   run: |
-      #     git config user.name "github-actions[bot]"
-      #     git config user.email "github-actions[bot]@users.noreply.github.com"
-      #     git checkout main
-      #     git reset --hard origin/main
-      #     git merge --ff-only generate-data
-      #     git push origin main
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout main
+          git reset --hard origin/main
+          git merge --ff-only generate-data
+          git push origin main
