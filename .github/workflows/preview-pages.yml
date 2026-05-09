@@ -20,11 +20,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        run: pnpm build --base /planit/pr-${{ github.event.pull_request.number }}/
-
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
+          version: 10
+
+
+      - name: Verify pnpm
+        run: pnpm --version
+
           version: 10
 
       - name: Install Node.js
