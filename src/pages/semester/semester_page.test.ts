@@ -233,6 +233,43 @@ describe('SemesterPage', () => {
         }
     });
 
+    it('renders current semester courses before slow free-elective hydration completes', async () => {
+        window.history.replaceState(null, '', '/semester?number=1');
+        mocks.getMetaMock.mockResolvedValue({
+            value: {
+                semesters: [{ id: 'אביב-2026-0', courseCodes: ['A100'] }],
+            },
+        });
+        mocks.getCourseMock.mockImplementation((code: string) => {
+            if (code === 'A100') {
+                return Promise.resolve({
+                    code: 'A100',
+                    name: 'A100',
+                    faculty: 'מדעי המחשב',
+                    median: 90,
+                });
+            }
+            return Promise.resolve(undefined);
+        });
+        mocks.getCourseFacultiesMock.mockImplementation(
+            () =>
+                new Promise<string[]>((resolve) => {
+                    void resolve;
+                })
+        );
+        mocks.getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
+
+        const page = SemesterPage();
+        await flushPromises();
+
+        const currentCodes = Array.from(
+            page.querySelectorAll(
+                '[data-role="current-semester-courses"] a[data-course-code]'
+            )
+        ).map((node) => node.getAttribute('data-course-code'));
+        expect(currentCodes).toEqual(['A100']);
+    });
+
     it('selects a course and adds it into current semester panel', async () => {
         window.history.replaceState(null, '', '/semester?number=2');
         mocks.getMetaMock.mockResolvedValue({

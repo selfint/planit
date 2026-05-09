@@ -209,25 +209,31 @@ async function hydratePage(pageState: SemesterPageState): Promise<void> {
         );
         elements.groupsRoot.replaceChildren();
 
-        const [semesterCourses] = await Promise.all([
-            loadCoursesForCodes(semesterCourseCodes, courseCache),
-            hydrateRequirementSections(
-                elements.groupsRoot,
-                requirementCodeGroups,
-                courseCache
-            ),
-            hydrateFreeElectiveSections(
-                elements.groupsRoot,
-                requirementCodeSet,
-                semesterCourseCodeSet
-            ),
-        ]);
+        const semesterCoursesPromise = loadCoursesForCodes(
+            semesterCourseCodes,
+            courseCache
+        );
+        const requirementHydrationPromise = hydrateRequirementSections(
+            elements.groupsRoot,
+            requirementCodeGroups,
+            courseCache
+        );
+        const freeElectiveHydrationPromise = hydrateFreeElectiveSections(
+            elements.groupsRoot,
+            requirementCodeSet,
+            semesterCourseCodeSet
+        );
 
+        const semesterCourses = await semesterCoursesPromise;
         renderCurrentSemesterCourses(
             elements.currentCourses,
             elements.currentEmpty,
             semesterCourses
         );
+        await Promise.all([
+            requirementHydrationPromise,
+            freeElectiveHydrationPromise,
+        ]);
         setCurrentSemesterMoveUi(pageState, false);
     } catch {
         elements.groupsRoot.replaceChildren();

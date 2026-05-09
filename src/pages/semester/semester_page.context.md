@@ -35,10 +35,13 @@ semester selected by the `number` query parameter.
 5. Free-elective rows are built from `state.courses.faculties()` and each
    faculty row hydrates independently via `state.courses.query({ faculty, pageSize: 'all' })`,
    excluding requirement and current-semester codes.
-6. All course entries render as `CourseCard` links with semester move behavior:
+6. Current semester hydration resolves and renders as soon as its own
+   `state.courses.get(code)` calls complete; requirement/free-elective hydration
+   continues independently and does not block the current panel.
+7. All course entries render as `CourseCard` links with semester move behavior:
    select on first click, navigate to `/course?code=<code>` on second click of
    the same card.
-7. Adding a selected course into the current semester updates plan metadata via
+8. Adding a selected course into the current semester updates plan metadata via
    `state.userPlan.set(...)` while preserving existing plan fields.
 
 ## Unit Tests
@@ -88,6 +91,22 @@ assert has_class('ring-2')
 click('[data-role="current-semester"]')
 assert codes('[data-role="current-semester-courses"]') == ['A100', 'B200']
 assert persisted.semesters[1].courseCodes == ['A100', 'B200']
+```
+
+### `renders current semester courses before slow free-elective hydration completes`
+
+WHAT: Verifies current-semester cards render without waiting for slow
+free-elective providers.
+WHY: Keeps the user’s selected semester responsive even when catalog hydration
+is heavy.
+HOW: Mocks current semester with `A100`, keeps `state.courses.faculties()`
+pending, renders page, then asserts `A100` appears in the current-semester row.
+
+```python
+mock_semester_courses(['A100'])
+mock_faculties(pending_promise=True)
+page = SemesterPage(); flush_promises()
+assert codes('[data-role="current-semester-courses"]') == ['A100']
 ```
 
 ### `opens course page when clicking same selected course twice`
