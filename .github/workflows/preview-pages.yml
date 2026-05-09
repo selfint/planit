@@ -37,7 +37,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: pnpm build --base /planit/pr-${{ github.event.pull_request.number }}/
 
       - name: Deploy preview to GitHub Pages
         uses: rajyan/preview-pages@v1
