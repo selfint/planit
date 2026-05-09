@@ -252,7 +252,10 @@ describe('SemesterPage', () => {
             return Promise.resolve(undefined);
         });
         mocks.getCourseFacultiesMock.mockImplementation(
-            () => new Promise<string[]>(() => {})
+            () =>
+                new Promise<string[]>((resolve) => {
+                    void resolve;
+                })
         );
         mocks.getActiveRequirementsSelectionMock.mockResolvedValue(undefined);
 
