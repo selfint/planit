@@ -59,9 +59,14 @@ jobs:
         with:
           script: |
             const previewUrl = `https://tom.selfin.io/planit/pr-${context.issue.number}/`;
+            const deployedCommit = context.sha;
+            const deployedAt = new Date().toISOString();
             github.rest.issues.createComment({
               owner: context.repo.owner,
               repo: context.repo.repo,
               issue_number: context.issue.number,
-              body: `🔍 Preview deployed: ${previewUrl}`,
+              body: `🔍 Preview deployed: ${previewUrl}
+
+Commit: \`${deployedCommit}\`
+Deployed at: ${deployedAt}`,
             });
