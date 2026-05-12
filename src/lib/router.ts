@@ -96,6 +96,7 @@ function renderRoute(pathname: string, replaceState = false): void {
     }
 
     const routePath = stripBasePath(pathname, APP_BASE_PATH);
+    document.body.classList.toggle('landing-gradient-bg', routePath === '/');
     const page = resolvePage(routePath);
 
     if (page === null) {
