@@ -37,6 +37,13 @@ export type CatalogSyncResult = {
 export type CatalogSyncOptions = {
     onSync?: (result: CatalogSyncResult) => void;
     onError?: (error: unknown) => void;
+    onProgress?: (progress: SyncProgress) => void;
+};
+
+export type SyncProgress = {
+    message: string;
+    downloadedBytes: number;
+    totalBytes: number;
 };
 
 function isOnline(): boolean {
@@ -94,7 +101,9 @@ async function fetchGeneratedAt(): Promise<string> {
     return generatedAt.toISOString();
 }
 
-export async function syncCatalogs(): Promise<CatalogSyncResult> {
+export async function syncCatalogs(
+    options?: Pick<CatalogSyncOptions, 'onProgress'>
+): Promise<CatalogSyncResult> {
     if (!isOnline()) {
         return { status: 'offline' };
     }
@@ -112,7 +121,10 @@ export async function syncCatalogs(): Promise<CatalogSyncResult> {
         );
     }
 
-    const data = (await response.json()) as Record<string, unknown>;
+    const data = (await readJsonWithProgress(response, {
+        onProgress: options?.onProgress,
+        message: 'מוריד קטלוגים...',
+    })) as Record<string, unknown>;
     const count = Object.keys(data).length;
     const generatedAt = await fetchGeneratedAt();
 
@@ -142,6 +154,56 @@ export async function syncCatalogs(): Promise<CatalogSyncResult> {
     ]);
 
     return { status: 'updated', count };
+}
+
+async function readJsonWithProgress(
+    response: Response,
+    options: {
+        onProgress?: (progress: SyncProgress) => void;
+        message: string;
+    }
+): Promise<unknown> {
+    const contentLengthHeader = response.headers.get('content-length');
+    const totalBytes =
+        contentLengthHeader === null ? 0 : Number.parseInt(contentLengthHeader, 10);
+
+    const streamReader = response.body?.getReader();
+    if (streamReader === undefined) {
+        return response.json();
+    }
+
+    const chunks: Uint8Array[] = [];
+    let downloadedBytes = 0;
+    options.onProgress?.({ message: options.message, downloadedBytes, totalBytes });
+
+    while (true) {
+        const nextChunk = await streamReader.read();
+        if (nextChunk.done) {
+            break;
+        }
+
+        downloadedBytes += nextChunk.value.byteLength;
+        chunks.push(nextChunk.value);
+        options.onProgress?.({
+            message: options.message,
+            downloadedBytes,
+            totalBytes: totalBytes > 0 ? totalBytes : downloadedBytes,
+        });
+    }
+
+    const fullBuffer = new Uint8Array(downloadedBytes);
+    let writeOffset = 0;
+    for (const chunk of chunks) {
+        fullBuffer.set(chunk, writeOffset);
+        writeOffset += chunk.byteLength;
+    }
+
+    options.onProgress?.({
+        message: 'מעבד נתוני קטלוג...',
+        downloadedBytes,
+        totalBytes: totalBytes > 0 ? totalBytes : downloadedBytes,
+    });
+    return JSON.parse(new TextDecoder().decode(fullBuffer)) as unknown;
 }
 
 export function initCatalogSync(options?: CatalogSyncOptions): void {
