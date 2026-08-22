@@ -6,7 +6,7 @@ Syncs the remote `courseData.json` into IndexedDB with metadata for caching and 
 
 ## Exports
 
-- `syncCourseData()`: Fetch course data if needed and persist it to IndexedDB.
+- `syncCourseData(options?)`: Fetch course data if needed and persist it to IndexedDB, optionally emitting download progress callbacks.
 - `initCourseSync(options)`: Run a one-time sync attempt when invoked.
 - `CourseSyncResult`: Status result for a sync attempt.
 - `CourseSyncOptions`: Optional callbacks for sync success or errors.
@@ -36,3 +36,10 @@ Syncs the remote `courseData.json` into IndexedDB with metadata for caching and 
 - Returns `offline` and avoids fetch calls when `navigator.onLine` is false.
 - Skips updates on 304 responses without writing metadata.
 - Updates courses, count, and `courseDataGeneratedAt` when remote data changes.
+
+
+- Progress callback payload includes `message`, `downloadedBytes`, and `totalBytes` so startup UI can explain wait reasons and byte progress.
+
+## Tests/Specs Role
+
+- `src/lib/catalogSync.test.ts` and `src/lib/courseSync.test.ts` validate offline/304/updated sync outcomes and protect the core freshness logic used by startup loading UX.
