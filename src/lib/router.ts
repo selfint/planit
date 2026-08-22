@@ -4,6 +4,7 @@ import { LandingPage } from '../pages/landing/landing_page';
 import { NotFoundPage } from '../pages/404/not_found_page';
 import { PlanPage } from '../pages/plan/plan_page';
 import { SearchPage } from '../pages/search/search_page';
+import { SharePage } from '../pages/share/share_page';
 import { SemesterPage } from '../pages/semester/semester_page';
 import { setStateProviderChangeHandler } from '$lib/stateManagement';
 
@@ -19,6 +20,7 @@ const routes: Partial<Record<string, PageFactory>> = {
     '/catalog': CatalogPage,
     '/course': CoursePage,
     '/search': SearchPage,
+    '/share': SharePage,
     '/semester': SemesterPage,
 };
 
