@@ -28,3 +28,4 @@ links.
   landing page wrapper.
 - This component is route-scoped to the landing page and lives under
   `src/pages/landing/components`.
+- Rendering now clones from a cached parsed template root and resolves key nodes via precomputed selector paths, so HTML and selector parsing happens once.
