@@ -23,3 +23,4 @@ call-to-action buttons, and summary copy.
 - The component is template-only and currently has no runtime event wiring.
 - This component is route-scoped to the landing page and lives under
   `src/pages/landing/components`.
+- Rendering now clones from a cached parsed template root, eliminating repeated template parsing for each mount.

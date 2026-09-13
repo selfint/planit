@@ -29,3 +29,4 @@ previews.
 - The media area renders a shimmer placeholder until `mediaSrc` is provided.
 - This component is route-scoped to the landing page and lives under
   `src/pages/landing/components`.
+- Rendering now clones from a cached parsed template root and resolves slot elements via precomputed selector paths to avoid repeated selector parsing.

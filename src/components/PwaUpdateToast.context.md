@@ -20,3 +20,5 @@ explicitly apply the service worker update.
 - `src/components/PwaUpdateToast.html`
 - `src/components/PwaUpdateToast.stories.ts`
 - `src/components/PwaUpdateToast.test.ts`
+- Rendering now clones from a cached parsed template root and uses precomputed selector paths for toast/button lookup.
+- `PwaUpdateToast.test.ts` validates toast visibility and apply-action wiring so refactors to template lookup remain behavior-safe.

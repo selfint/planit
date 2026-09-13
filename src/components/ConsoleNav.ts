@@ -16,29 +16,28 @@ const ACTIVE_PATHS: Record<ConsoleLinkKey, string> = {
     plan: '/plan',
     search: '/search',
 };
+const TEMPLATE_ROOT = createTemplateRoot();
+
+const LOGO_PATH = createSelectorPath('[data-logo]');
+const TITLE_USE_PATH = createSelectorPath('[data-title-use]');
+const LOGIN_PATH = createSelectorPath('[data-login]');
+const LOGOUT_PATH = createSelectorPath('[data-logout]');
 
 export function ConsoleNav(options: ConsoleNavOptions = {}): HTMLElement {
-    const template = document.createElement('template');
-    template.innerHTML = templateHtml;
-    const templateElement = template.content.firstElementChild;
-    if (!(templateElement instanceof HTMLTemplateElement)) {
-        throw new Error('ConsoleNav template element not found');
-    }
-
-    const root = templateElement.content.firstElementChild?.cloneNode(true);
+    const root = TEMPLATE_ROOT.cloneNode(true);
     if (!(root instanceof HTMLElement)) {
         throw new Error('ConsoleNav template root not found');
     }
 
-    const logo = root.querySelector<HTMLImageElement>('[data-logo]');
-    if (logo !== null) {
-        logo.src = logoUrl;
-    }
+    const logo = getElementByPath<HTMLImageElement>(root, LOGO_PATH, 'logo');
+    logo.src = logoUrl;
 
-    const titleUse = root.querySelector<SVGUseElement>('[data-title-use]');
-    if (titleUse !== null) {
-        titleUse.setAttribute('href', titleUrl);
-    }
+    const titleUse = getElementByPath<SVGUseElement>(
+        root,
+        TITLE_USE_PATH,
+        'title use'
+    );
+    titleUse.setAttribute('href', titleUrl);
 
     applyActiveState(root, options.activePath);
     bindAuthControls(root);
@@ -87,17 +86,17 @@ function normalizePath(path: string | undefined): string {
 }
 
 function bindAuthControls(root: HTMLElement): void {
-    const loginButton = root.querySelector<HTMLButtonElement>('[data-login]');
-    if (loginButton === null) {
-        throw new Error('ConsoleNav login button not found');
-    }
-    const resolvedLoginButton = loginButton;
+    const resolvedLoginButton = getElementByPath<HTMLButtonElement>(
+        root,
+        LOGIN_PATH,
+        'login button'
+    );
 
-    const logoutButton = root.querySelector<HTMLButtonElement>('[data-logout]');
-    if (logoutButton === null) {
-        throw new Error('ConsoleNav logout button not found');
-    }
-    const resolvedLogoutButton = logoutButton;
+    const resolvedLogoutButton = getElementByPath<HTMLButtonElement>(
+        root,
+        LOGOUT_PATH,
+        'logout button'
+    );
 
     function render(): void {
         const user = state.firebase.getUser();
@@ -136,4 +135,59 @@ function bindAuthControls(root: HTMLElement): void {
     );
 
     render();
+}
+
+function createTemplateRoot(): HTMLElement {
+    const template = document.createElement('template');
+    template.innerHTML = templateHtml.trim();
+    const root = template.content.firstElementChild;
+    if (!(root instanceof HTMLElement)) {
+        throw new Error('ConsoleNav template root not found');
+    }
+    return root;
+}
+
+function createSelectorPath(selector: string): number[] {
+    const element = TEMPLATE_ROOT.querySelector(selector);
+    if (!(element instanceof Element)) {
+        throw new Error(`ConsoleNav selector not found: ${selector}`);
+    }
+    return getNodePath(TEMPLATE_ROOT, element);
+}
+
+function getElementByPath<TElement extends Element>(
+    root: Element,
+    path: number[],
+    label: string
+): TElement {
+    let current: Element = root;
+    for (const index of path) {
+        const child = current.children.item(index);
+        if (!(child instanceof Element)) {
+            throw new Error(`ConsoleNav ${label} not found in clone`);
+        }
+        current = child;
+    }
+    return current as TElement;
+}
+
+function getNodePath(root: Element, target: Element): number[] {
+    const path: number[] = [];
+    let current: Element | null = target;
+    while (current !== null && current !== root) {
+        const parent: Element | null = current.parentElement;
+        if (parent === null) {
+            throw new Error('ConsoleNav target node is detached from template');
+        }
+        const index = Array.prototype.indexOf.call(parent.children, current);
+        if (index < 0) {
+            throw new Error('ConsoleNav target index not found in template');
+        }
+        path.unshift(index);
+        current = parent;
+    }
+    if (current !== root) {
+        throw new Error('ConsoleNav target is outside template root');
+    }
+    return path;
 }

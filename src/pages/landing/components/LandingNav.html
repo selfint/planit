@@ -1,102 +1,100 @@
-<template>
-    <div class="relative" data-component="LandingNav">
-        <header
-            class="border-border/50 border-b bg-transparent pt-[env(safe-area-inset-top)] backdrop-blur-sm"
-        >
-            <div
-                class="mx-auto flex items-center justify-between px-4 sm:px-6 lg:max-w-6xl lg:px-8"
-            >
-                <div class="order-3 flex items-center gap-3" data-slot="logo">
-                    <svg class="size-16" aria-label="Planit" role="img">
-                        <use data-title-use></use>
-                    </svg>
-
-                    <img class="size-10" alt="לוגו Planit" data-logo />
-                </div>
-
-                <nav
-                    class="text-text order-2 hidden items-center gap-6 text-sm md:flex"
-                    data-slot="links"
-                >
-                    <a
-                        class="hover:text-text w-fit transition duration-200 ease-out"
-                        href="/plan"
-                    >
-                        מתכנן
-                    </a>
-                    <a
-                        class="hover:text-text w-fit transition duration-200 ease-out"
-                        href="/catalog"
-                    >
-                        קטלוגים
-                    </a>
-                    <a
-                        class="hover:text-text w-fit transition duration-200 ease-out"
-                        href="/course"
-                    >
-                        קורסים
-                    </a>
-                    <a
-                        class="hover:text-text w-fit transition duration-200 ease-out"
-                        href="/search"
-                    >
-                        חיפוש
-                    </a>
-                </nav>
-
-                <div
-                    class="order-1 hidden items-center gap-3 md:flex"
-                    data-slot="actions"
-                >
-                    <a
-                        class="bg-accent text-accent-contrast rounded-full px-4 py-2 text-xs font-medium shadow-sm"
-                        href="/catalog"
-                    >
-                        התחילו לתכנן
-                    </a>
-                </div>
-
-                <button
-                    class="text-text order-1 flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium md:hidden"
-                    type="button"
-                    data-action="toggle-menu"
-                    aria-expanded="false"
-                    aria-controls="landing-mobile-menu"
-                >
-                    <span class="sr-only">תפריט</span>
-                    <span
-                        class="flex h-4 w-5 flex-col justify-between"
-                        aria-hidden="true"
-                    >
-                        <span class="bg-text h-0.5 w-full rounded-full"></span>
-                        <span class="bg-text h-0.5 w-full rounded-full"></span>
-                        <span class="bg-text h-0.5 w-full rounded-full"></span>
-                    </span>
-                </button>
-            </div>
-        </header>
-
+<div class="relative" data-component="LandingNav">
+    <header
+        class="border-border/50 border-b bg-transparent pt-[env(safe-area-inset-top)] backdrop-blur-sm"
+    >
         <div
-            class="border-border/60 bg-surface-1/95 absolute inset-x-4 top-full z-40 mt-3 hidden rounded-2xl border p-4 shadow-sm backdrop-blur-lg sm:inset-x-6"
-            role="dialog"
-            aria-modal="true"
-            id="landing-mobile-menu"
-            data-role="mobile-menu"
+            class="mx-auto flex items-center justify-between px-4 sm:px-6 lg:max-w-6xl lg:px-8"
         >
-            <nav class="mt-6 flex flex-col items-start gap-4 text-base">
-                <a class="hover:text-text" href="/plan">מתכנן</a>
-                <a class="hover:text-text" href="/catalog">קטלוגים</a>
-                <a class="hover:text-text" href="/course">קורסים</a>
-                <a class="hover:text-text" href="/search">חיפוש</a>
-            </nav>
-            <div class="mt-6 flex flex-col gap-3">
+            <div class="order-3 flex items-center gap-3" data-slot="logo">
+                <svg class="size-16" aria-label="Planit" role="img">
+                    <use data-title-use></use>
+                </svg>
+
+                <img class="size-10" alt="לוגו Planit" data-logo />
+            </div>
+
+            <nav
+                class="text-text order-2 hidden items-center gap-6 text-sm md:flex"
+                data-slot="links"
+            >
                 <a
-                    class="bg-accent text-accent-contrast rounded-full px-4 py-3 text-center text-sm font-medium"
+                    class="hover:text-text w-fit transition duration-200 ease-out"
+                    href="/plan"
+                >
+                    מתכנן
+                </a>
+                <a
+                    class="hover:text-text w-fit transition duration-200 ease-out"
+                    href="/catalog"
+                >
+                    קטלוגים
+                </a>
+                <a
+                    class="hover:text-text w-fit transition duration-200 ease-out"
+                    href="/course"
+                >
+                    קורסים
+                </a>
+                <a
+                    class="hover:text-text w-fit transition duration-200 ease-out"
+                    href="/search"
+                >
+                    חיפוש
+                </a>
+            </nav>
+
+            <div
+                class="order-1 hidden items-center gap-3 md:flex"
+                data-slot="actions"
+            >
+                <a
+                    class="bg-accent text-accent-contrast rounded-full px-4 py-2 text-xs font-medium shadow-sm"
                     href="/catalog"
                 >
                     התחילו לתכנן
                 </a>
             </div>
+
+            <button
+                class="text-text order-1 flex items-center gap-2 rounded-full px-3 py-2 text-xs font-medium md:hidden"
+                type="button"
+                data-action="toggle-menu"
+                aria-expanded="false"
+                aria-controls="landing-mobile-menu"
+            >
+                <span class="sr-only">תפריט</span>
+                <span
+                    class="flex h-4 w-5 flex-col justify-between"
+                    aria-hidden="true"
+                >
+                    <span class="bg-text h-0.5 w-full rounded-full"></span>
+                    <span class="bg-text h-0.5 w-full rounded-full"></span>
+                    <span class="bg-text h-0.5 w-full rounded-full"></span>
+                </span>
+            </button>
+        </div>
+    </header>
+
+    <div
+        class="border-border/60 bg-surface-1/95 absolute inset-x-4 top-full z-40 mt-3 hidden rounded-2xl border p-4 shadow-sm backdrop-blur-lg sm:inset-x-6"
+        role="dialog"
+        aria-modal="true"
+        id="landing-mobile-menu"
+        data-role="mobile-menu"
+    >
+        <nav class="mt-6 flex flex-col items-start gap-4 text-base">
+            <a class="hover:text-text" href="/plan">מתכנן</a>
+            <a class="hover:text-text" href="/catalog">קטלוגים</a>
+            <a class="hover:text-text" href="/course">קורסים</a>
+            <a class="hover:text-text" href="/search">חיפוש</a>
+        </nav>
+        <div class="mt-6 flex flex-col gap-3">
+            <a
+                class="bg-accent text-accent-contrast rounded-full px-4 py-3 text-center text-sm font-medium"
+                href="/catalog"
+            >
+                התחילו לתכנן
+            </a>
         </div>
     </div>
-</template>
+</div>

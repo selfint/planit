@@ -1,64 +1,57 @@
-<template>
-    <section
-        class="mx-4 flex flex-col gap-4 xl:mx-0"
-        data-component="DegreePicker"
-    >
-        <div class="flex flex-col gap-1">
-            <p class="text-lg font-medium">
-                בחר קטלוג ותכנית כדי לטעון דרישות.
-            </p>
-        </div>
-        <div class="flex flex-col gap-3">
-            <label class="text-text-muted flex flex-col gap-2 text-xs">
-                <span>קטלוג</span>
-                <select
-                    class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                    data-degree-catalog
-                ></select>
-            </label>
-            <label class="text-text-muted flex flex-col gap-2 text-xs">
-                <span>פקולטה</span>
-                <select
-                    class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                    data-degree-faculty
-                ></select>
-            </label>
-            <label class="text-text-muted flex flex-col gap-2 text-xs">
-                <span>תכנית</span>
-                <select
-                    class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                    data-degree-program
-                ></select>
-            </label>
-            <label class="text-text-muted flex flex-col gap-2 text-xs">
-                <span>מסלול</span>
-                <select
-                    class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
-                    data-degree-path
-                ></select>
-            </label>
-            <p class="text-text-muted hidden text-xs" data-path-empty></p>
-        </div>
-        <div class="pt-2">
-            <p class="text-text-muted mb-2 text-xs">דרישות במסלול</p>
-            <table class="w-full text-xs">
-                <thead class="border-border/50 text-text-muted border-y">
-                    <tr>
-                        <th class="px-3 py-2 text-start font-medium">דרישה</th>
-                        <th class="px-3 py-2 text-start font-medium">
-                            סה״כ קורסים
-                        </th>
-                    </tr>
-                </thead>
-                <tbody class="divide-border/40 divide-y" data-requirement-rows>
-                    <tr>
-                        <td class="text-text px-3 py-2" colspan="2">
-                            בחר תכנית ומסלול כדי לראות דרישות.
-                        </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <p class="text-text-muted text-xs" data-degree-status></p>
-    </section>
-</template>
+<section class="mx-4 flex flex-col gap-4 xl:mx-0" data-component="DegreePicker">
+    <div class="flex flex-col gap-1">
+        <p class="text-lg font-medium">בחר קטלוג ותכנית כדי לטעון דרישות.</p>
+    </div>
+    <div class="flex flex-col gap-3">
+        <label class="text-text-muted flex flex-col gap-2 text-xs">
+            <span>קטלוג</span>
+            <select
+                class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                data-degree-catalog
+            ></select>
+        </label>
+        <label class="text-text-muted flex flex-col gap-2 text-xs">
+            <span>פקולטה</span>
+            <select
+                class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                data-degree-faculty
+            ></select>
+        </label>
+        <label class="text-text-muted flex flex-col gap-2 text-xs">
+            <span>תכנית</span>
+            <select
+                class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                data-degree-program
+            ></select>
+        </label>
+        <label class="text-text-muted flex flex-col gap-2 text-xs">
+            <span>מסלול</span>
+            <select
+                class="border-border/60 bg-surface-2/80 text-text rounded-2xl border px-3 py-2 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+                data-degree-path
+            ></select>
+        </label>
+        <p class="text-text-muted hidden text-xs" data-path-empty></p>
+    </div>
+    <div class="pt-2">
+        <p class="text-text-muted mb-2 text-xs">דרישות במסלול</p>
+        <table class="w-full text-xs">
+            <thead class="border-border/50 text-text-muted border-y">
+                <tr>
+                    <th class="px-3 py-2 text-start font-medium">דרישה</th>
+                    <th class="px-3 py-2 text-start font-medium">
+                        סה״כ קורסים
+                    </th>
+                </tr>
+            </thead>
+            <tbody class="divide-border/40 divide-y" data-requirement-rows>
+                <tr>
+                    <td class="text-text px-3 py-2" colspan="2">
+                        בחר תכנית ומסלול כדי לראות דרישות.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <p class="text-text-muted text-xs" data-degree-status></p>
+</section>
