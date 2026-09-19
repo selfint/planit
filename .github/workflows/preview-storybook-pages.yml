@@ -1,0 +1,48 @@
+name: Deploy Storybook Preview Pages
+
+on:
+  pull_request:
+    types:
+      - opened
+      - reopened
+      - synchronize
+
+permissions:
+  pull-requests: write
+  contents: write
+
+concurrency:
+  group: preview-storybook-pages-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  preview-storybook:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build Storybook
+        run: pnpm build-storybook
+
+      - name: Deploy Storybook preview to GitHub Pages
+        uses: rajyan/preview-pages@v1
+        with:
+          source-dir: storybook-static
+          preview-name: storybook-ui
+          pr-comment: sticky
+          pr-per-commit: false
