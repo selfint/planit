@@ -32,3 +32,4 @@ used on all routes except the landing page and 404 page.
 - The search link stays icon-only and uses `aria-label` for accessibility.
 - The title wordmark is hidden on narrow screens to preserve space.
 - Auth button state is updated in-place without route refresh.
+- Rendering now reuses a cached parsed template root and precomputed selector paths for key controls, reducing per-render DOM parsing overhead.
