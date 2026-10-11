@@ -20,28 +20,68 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24
 
       - name: Install pnpm
         uses: pnpm/action-setup@v4
         with:
           version: 10
 
-      - name: Install Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: 24
-          cache: 'pnpm'
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm build
+        run: pnpm build --base /planit/pr-${{ github.event.pull_request.number }}/
 
-      - name: Deploy preview to GitHub Pages
-        uses: rajyan/preview-pages@v1
-        with:
-          source-dir: dist
-          pr-comment: sticky
-          pr-per-commit: false
+      - name: Deploy preview to gh-pages branch
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euxo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git fetch origin gh-pages:gh-pages || true
+          if git show-ref --verify --quiet refs/heads/gh-pages; then
+            git worktree add /tmp/gh-pages gh-pages
+          else
+            git worktree add -B gh-pages /tmp/gh-pages
+          fi
+
+          mkdir -p "/tmp/gh-pages/planit/pr-${PR_NUMBER}"
+          rm -rf "/tmp/gh-pages/planit/pr-${PR_NUMBER}"/*
+          cp -R dist/. "/tmp/gh-pages/planit/pr-${PR_NUMBER}/"
+
+          cd /tmp/gh-pages
+          touch .nojekyll
+          git add -A
+          if git diff --cached --quiet; then
+            echo "No changes to deploy"
+          else
+            git commit -m "Deploy preview for PR #${PR_NUMBER} (${GITHUB_SHA})"
+            git push "https://x-access-token:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" gh-pages
+          fi
+
+      - name: Comment preview URL
+        env:
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          PREVIEW_URL="https://tom.selfin.io/planit/pr-${PR_NUMBER}/"
+          DEPLOYED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          BODY="🔍 Preview deployed: ${PREVIEW_URL}\n\nCommit: ${GITHUB_SHA}\nDeployed at: ${DEPLOYED_AT}"
+          curl -sS -X POST \
+            -H "Authorization: Bearer ${GITHUB_TOKEN}" \
+            -H "Accept: application/vnd.github+json" \
+            "https://api.github.com/repos/${GITHUB_REPOSITORY}/issues/${PR_NUMBER}/comments" \
+            -d "$(jq -n --arg body \"$BODY\" '{body: $body}')"
