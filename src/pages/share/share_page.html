@@ -1,0 +1,31 @@
+<template>
+    <section class="text-text min-h-screen w-full" data-page="share">
+        <div data-console-nav></div>
+        <main class="mx-auto flex min-h-screen w-full flex-col gap-4 px-4 pt-5 pb-[calc(env(safe-area-inset-bottom)+1.5rem)] sm:px-6 lg:max-w-4xl lg:px-8">
+            <header class="flex flex-col gap-1">
+                <h1 class="text-xl font-medium">שיתוף תוכנית לימודים</h1>
+                <p class="text-text-muted text-xs">ייצוא התוכנית לקישור ושליפה של תוכנית קיימת.</p>
+            </header>
+
+            <section class="border-border/60 bg-surface-1/75 flex flex-col gap-2 rounded-2xl border p-3">
+                <div class="flex items-center justify-between gap-2">
+                    <h2 class="text-sm font-medium">קישור שיתוף</h2>
+                    <button type="button" class="bg-accent text-accent-contrast focus-visible:ring-accent/60 min-h-11 rounded-xl px-3 text-xs font-medium touch-manipulation transition duration-200 ease-out focus-visible:ring-2" data-share-create>
+                        יצירת קישור
+                    </button>
+                </div>
+                <textarea readonly class="border-border/60 bg-surface-2/70 text-text-muted min-h-24 w-full rounded-xl border p-2 text-xs" data-share-link></textarea>
+                <p class="text-info hidden text-xs" data-share-status role="status" aria-live="polite"></p>
+            </section>
+
+            <section class="border-border/60 bg-surface-1/75 flex flex-col gap-2 rounded-2xl border p-3">
+                <h2 class="text-sm font-medium">ייבוא תוכנית</h2>
+                <textarea class="focus-visible:ring-accent/60 border-border/60 bg-surface-2/70 text-text min-h-24 w-full rounded-xl border p-2 text-xs focus-visible:ring-2" placeholder="הדביקו קישור שיתוף או מחרוזת JSON" data-share-import-input></textarea>
+                <button type="button" class="border-border/70 bg-surface-2 text-text focus-visible:ring-accent/60 min-h-11 rounded-xl border px-3 text-xs font-medium touch-manipulation transition duration-200 ease-out focus-visible:ring-2" data-share-import>
+                    ייבוא תוכנית
+                </button>
+                <p class="text-success hidden text-xs" data-share-import-status role="status" aria-live="polite"></p>
+            </section>
+        </main>
+    </section>
+</template>
