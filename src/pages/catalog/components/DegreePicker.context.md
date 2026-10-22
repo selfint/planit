@@ -37,3 +37,5 @@ Provides catalog, faculty, program, and path selection and renders program requi
 - The table renders only requirement nodes that contain courses, using a space-separated path label.
 - This component is route-scoped to catalog flows and lives under
   `src/pages/catalog/components`.
+- Rendering now clones from a cached parsed template root and uses precomputed selector paths for all required form/table nodes.
+- `catalog_page.test.ts` exercises picker-driven flows (selection, requirement hydration, empty/missing states), documenting why this component wiring must stay deterministic.
