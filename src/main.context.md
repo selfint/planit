@@ -16,19 +16,21 @@ temporary loading overlay, then mounts routing and PWA update handling.
    any session redirect path, and registers route rerendering on state-provider
    swaps.
 5. If online and not running with seeded dev payload (`import.meta.env.DEV` +
-   `planit:dev-state` in localStorage), mounts `AppLoadingScreen.html`, awaits
-   `preloadFirebase()`, then awaits one-time startup sync for
-   `courseData.json` and `catalogs.json`.
-6. Removes the loading overlay after preload/sync finishes.
-7. If offline, or if seeded dev payload is present, skips startup online preload.
-8. Initializes SPA route rendering (`initRendering()`).
-9. Appends `PwaUpdateToast()` to `document.body` so update prompts can be shown
+   `planit:dev-state` in localStorage), mounts `AppLoadingScreen.html` and starts
+   `syncCatalogs`, `syncCourseData`, and `preloadFirebase` in parallel.
+6. The loading overlay now updates with a message + progress bar +
+   downloaded-bytes/total-bytes text while startup dataset downloads stream.
+7. Removes the loading overlay after preload/sync finishes.
+8. If offline, or if seeded dev payload is present, skips startup online preload.
+9. Initializes SPA route rendering (`initRendering()`).
+10. Appends `PwaUpdateToast()` to `document.body` so update prompts can be shown
    from anywhere in the app.
 
 ## Business/User Flow Rationale
 
-- Online users see a short startup loading state before app shell render so auth
-  and required catalogs/courses data are ready on first paint.
+- Online users see a startup loading state that now explains *what* is happening
+  (auth warmup vs. courses/catalog downloads) and *how far* downloads progressed,
+  reducing uncertainty on large payload networks.
 - Offline users are not blocked by auth bootstrap and enter the app immediately.
 - In development/e2e runs with seeded payload, startup network sync is skipped so tests use deterministic IndexedDB fixtures and avoid unnecessary blocking network work.
 - PWA updates are surfaced with explicit user confirmation via toast instead of forcing sudden reloads.
@@ -47,3 +49,9 @@ temporary loading overlay, then mounts routing and PWA update handling.
 ## Notes
 
 - This file intentionally keeps orchestration shallow; domain logic stays in `src/lib/*` modules.
+- Progress math is UI-only and based on streamed network bytes from sync modules.
+
+## Tests/Specs Role
+
+- `src/pages/**/*.spec.ts` and page tests indirectly validate that app startup completes and loading overlays do not persist after hydration.
+- No dedicated `main.ts` unit test currently exists; startup behavior is exercised through integration-style page specs.
