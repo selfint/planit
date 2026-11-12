@@ -25,6 +25,9 @@ vi.mock('../pages/search/search_page', () => ({
 vi.mock('../pages/semester/semester_page', () => ({
     SemesterPage: (): HTMLElement => mockPage(),
 }));
+vi.mock('../pages/share/share_page', () => ({
+    SharePage: (): HTMLElement => mockPage(),
+}));
 vi.mock('../pages/404/not_found_page', () => ({
     NotFoundPage: (): HTMLElement => mockPage(),
 }));
