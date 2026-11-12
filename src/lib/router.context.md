@@ -25,6 +25,7 @@ Provides client-side SPA route rendering and internal link interception.
 - Uses `history.pushState` and `popstate` to keep URL and rendered page in sync.
 - Intercepts same-origin anchor clicks through `initRouterNavigationInterception()`.
 - Renders `NotFoundPage` for unknown routes.
+- Toggles `landing-gradient-bg` on `<body>` only when route path is `/` so non-landing pages keep a solid background.
 
 ## Dependencies
 
@@ -45,3 +46,4 @@ Provides client-side SPA route rendering and internal link interception.
 - Verifies click interception allows same-origin plain anchor clicks.
 - Verifies links with query/hash are handled by the SPA router.
 - Verifies redirected deep-link paths are restored from session storage on init.
+- Verifies route renders still work after body-level landing background toggling.
