@@ -32,50 +32,56 @@ const REQUIREMENTS_EMPTY_MESSAGE = 'בחר תכנית ומסלול כדי לרא
 const REQUIREMENTS_MISSING_MESSAGE = 'לא נמצאו דרישות לתכנית זו.';
 const REQUIREMENTS_PATH_MESSAGE = 'בחר מסלול כדי להציג דרישות.';
 const REQUIREMENTS_PATH_EMPTY_MESSAGE = 'אין דרישות במסלול זה.';
+const TEMPLATE_ROOT = createTemplateRoot();
+const CATALOG_SELECT_PATH = createSelectorPath('[data-degree-catalog]');
+const FACULTY_SELECT_PATH = createSelectorPath('[data-degree-faculty]');
+const PROGRAM_SELECT_PATH = createSelectorPath('[data-degree-program]');
+const PATH_SELECT_PATH = createSelectorPath('[data-degree-path]');
+const PATH_EMPTY_PATH = createSelectorPath('[data-path-empty]');
+const STATUS_PATH = createSelectorPath('[data-degree-status]');
+const REQUIREMENT_ROWS_PATH = createSelectorPath('[data-requirement-rows]');
 
 export function DegreePicker(): HTMLElement {
-    const template = document.createElement('template');
-    template.innerHTML = templateHtml;
-    const templateElement = template.content.firstElementChild;
-    if (!(templateElement instanceof HTMLTemplateElement)) {
-        throw new Error('DegreePicker template element not found');
-    }
-    const root = templateElement.content.firstElementChild?.cloneNode(true);
+    const root = TEMPLATE_ROOT.cloneNode(true);
     if (!(root instanceof HTMLElement)) {
         throw new Error('DegreePicker template root not found');
     }
 
-    const catalogSelect = root.querySelector<HTMLSelectElement>(
-        '[data-degree-catalog]'
+    const catalogSelect = getElementByPath<HTMLSelectElement>(
+        root,
+        CATALOG_SELECT_PATH,
+        'catalog select'
     );
-    const facultySelect = root.querySelector<HTMLSelectElement>(
-        '[data-degree-faculty]'
+    const facultySelect = getElementByPath<HTMLSelectElement>(
+        root,
+        FACULTY_SELECT_PATH,
+        'faculty select'
     );
-    const programSelect = root.querySelector<HTMLSelectElement>(
-        '[data-degree-program]'
+    const programSelect = getElementByPath<HTMLSelectElement>(
+        root,
+        PROGRAM_SELECT_PATH,
+        'program select'
     );
-    const pathSelect =
-        root.querySelector<HTMLSelectElement>('[data-degree-path]');
-    const pathEmpty =
-        root.querySelector<HTMLParagraphElement>('[data-path-empty]');
-    const status = root.querySelector<HTMLParagraphElement>(
-        '[data-degree-status]'
+    const pathSelect = getElementByPath<HTMLSelectElement>(
+        root,
+        PATH_SELECT_PATH,
+        'path select'
     );
-    const requirementRows = root.querySelector<HTMLTableSectionElement>(
-        '[data-requirement-rows]'
+    const pathEmpty = getElementByPath<HTMLParagraphElement>(
+        root,
+        PATH_EMPTY_PATH,
+        'path empty text'
     );
-
-    if (
-        catalogSelect === null ||
-        facultySelect === null ||
-        programSelect === null ||
-        pathSelect === null ||
-        pathEmpty === null ||
-        status === null ||
-        requirementRows === null
-    ) {
-        throw new Error('DegreePicker required elements not found');
-    }
+    const status = getElementByPath<HTMLParagraphElement>(
+        root,
+        STATUS_PATH,
+        'status text'
+    );
+    const requirementRows = getElementByPath<HTMLTableSectionElement>(
+        root,
+        REQUIREMENT_ROWS_PATH,
+        'requirement rows'
+    );
 
     const state: PickerState = {
         catalogs: {},
@@ -670,4 +676,61 @@ async function persistActiveSelectionIfComplete(
         return;
     }
     await appState.userDegree.set(state.selection);
+}
+
+function createTemplateRoot(): HTMLElement {
+    const template = document.createElement('template');
+    template.innerHTML = templateHtml.trim();
+    const root = template.content.firstElementChild;
+    if (!(root instanceof HTMLElement)) {
+        throw new Error('DegreePicker template root not found');
+    }
+    return root;
+}
+
+function createSelectorPath(selector: string): number[] {
+    const element = TEMPLATE_ROOT.querySelector(selector);
+    if (!(element instanceof Element)) {
+        throw new Error(`DegreePicker selector not found: ${selector}`);
+    }
+    return getNodePath(TEMPLATE_ROOT, element);
+}
+
+function getElementByPath<TElement extends Element>(
+    root: Element,
+    path: number[],
+    label: string
+): TElement {
+    let current: Element = root;
+    for (const index of path) {
+        const child = current.children.item(index);
+        if (!(child instanceof Element)) {
+            throw new Error(`DegreePicker ${label} not found in clone`);
+        }
+        current = child;
+    }
+    return current as TElement;
+}
+
+function getNodePath(root: Element, target: Element): number[] {
+    const path: number[] = [];
+    let current: Element | null = target;
+    while (current !== null && current !== root) {
+        const parent: Element | null = current.parentElement;
+        if (parent === null) {
+            throw new Error(
+                'DegreePicker target node is detached from template'
+            );
+        }
+        const index = Array.prototype.indexOf.call(parent.children, current);
+        if (index < 0) {
+            throw new Error('DegreePicker target index not found in template');
+        }
+        path.unshift(index);
+        current = parent;
+    }
+    if (current !== root) {
+        throw new Error('DegreePicker target is outside template root');
+    }
+    return path;
 }

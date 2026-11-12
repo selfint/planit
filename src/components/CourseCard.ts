@@ -9,18 +9,19 @@ export type CourseCardOptions = {
 const DEFAULT_STATUS_COLOR = 'hsl(168 56% 46%)';
 const DEFAULT_EMPTY_VALUE = '—';
 const DEFAULT_TITLE = 'קורס ללא שם';
+const TEMPLATE_ROOT = createTemplateRoot();
+
+const STATUS_DOT_PATH = createSelectorPath("[data-role='status-dot']");
+const POINTS_PATH = createSelectorPath("[data-role='course-points']");
+const MEDIAN_PATH = createSelectorPath("[data-role='course-median']");
+const TITLE_PATH = createSelectorPath("[data-role='course-title']");
+const CODE_PATH = createSelectorPath("[data-role='course-code']");
 
 export function CourseCard(
     course?: CourseRecord,
     options?: CourseCardOptions
 ): HTMLElement {
-    const template = document.createElement('template');
-    template.innerHTML = templateHtml;
-    const templateElement = template.content.firstElementChild;
-    if (!(templateElement instanceof HTMLTemplateElement)) {
-        throw new Error('CourseCard template element not found');
-    }
-    const root = templateElement.content.firstElementChild?.cloneNode(true);
+    const root = TEMPLATE_ROOT.cloneNode(true);
     if (!(root instanceof HTMLElement)) {
         throw new Error('CourseCard template root not found');
     }
@@ -42,43 +43,98 @@ export function CourseCard(
         : false;
     const shapeClass = hasTests ? 'rounded-full' : 'rounded-none';
 
-    const statusDot = root.querySelector<HTMLSpanElement>(
-        "[data-role='status-dot']"
+    const statusDot = getElementByPath<HTMLSpanElement>(
+        root,
+        STATUS_DOT_PATH,
+        'status dot'
     );
-    if (statusDot !== null) {
-        statusDot.className = `me-[10px] h-3 w-3 min-h-3 min-w-3 shrink-0 ${shapeClass}`;
-        statusDot.style.backgroundColor = statusColor;
-    }
+    statusDot.className = `me-[10px] h-3 w-3 min-h-3 min-w-3 shrink-0 ${shapeClass}`;
+    statusDot.style.backgroundColor = statusColor;
 
-    const points = root.querySelector<HTMLSpanElement>(
-        "[data-role='course-points']"
+    const points = getElementByPath<HTMLSpanElement>(
+        root,
+        POINTS_PATH,
+        'course points'
     );
-    if (points !== null) {
-        points.textContent = formatCourseNumber(course.points, emptyValue);
-    }
+    points.textContent = formatCourseNumber(course.points, emptyValue);
 
-    const median = root.querySelector<HTMLSpanElement>(
-        "[data-role='course-median']"
+    const median = getElementByPath<HTMLSpanElement>(
+        root,
+        MEDIAN_PATH,
+        'course median'
     );
-    if (median !== null) {
-        median.textContent = formatCourseNumber(course.median, emptyValue);
-    }
+    median.textContent = formatCourseNumber(course.median, emptyValue);
 
-    const title = root.querySelector<HTMLParagraphElement>(
-        "[data-role='course-title']"
+    const title = getElementByPath<HTMLParagraphElement>(
+        root,
+        TITLE_PATH,
+        'course title'
     );
-    if (title !== null) {
-        title.textContent = titleText;
-    }
+    title.textContent = titleText;
 
-    const code = root.querySelector<HTMLParagraphElement>(
-        "[data-role='course-code']"
+    const code = getElementByPath<HTMLParagraphElement>(
+        root,
+        CODE_PATH,
+        'course code'
     );
-    if (code !== null) {
-        code.textContent = course.code;
-    }
+    code.textContent = course.code;
 
     return root;
+}
+
+function createTemplateRoot(): HTMLElement {
+    const template = document.createElement('template');
+    template.innerHTML = templateHtml.trim();
+    const root = template.content.firstElementChild;
+    if (!(root instanceof HTMLElement)) {
+        throw new Error('CourseCard template root not found');
+    }
+    return root;
+}
+
+function createSelectorPath(selector: string): number[] {
+    const element = TEMPLATE_ROOT.querySelector(selector);
+    if (!(element instanceof Element)) {
+        throw new Error(`CourseCard selector not found: ${selector}`);
+    }
+    return getNodePath(TEMPLATE_ROOT, element);
+}
+
+function getElementByPath<TElement extends Element>(
+    root: Element,
+    path: number[],
+    label: string
+): TElement {
+    let current: Element = root;
+    for (const index of path) {
+        const child = current.children.item(index);
+        if (!(child instanceof Element)) {
+            throw new Error(`CourseCard ${label} not found in clone`);
+        }
+        current = child;
+    }
+    return current as TElement;
+}
+
+function getNodePath(root: Element, target: Element): number[] {
+    const path: number[] = [];
+    let current: Element | null = target;
+    while (current !== null && current !== root) {
+        const parent: Element | null = current.parentElement;
+        if (parent === null) {
+            throw new Error('CourseCard target node is detached from template');
+        }
+        const index = Array.prototype.indexOf.call(parent.children, current);
+        if (index < 0) {
+            throw new Error('CourseCard target index not found in template');
+        }
+        path.unshift(index);
+        current = parent;
+    }
+    if (current !== root) {
+        throw new Error('CourseCard target is outside template root');
+    }
+    return path;
 }
 
 function applySkeleton(root: HTMLElement): void {
