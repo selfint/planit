@@ -8,7 +8,8 @@ call IndexedDB or requirements-sync modules directly. They should import
 
 The implementation is provider-based:
 
-- The app has one active provider at a time (`local` now, `cloud` later).
+- The app has one active provider at a time (local provider with optional
+  Firestore-backed user slices when authenticated).
 - Every state operation delegates to the active provider.
 - Swapping provider via `state.provider.set(nextProvider)` triggers router
   rerender of the current route, so the same page can rehydrate from the new
@@ -88,10 +89,14 @@ Current local provider methods map to existing modules as follows:
 - `catalogs.set` -> `indexeddb.putCatalogs`
 - `requirements.get` -> `indexeddb.getRequirement`
 - `requirements.sync` -> `requirementsSync.syncRequirements`
-- `userDegree.get` -> `requirementsSync.getActiveRequirementsSelection`
-- `userDegree.set` -> `requirementsSync.setActiveRequirementsSelection`
-- `userPlan.get` -> `indexeddb.getMeta('planPageState')`
-- `userPlan.set` -> `indexeddb.setMeta({ key: 'planPageState', ... })`
+- `userDegree.get` -> local `requirementsSync.getActiveRequirementsSelection`,
+  then Firestore `users-v2/<uid>.userDegree` override when logged in
+- `userDegree.set` -> `requirementsSync.setActiveRequirementsSelection` +
+  Firestore `users-v2/<uid>.userDegree` mirror when logged in
+- `userPlan.get` -> local `indexeddb.getMeta('planPageState')`, then Firestore
+  `users-v2/<uid>.planPageState` override when logged in
+- `userPlan.set` -> local `indexeddb.setMeta({ key: 'planPageState', ... })` +
+  Firestore `users-v2/<uid>.planPageState` mirror when logged in
 - `firebase.login` -> `firebase.login`
 - `firebase.logout` -> `firebase.logout`
 - `firebase.getUser` -> `firebase.getUser`
@@ -107,8 +112,9 @@ Current local provider methods map to existing modules as follows:
   `state.requirements.sync(selection, { persistActiveSelection: false })`, then
   commits the active selection after the user picks a complete
   catalog/faculty/program/path combination.
-- `state.userPlan` owns local-first planner persistence (`planPageState`) used by
-  plan, semester, and course flows.
+- `state.userPlan` and `state.userDegree` still write through to IndexedDB first
+  for offline-first behavior, and additionally mirror/load from Firestore for
+  signed-in users.
 
 ## Method Usage Coverage
 
@@ -501,3 +507,7 @@ Unused today:
   wiring to IndexedDB/requirements sync.
 - `swaps provider and notifies rerender handler`: validates provider replacement
   and rerender callback.
+- `loads user degree and plan from firestore when authenticated`: validates
+  Firestore read-through into IndexedDB-backed slices.
+- `saves user degree and plan to firestore when authenticated`: validates
+  dual-write behavior (local + Firestore) for signed-in users.
