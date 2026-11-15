@@ -4,9 +4,11 @@ import {
     __resetFirebaseForTests,
     __setFirebaseSdkLoaderForTests,
     getUser,
+    loadUserData,
     login,
     logout,
     preloadFirebase,
+    saveUserData,
 } from '$lib/firebase';
 
 type MockUser = {
@@ -32,7 +34,19 @@ describe('firebase lib', () => {
 
     const initializeApp = vi.fn(() => ({ name: 'app' }));
     const getAuth = vi.fn(() => auth);
-    const getFirestore = vi.fn(() => ({ name: 'db' }));
+    const firestore = { name: 'db' };
+    const usersCollection = { name: 'users-v2' };
+    const userDocument = { id: 'user-1' };
+    const getFirestore = vi.fn(() => firestore);
+    const collection = vi.fn(() => usersCollection);
+    const doc = vi.fn(() => userDocument);
+    const getDoc = vi.fn(() =>
+        Promise.resolve({
+            exists: () => false,
+            data: () => undefined,
+        })
+    );
+    const setDoc = vi.fn(() => Promise.resolve());
     const connectAuthEmulator = vi.fn();
     const connectFirestoreEmulator = vi.fn();
     const onAuthStateChanged = vi.fn(
@@ -67,9 +81,9 @@ describe('firebase lib', () => {
     const MockGoogleAuthProvider = function MockGoogleAuthProvider(): void {
         return;
     } as unknown as MockGoogleAuthProviderType;
-    MockGoogleAuthProvider.credential = function credential(
-        idToken: string
-    ): { idToken: string } {
+    MockGoogleAuthProvider.credential = function credential(idToken: string): {
+        idToken: string;
+    } {
         return { idToken };
     };
 
@@ -82,6 +96,10 @@ describe('firebase lib', () => {
         getFirestore.mockClear();
         connectAuthEmulator.mockClear();
         connectFirestoreEmulator.mockClear();
+        collection.mockClear();
+        doc.mockClear();
+        getDoc.mockClear();
+        setDoc.mockClear();
         onAuthStateChanged.mockClear();
         signInWithPopup.mockClear();
         signOut.mockClear();
@@ -102,8 +120,12 @@ describe('firebase lib', () => {
                     signOut,
                 },
                 firestoreModule: {
+                    collection,
                     connectFirestoreEmulator,
+                    doc,
+                    getDoc,
                     getFirestore,
+                    setDoc,
                 },
             });
         });
@@ -148,5 +170,37 @@ describe('firebase lib', () => {
 
         expect(signOut).toHaveBeenCalledTimes(1);
         expect(getUser()).toBeNull();
+    });
+
+    it('loads user data from users-v2 collection', async () => {
+        auth.currentUser = user;
+        getDoc.mockResolvedValueOnce({
+            exists: () => true,
+            data: () => ({ planPageState: { semesterCount: 8 } }),
+        });
+
+        const payload = await loadUserData<{ semesterCount: number }>(
+            'planPageState'
+        );
+
+        expect(collection).toHaveBeenCalledWith({ name: 'db' }, 'users-v2');
+        expect(doc).toHaveBeenCalledWith({ name: 'users-v2' }, 'user-1');
+        expect(payload).toEqual({ semesterCount: 8 });
+    });
+
+    it('saves user data to users-v2 collection with merge', async () => {
+        auth.currentUser = user;
+
+        await saveUserData('planPageState', { semesterCount: 6 });
+
+        expect(collection).toHaveBeenCalledWith({ name: 'db' }, 'users-v2');
+        expect(doc).toHaveBeenCalledWith({ name: 'users-v2' }, 'user-1');
+        expect(setDoc).toHaveBeenCalledWith(
+            { id: 'user-1' },
+            expect.objectContaining({
+                planPageState: { semesterCount: 6 },
+            }),
+            { merge: true }
+        );
     });
 });

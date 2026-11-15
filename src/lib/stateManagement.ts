@@ -19,8 +19,10 @@ import {
 import {
     type FirebaseUser,
     getUser as getFirebaseUser,
+    loadUserData as loadFirebaseUserData,
     login as loginToFirebase,
     logout as logoutFromFirebase,
+    saveUserData as saveFirebaseUserData,
 } from '$lib/firebase';
 import {
     type RequirementsSelection,
@@ -32,6 +34,7 @@ import {
 
 const PLAN_META_KEY = 'planPageState';
 const COURSE_LAST_SYNC_META_KEY = 'courseDataGeneratedAt';
+const USER_DEGREE_FIRESTORE_KEY = 'userDegree';
 
 export type StateProvider = {
     courses: {
@@ -191,16 +194,67 @@ export function createLocalStateProvider(): StateProvider {
             sync: syncRequirements,
         },
         userDegree: {
-            get: getActiveRequirementsSelection,
-            set: setActiveRequirementsSelection,
+            async get(): Promise<RequirementsSelection | undefined> {
+                const localSelection = await getActiveRequirementsSelection();
+                if (getFirebaseUser() === null) {
+                    return localSelection;
+                }
+
+                const remoteSelection =
+                    await loadFirebaseUserData<RequirementsSelection>(
+                        USER_DEGREE_FIRESTORE_KEY
+                    );
+                if (remoteSelection === undefined) {
+                    return localSelection;
+                }
+
+                await setActiveRequirementsSelection(remoteSelection);
+                return remoteSelection;
+            },
+            async set(selection: RequirementsSelection): Promise<void> {
+                await setActiveRequirementsSelection(selection);
+
+                if (getFirebaseUser() === null) {
+                    return;
+                }
+
+                await saveFirebaseUserData(
+                    USER_DEGREE_FIRESTORE_KEY,
+                    selection
+                );
+            },
         },
         userPlan: {
-            get: () => getMeta(PLAN_META_KEY),
-            set: (value) =>
-                setMeta({
+            async get(): Promise<MetaEntry | undefined> {
+                const localEntry = await getMeta(PLAN_META_KEY);
+                if (getFirebaseUser() === null) {
+                    return localEntry;
+                }
+
+                const remoteValue = await loadFirebaseUserData(PLAN_META_KEY);
+                if (remoteValue === undefined) {
+                    return localEntry;
+                }
+
+                const entry: MetaEntry = {
+                    key: PLAN_META_KEY,
+                    value: remoteValue,
+                };
+                await setMeta(entry);
+                return entry;
+            },
+            async set(value: unknown): Promise<void> {
+                await setMeta({
                     key: PLAN_META_KEY,
                     value,
-                }),
+                });
+
+                if (getFirebaseUser() === null) {
+                    return;
+                }
+
+                await saveFirebaseUserData(PLAN_META_KEY, value);
+            },
         },
         firebase: {
             login: loginToFirebase,

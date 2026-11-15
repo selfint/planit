@@ -19,6 +19,8 @@ const mocks = vi.hoisted(() => ({
     firebaseLoginMock: vi.fn(),
     firebaseLogoutMock: vi.fn(),
     firebaseGetUserMock: vi.fn(),
+    firebaseLoadUserDataMock: vi.fn(),
+    firebaseSaveUserDataMock: vi.fn(),
 }));
 
 vi.mock('$lib/indexeddb', () => ({
@@ -44,8 +46,10 @@ vi.mock('$lib/requirementsSync', () => ({
 
 vi.mock('$lib/firebase', () => ({
     getUser: mocks.firebaseGetUserMock,
+    loadUserData: mocks.firebaseLoadUserDataMock,
     login: mocks.firebaseLoginMock,
     logout: mocks.firebaseLogoutMock,
+    saveUserData: mocks.firebaseSaveUserDataMock,
 }));
 
 import {
@@ -56,6 +60,7 @@ import {
 
 describe('stateManagement', () => {
     it('proxies local provider course and degree getters', async () => {
+        mocks.firebaseGetUserMock.mockReturnValue(null);
         const localProvider = createLocalStateProvider();
 
         await localProvider.courses.get('236501');
@@ -133,5 +138,81 @@ describe('stateManagement', () => {
 
         setStateProviderChangeHandler(undefined);
         state.provider.set(createLocalStateProvider());
+    });
+
+    it('loads user degree and plan from firestore when authenticated', async () => {
+        const localProvider = createLocalStateProvider();
+        const firestoreSelection = {
+            catalogId: '2024-2025',
+            facultyId: '01',
+            programId: '1234',
+            path: 'main',
+        };
+        const firestorePlan = {
+            semesterCount: 8,
+            currentSemester: 2,
+        };
+
+        mocks.firebaseGetUserMock.mockReturnValue({ uid: 'u-1' });
+        mocks.firebaseLoadUserDataMock.mockImplementation((key: string) => {
+            if (key === 'userDegree') {
+                return Promise.resolve(firestoreSelection);
+            }
+            if (key === 'planPageState') {
+                return Promise.resolve(firestorePlan);
+            }
+            return Promise.resolve(undefined);
+        });
+
+        const resolvedSelection = await localProvider.userDegree.get();
+        const resolvedPlan = await localProvider.userPlan.get();
+
+        expect(resolvedSelection).toEqual(firestoreSelection);
+        expect(mocks.setActiveRequirementsSelectionMock).toHaveBeenCalledWith(
+            firestoreSelection
+        );
+        expect(resolvedPlan).toEqual({
+            key: 'planPageState',
+            value: firestorePlan,
+        });
+        expect(mocks.setMetaMock).toHaveBeenCalledWith({
+            key: 'planPageState',
+            value: firestorePlan,
+        });
+    });
+
+    it('saves user degree and plan to firestore when authenticated', async () => {
+        const localProvider = createLocalStateProvider();
+        const selection = {
+            catalogId: '2024-2025',
+            facultyId: '01',
+            programId: '1234',
+            path: undefined,
+        };
+        const planPayload = {
+            semesterCount: 6,
+            currentSemester: 1,
+        };
+
+        mocks.firebaseGetUserMock.mockReturnValue({ uid: 'u-1' });
+
+        await localProvider.userDegree.set(selection);
+        await localProvider.userPlan.set(planPayload);
+
+        expect(mocks.setActiveRequirementsSelectionMock).toHaveBeenCalledWith(
+            selection
+        );
+        expect(mocks.firebaseSaveUserDataMock).toHaveBeenCalledWith(
+            'userDegree',
+            selection
+        );
+        expect(mocks.setMetaMock).toHaveBeenCalledWith({
+            key: 'planPageState',
+            value: planPayload,
+        });
+        expect(mocks.firebaseSaveUserDataMock).toHaveBeenCalledWith(
+            'planPageState',
+            planPayload
+        );
     });
 });
