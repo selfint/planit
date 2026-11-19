@@ -38,6 +38,13 @@ export type CourseSyncResult = {
 export type CourseSyncOptions = {
     onSync?: (result: CourseSyncResult) => void;
     onError?: (error: unknown) => void;
+    onProgress?: (progress: SyncProgress) => void;
+};
+
+export type SyncProgress = {
+    message: string;
+    downloadedBytes: number;
+    totalBytes: number;
 };
 
 function isOnline(): boolean {
@@ -95,7 +102,9 @@ async function fetchGeneratedAt(): Promise<string> {
     return generatedAt.toISOString();
 }
 
-export async function syncCourseData(): Promise<CourseSyncResult> {
+export async function syncCourseData(
+    options?: Pick<CourseSyncOptions, 'onProgress'>
+): Promise<CourseSyncResult> {
     if (!isOnline()) {
         return { status: 'offline' };
     }
@@ -113,7 +122,10 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
         );
     }
 
-    const data = (await response.json()) as Record<string, CourseRecord>;
+    const data = (await readJsonWithProgress(response, {
+        onProgress: options?.onProgress,
+        message: 'מוריד נתוני קורסים...',
+    })) as Record<string, CourseRecord>;
     const courses = Object.values(data);
     const generatedAt = await fetchGeneratedAt();
 
@@ -143,6 +155,56 @@ export async function syncCourseData(): Promise<CourseSyncResult> {
     ]);
 
     return { status: 'updated', count: courses.length };
+}
+
+async function readJsonWithProgress(
+    response: Response,
+    options: {
+        onProgress?: (progress: SyncProgress) => void;
+        message: string;
+    }
+): Promise<unknown> {
+    const contentLengthHeader = response.headers.get('content-length');
+    const totalBytes =
+        contentLengthHeader === null ? 0 : Number.parseInt(contentLengthHeader, 10);
+
+    const streamReader = response.body?.getReader();
+    if (streamReader === undefined) {
+        return response.json();
+    }
+
+    const chunks: Uint8Array[] = [];
+    let downloadedBytes = 0;
+    options.onProgress?.({ message: options.message, downloadedBytes, totalBytes });
+
+    while (true) {
+        const nextChunk = await streamReader.read();
+        if (nextChunk.done) {
+            break;
+        }
+
+        downloadedBytes += nextChunk.value.byteLength;
+        chunks.push(nextChunk.value);
+        options.onProgress?.({
+            message: options.message,
+            downloadedBytes,
+            totalBytes: totalBytes > 0 ? totalBytes : downloadedBytes,
+        });
+    }
+
+    const fullBuffer = new Uint8Array(downloadedBytes);
+    let writeOffset = 0;
+    for (const chunk of chunks) {
+        fullBuffer.set(chunk, writeOffset);
+        writeOffset += chunk.byteLength;
+    }
+
+    options.onProgress?.({
+        message: 'מעבד נתוני קורסים...',
+        downloadedBytes,
+        totalBytes: totalBytes > 0 ? totalBytes : downloadedBytes,
+    });
+    return JSON.parse(new TextDecoder().decode(fullBuffer)) as unknown;
 }
 
 export function initCourseSync(options?: CourseSyncOptions): void {
