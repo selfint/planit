@@ -61,3 +61,4 @@ course code using an FNV-1a hash mapped into an HSL color.
 - Keep spacing around course cards on the `2` scale for consistency with search
   and semester layouts: use `gap-2` between cards and prefer matching
   `p-2`/`m-2` when local wrappers need padding or margins around the card area.
+- Rendering now uses a cached parsed template root and precomputed element paths, so each card clone avoids reparsing HTML and selector strings at runtime.
