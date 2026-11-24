@@ -60,3 +60,13 @@
         @apply touch-manipulation;
     }
 }
+
+@layer utilities {
+    .landing-gradient-bg {
+        @apply [background:radial-gradient(1100px_circle_at_8%_-10%,rgba(62,200,180,0.2),transparent_55%),radial-gradient(900px_circle_at_100%_0%,rgba(106,167,216,0.18),transparent_50%)];
+    }
+
+    .dark .landing-gradient-bg {
+        @apply [background:radial-gradient(1100px_circle_at_12%_-10%,rgba(62,200,180,0.12),transparent_55%),radial-gradient(900px_circle_at_95%_0%,rgba(79,143,190,0.14),transparent_55%)];
+    }
+}
